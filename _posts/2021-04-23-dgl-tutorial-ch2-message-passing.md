@@ -1,7 +1,7 @@
 ---
 title: 【DGL教程】第2章 消息传递
 date: 2021-04-23 16:54:18 +0800
-categories: [DGL]
+categories: [Graph Neural Network, DGL]
 tags: [dgl, pytorch, graph neural network, message passing]
 math: true
 ---

@@ -1,7 +1,7 @@
 ---
 title: 【DGL教程】第1章 图(Graph)
 date: 2021-04-23 15:45:52 +0800
-categories: [DGL]
+categories: [Graph Neural Network, DGL]
 tags: [dgl, pytorch, graph neural network]
 ---
 Deep Graph Library (DGL)是一个用于构建图神经网络模型的框架

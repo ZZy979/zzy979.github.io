@@ -1,7 +1,7 @@
 ---
 title: 【DGL教程】第5章 训练GNN
 date: 2021-11-11 19:50:36 +0800
-categories: [DGL]
+categories: [Graph Neural Network, DGL]
 tags: [dgl, pytorch, graph neural network]
 math: true
 ---

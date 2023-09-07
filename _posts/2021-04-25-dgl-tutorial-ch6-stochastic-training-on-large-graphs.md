@@ -1,7 +1,7 @@
 ---
 title: 【DGL教程】第6章 大图上的随机训练
 date: 2021-04-25 21:40:04 +0800
-categories: [DGL]
+categories: [Graph Neural Network, DGL]
 tags: [dgl, pytorch, graph neural network, minibatch]
 ---
 官方文档：<https://docs.dgl.ai/guide/minibatch.html>
