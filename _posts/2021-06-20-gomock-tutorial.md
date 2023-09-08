@@ -2,7 +2,7 @@
 title: gomock使用教程
 date: 2021-06-20 18:02:21 +0800
 categories: [Go]
-tags: [golang, gomock, unit test]
+tags: [golang, gomock, unit test, mock]
 ---
 gomock是Go官方提供的模拟(mock)框架，提供了打桩和验证调用的功能
 
