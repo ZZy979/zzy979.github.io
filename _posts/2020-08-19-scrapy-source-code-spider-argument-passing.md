@@ -2,7 +2,7 @@
 title: 【Scrapy源码阅读】Spider参数传递
 date: 2020-08-19 17:45:44 +0800
 categories: [Scrapy]
-tags: [python, crawler]
+tags: [python, scrapy, crawler]
 ---
 官方文档[Spider参数](https://docs.scrapy.org/en/latest/topics/spiders.html#spider-arguments)中提到，可以使用`scrapy crawl`命令的`-a`选项向Spider传递参数：
 

@@ -2,7 +2,7 @@
 title: 【Scrapy源码阅读】ItemMeta类
 date: 2020-08-19 18:20:43 +0800
 categories: [Scrapy]
-tags: [python, crawler, metaclass]
+tags: [python, scrapy, crawler, metaclass]
 ---
 下面的代码定义了一个Item类：
 

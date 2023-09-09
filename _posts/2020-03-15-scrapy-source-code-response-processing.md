@@ -2,7 +2,7 @@
 title: 【Scrapy源码阅读】response处理过程
 date: 2020-03-15 22:59:17 +0800
 categories: [Scrapy]
-tags: [python, crawler]
+tags: [python, scrapy, crawler]
 ---
 以官方教程[QuotesSpider](https://docs.scrapy.org/en/latest/intro/tutorial.html)为例，结合源码分析一下Scrapy中response的处理过程。
 
