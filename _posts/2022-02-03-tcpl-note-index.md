@@ -2,7 +2,7 @@
 title: 《C程序设计语言》笔记 目录
 date: 2022-02-03 00:47:04 +0800
 categories: [C/C++, TCPL]
-tags: [c, tcpl]
+tags: [c]
 ---
 图书链接：<https://book.douban.com/subject/1139336/>
 
