@@ -281,7 +281,7 @@ else
     printf("%d is not a leap year\n", year);
 ```
 
-取模运算符`%`不能用于`float`或`double`类型。如果有负操作数，则余数的符号与除数相同（见 [除法舍入问题]({% post_url 2021-12-25-python-division-rounding %})）。
+取模运算符`%`不能用于`float`或`double`类型。如果有负操作数，则余数的符号与除数相同（见 [除法舍入问题]({% post_url 2021-03-20-python-division-rounding %})）。
 
 运算符`+`和`-`的优先级比`*`、`/`和`%`的优先级低，相同优先级的算术运算符采用从左到右的结合规则。例如，`a + b - c`等价于`(a + b) - c`，`a + b * c`等价于`a + (b * c)`。
 
