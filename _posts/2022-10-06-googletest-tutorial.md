@@ -2,7 +2,7 @@
 title: GoogleTest使用教程
 date: 2022-10-06 15:08:10 +0800
 categories: [C/C++]
-tags: [googletest, unit test, gmock, mock]
+tags: [googletest, cpp, unit test, gmock, mock]
 ---
 ## 1.简介
 GoogleTest是由Google开发的一个C++测试框架，支持Linux、Windows和macOS操作系统，使用Bazel或CMake构建工具。

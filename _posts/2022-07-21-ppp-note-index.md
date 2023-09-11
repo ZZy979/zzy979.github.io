@@ -28,15 +28,15 @@ tags: [cpp]
 * [第11章 定制输入/输出]({% post_url 2023-01-25-ppp-note-ch11-customizing-input-and-output %})
 * [第12章 一个显示模型]({% post_url 2023-02-01-ppp-note-ch12-a-display-model %})
 * [第13章 图形类]({% post_url 2023-02-13-ppp-note-ch13-graphics-classes %})
-* [第14章 设计图形类](https://blog.csdn.net/zzy979481894/article/details/129133590)
-* [第15章 绘制函数图和数据图](https://blog.csdn.net/zzy979481894/article/details/129472470)
-* [第16章 图形用户界面](https://blog.csdn.net/zzy979481894/article/details/129779417)
+* [第14章 设计图形类]({% post_url 2023-03-06-ppp-note-ch14-graphics-class-design %})
+* [第15章 绘制函数图和数据图]({% post_url 2023-03-20-ppp-note-ch15-graphing-functions-and-data %})
+* [第16章 图形用户界面]({% post_url 2023-04-09-ppp-note-ch16-graphical-user-interfaces %})
 
 ### 第三部分 数据结构和算法
-* [第17章 向量和自由存储](https://blog.csdn.net/zzy979481894/article/details/130140557)
-* [第18章 向量和数组](https://blog.csdn.net/zzy979481894/article/details/130692897)
-* [第19章 向量、模板和异常](https://blog.csdn.net/zzy979481894/article/details/130937634)
-* [第20章 容器和迭代器](https://blog.csdn.net/zzy979481894/article/details/131406187)
+* [第17章 向量和自由存储]({% post_url 2023-04-22-ppp-note-ch17-vector-and-free-store %})
+* [第18章 向量和数组]({% post_url 2023-05-28-ppp-note-ch18-vectors-and-arrays %})
+* [第19章 向量、模板和异常]({% post_url 2023-06-16-ppp-note-ch19-vector-templates-and-exceptions %})
+* [第20章 容器和迭代器]({% post_url 2023-07-15-ppp-note-ch20-containers-and-iterators %})
 * 第21章 算法和映射
 
 ### 第四部分 拓宽视野
