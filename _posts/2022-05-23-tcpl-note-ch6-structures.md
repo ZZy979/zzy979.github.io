@@ -625,7 +625,7 @@ enum { KEYWORD = 01, EXTERNAL = 02, STATIC = 04 };
 
 这些数字必须是2的幂。这样，访问这些位就变成了用第2章中描述的移位、掩码及补码运算进行简单的位操作。
 
-例如：`flags |= EXTERNAL | STATIC;`将`flags`中的`EXTERNAL`和`STATIC`位置为1；`flags ~= ~(EXTERNAL | STATIC);`将它们置为0；当这两位都为0时，`if (flags & (EXTERNAL | STATIC))`为真。
+例如：`flags |= EXTERNAL | STATIC;`将`flags`中的`EXTERNAL`和`STATIC`位置为1；`flags &= ~(EXTERNAL | STATIC);`将它们置为0；当这两位都为0时，`if ((flags & (EXTERNAL | STATIC)) == 0)`为真。
 
 C语言还提供了直接定义和访问一个字中的位字段的能力，而不需要通过按位运算符。**位字段**(bit-field)，或简称字段(field)，是“字”中相邻位的集合。“字”(word)是单个存储单元，与具体的实现有关（可理解为字节）。例如，上述符号表的几个`#define`语句可用下列三个位字段的定义来代替：
 
