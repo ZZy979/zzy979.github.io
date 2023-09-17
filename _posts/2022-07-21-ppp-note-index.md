@@ -37,7 +37,7 @@ tags: [cpp]
 * [第18章 向量和数组]({% post_url 2023-05-28-ppp-note-ch18-vectors-and-arrays %})
 * [第19章 向量、模板和异常]({% post_url 2023-06-16-ppp-note-ch19-vector-templates-and-exceptions %})
 * [第20章 容器和迭代器]({% post_url 2023-07-15-ppp-note-ch20-containers-and-iterators %})
-* 第21章 算法和映射
+* [第21章 算法和映射]({% post_url 2023-08-20-ppp-note-ch21-algorithms-and-maps %})
 
 ### 第四部分 拓宽视野
 * 第22章 理念和历史
