@@ -445,13 +445,8 @@ T inner_product(
 接下来要生成输出。我们可以遍历一个`map`，就像其他STL容器一样。`map<string, int>`的元素类型是`pair<string, int>`（即键值对），`pair`的两个成员分别叫做`first`和`second`（分别对应key和value）。
 
 #### 小结
-`map`常用操作：假设`m`是一个`map<K, V>`对象
-* 初始化列表：
-
-```cpp
-map<K, V> m = { {key1, value1}, {key2, value2}, ... };
-```
-
+`map`常用操作：
+* `map<K, V> m = { {key1, value1}, {key2, value2}, ... };` 从初始化列表构造
 * `m[key]` 返回key对应的value的引用，**如果key不存在则先执行插入**，value为类型`V`的默认值
 * `m[key] = value` 将key映射到value，如果key已存在则覆盖原有值
 * `m.at(key)` 返回key对应的value的引用，如果key不存在则抛出`out_of_range`异常
@@ -461,6 +456,9 @@ map<K, V> m = { {key1, value1}, {key2, value2}, ... };
 * `m.contains(key)` (C++20)判断指定的key是否存在 
 * `m.insert(make_pair(key, value))`或`m.emplace(key, value)` 插入(key, value)，如果已存在则不插入
 * `m.erase(key)` 删除指定的key
+* `m.lower_bound(key)` 返回第一个不小于key的元素的迭代器
+* `m.upper_bound(key)` 返回第一个大于key的元素的迭代器
+* `m.equal_range(key)` 返回等于key的范围的起止迭代器
 
 注意：`[]`运算符可能会执行插入操作，因此不是`const`成员函数，不能用于`const map`！
 
@@ -860,6 +858,8 @@ template<class RandomIt, class Compare>
 void sort(RandomIt first, RandomIt last, Compare comp);
 ```
 
+注意：模板参数`RandomIt`必须是随机访问迭代器，因此**不能使用`sort()`对`list`排序**，而应该使用`list::sort()`。
+
 例如，排序字符串向量（不区分大小写）：
 
 [排序字符串（不区分大小写）](https://github.com/ZZy979/PPP-code/blob/main/ch21/sort_strings_ignore_case.cpp)
@@ -913,6 +913,8 @@ ForwardIt binary_search(ForwardIt first, ForwardIt last, const T& value, Compare
 
 注意：**二分搜索算法要求输入序列是有序的**，否则可能发生意想不到的事情（例如无限循环）。
 
+注：对于随机访问容器（例如`vector`），`binary_search()`的时间复杂度是 $O(\log n)$ ，而对于不可随机访问的容器（例如`list`），时间复杂度是 $O(n\log n)$ 。
+
 `binary_search()`只返回一个值在序列中是否存在。如果需要元素位置，可以使用`lower_bound()`、`upper_bound()`或`equal_range()`。
 
 | 二分搜索算法 | 功能 |
@@ -939,5 +941,21 @@ void sort(C& c) {
 ```
 
 ## 简单练习
+* [21-1](https://github.com/ZZy979/PPP-code/blob/main/ch21/drill21-1.cpp)
+* [21-2](https://github.com/ZZy979/PPP-code/blob/main/ch21/drill21-2.cpp)
+* [21-3](https://github.com/ZZy979/PPP-code/blob/main/ch21/drill21-3.cpp)
 
 ## 习题
+* [21-3~21-4](https://github.com/ZZy979/PPP-code/blob/main/ch21/count.h)
+* [21-6](https://github.com/ZZy979/PPP-code/blob/main/ch21/exec21-6.cpp)
+* [21-7](https://github.com/ZZy979/PPP-code/blob/main/ch21/binary_search.h)
+* [21-8](https://github.com/ZZy979/PPP-code/blob/main/ch21/exec21-8.cpp)
+* 21-9~21-10
+  * [Order类](https://github.com/ZZy979/PPP-code/blob/main/ch21/order.h)
+  * [主程序](https://github.com/ZZy979/PPP-code/blob/main/ch21/exec21-9.cpp)
+* 21-11~21-12
+  * [Order_list_window](https://github.com/ZZy979/PPP-code/blob/main/ch21/order_list_window.h)
+  * [Order_list_table](https://github.com/ZZy979/PPP-code/blob/main/ch21/order_list_table.h)
+  * [Order_edit_window](https://github.com/ZZy979/PPP-code/blob/main/ch21/order_edit_window.h)
+  * [Purchase_list_table](https://github.com/ZZy979/PPP-code/blob/main/ch21/purchase_list_table.h)
+  * [主程序](https://github.com/ZZy979/PPP-code/blob/main/ch21/exec21-11.cpp)

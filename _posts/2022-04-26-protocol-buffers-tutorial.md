@@ -874,7 +874,7 @@ public:
 
 但是**Protocol Buffers本身并不包含RPC实现**（`RpcChannel`和`RpcController`，详见[service.h](https://protobuf.dev/reference/cpp/api-docs/google.protobuf.service/)）。因此要实现RPC服务，需要配合使用其他RPC实现框架，例如Google开发的[gRPC](https://grpc.io/)。
 
-[gRPC入门教程](https://blog.csdn.net/zzy979481894/article/details/127481526)
+[gRPC入门教程]({% post_url 2023-04-30-grpc-tutorial %})
 
 ### 4.5 文本格式
 #### 4.5.1 语法
