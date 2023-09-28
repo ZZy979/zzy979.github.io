@@ -959,3 +959,7 @@ void sort(C& c) {
   * [Order_edit_window](https://github.com/ZZy979/PPP-code/blob/main/ch21/order_edit_window.h)
   * [Purchase_list_table](https://github.com/ZZy979/PPP-code/blob/main/ch21/purchase_list_table.h)
   * [主程序](https://github.com/ZZy979/PPP-code/blob/main/ch21/exec21-11.cpp)
+* 21-13~21-15
+  * [Word_query](https://github.com/ZZy979/PPP-code/blob/main/ch21/word_query.h)
+  * [Word_query_window](https://github.com/ZZy979/PPP-code/blob/main/ch21/word_query_window.h)
+  * [主程序](https://github.com/ZZy979/PPP-code/blob/main/ch21/exec21-15.cpp)
