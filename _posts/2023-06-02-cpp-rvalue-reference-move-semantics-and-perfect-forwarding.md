@@ -575,7 +575,7 @@ std::unique_ptr<T> make_unique(Args&&... args) {
 }
 ```
 
-其中，`args`是转发引用，通过`std::forward()`被传递给`T`的构造函数。在这里，`T`的构造函数接受到的参数的值类别将与`make_unique()`函数的实参相同。例如，`make_unique<T>(std::move(t))`将调用`T`的移动构造函数。
+其中，`args`是转发引用，通过`std::forward()`被传递给`T`的构造函数。在这里，`T`的构造函数接受到的参数的值类别将与`make_unique()`函数的实参相同。例如，假设`t`是`T`类对象，则`make_unique<T>(t)`将调用`T`的拷贝构造函数，而`make_unique<T>(std::move(t))`将调用`T`的移动构造函数。
 
 类似的函数还有`vector<T>::emplace_back()`、`allocator<T>::construct()`等等。
 
