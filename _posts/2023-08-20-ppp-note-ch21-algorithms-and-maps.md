@@ -2,7 +2,7 @@
 title: 《C++程序设计原理与实践》笔记 第21章 算法和映射
 date: 2023-08-20 14:24:44 +0800
 categories: [C/C++, PPP]
-tags: [cpp, stl]
+tags: [cpp, stl, function object]
 math: true
 ---
 本章将完成我们对STL基本思想及其所提供的功能的介绍。本章重点关注算法。
@@ -197,7 +197,7 @@ void f(list<double>& v, int n) {
 * [Function objects](https://en.cppreference.com/w/cpp/utility/functional)
 * [Pointers to functions](https://en.cppreference.com/w/cpp/language/pointer#Pointers_to_functions)
 * [named requirement FunctionObject](https://en.cppreference.com/w/cpp/named_req/FunctionObject)
-* [【C++】Lambda表达式、函数指针与函数对象]()
+* [C++函数式编程]({% post_url 2023-10-04-cpp-functional-programming %})
 
 ### 21.4.1 函数对象的抽象视角
 函数对象提供了一种通用的、强大的、方便的机制，允许“函数”携带它所需的数据。考虑函数对象更一般的概念：
@@ -293,14 +293,14 @@ sort(vr.begin(), vr.end(),  // sort by addr
 void f(list<double>& v, int n) {
     auto p = find_if(v.begin(), v.end(), [](int x) { return x > 42; });
     if (p != v.end()) { /* we found a value > 42 */ }
-    
+
     auto q = find_if(v.begin(), v.end(), [n](int x) { return x > n; });
     if (q != v.end()) { /* we found a value > n */ }
     // ...
 }
 ```
 
-注：实际上，**对于带捕获的Lambda表达式，编译器会生成一个匿名类**。详见[【C++】Lambda表达式、函数指针与函数对象]() 第？？节。
+注：实际上，**对于带捕获的Lambda表达式，编译器会生成一个匿名类**。详见[C++函数式编程]({% post_url 2023-10-04-cpp-functional-programming %}) 第5节。
 
 ## 21.5 数值算法
 头文件\<algorithm\>中的标准库算法大多都是处理数据：拷贝、排序、搜索等。而数值算法处理数值计算。例如：
