@@ -57,7 +57,7 @@ int main() {
 
 很多STL算法都接受函数对象以实现自定义行为。例如，`find_if()`自定义搜索条件，`sort()`自定义排序规则，`accumulate()`自定义“加法”操作，`for_each()`指定对每个元素执行的操作等等。
 
-例如，下面的代码在一个`int`向量中查找大于42、大于n的元素：
+例如，下面的代码在一个`int`向量中分别查找大于42、大于n的元素：
 
 ```cpp
 struct Larger_than {
@@ -69,7 +69,7 @@ void f(std::vector<int>& v, int n) {
     auto p = std::find_if(v.begin(), v.end(), Larger_than{42});
     if (p != v.end()) { /* ... */ }
 
-    auto q = std::find_if(v.begin(), v.end(), Larger_than{});
+    auto q = std::find_if(v.begin(), v.end(), Larger_than{n});
     if (q != v.end()) { /* ... */ }
 }
 ```
@@ -112,9 +112,9 @@ int (*pf)(int) = &f;
 int (*pf2)(int) = f;  // same as &f
 ```
 
-由于**函数名可以隐式转换为函数指针**，因此`&`运算符可以省略，`pf2`和`pf`的定义是等价的。
+由于**函数名可以隐式转换为函数指针**，因此取地址运算符`&`可以省略，`pf2`和`pf`的定义是等价的。
 
-通过函数指针调用函数时，`*`运算符也是可选的：
+通过函数指针调用函数时，解引用运算符`*`也是可选的：
 
 ```cpp
 int y = (*pf)(0);
@@ -146,7 +146,7 @@ void f(std::vector<int>& v) {
 下面的代码将向量中的每个元素加1并打印出来：
 
 ```cpp
-void increase(int &n) { ++n; }
+void increase(int& n) { ++n; }
 
 void print(int n) { std::cout << n << ' '; }
 
@@ -194,6 +194,8 @@ pc->*pm
 例如：
 
 ```cpp
+#include <iostream>
+
 struct C { int m; };
 
 int main() {
@@ -210,6 +212,8 @@ int main() {
 数据成员指针也可以传递给函数，例如：
 
 ```cpp
+#include <iostream>
+
 struct Point { int x; int y; };
 
 int get(const Point& p, int Point::*pm) {
@@ -225,7 +229,7 @@ int main() {
 }
 ```
 
-注意：**数据成员指针并未绑定到具体对象**，实际存储的仅仅是数据成员的偏移量，其值在编译时就是已知的。通过对象和数据成员指针访问成员时，实际上就是将对象的地址加上数据成员指针的值（偏移量）得到数据成员的地址。使用[Compiler Explorer](https://godbolt.org/)可以验证：
+注意：**数据成员指针并未绑定到具体对象**，实际存储的仅仅是数据成员的偏移量，其值在编译时就是已知的。通过对象和数据成员指针访问数据成员时，实际上就是将对象的地址加上数据成员指针的值（偏移量）得到数据成员的地址。使用[Compiler Explorer](https://godbolt.org/)可以验证：
 
 ```cpp
 struct Point { int x; int y; };
@@ -245,7 +249,7 @@ int main() {
 **成员函数指针**(pointer to member function)是指向类的成员函数的指针，用于调用类的非静态成员函数。指向类`C`的非静态成员函数`f`的指针定义如下：
 
 ```cpp
-R (C::* pf)(A1, A2, ...) = &C::f;
+R (C::* pf)(Args...) = &C::f;
 ```
 
 可以使用`.*`和`->*`运算符通过对象/对象指针和成员函数指针来调用成员函数。对于`C`类对象`c`及其指针`pc`，以下表达式是等价的，都表示调用对象`c`的成员函数`f`：
@@ -262,6 +266,8 @@ pc->f(args)
 例如：
 
 ```cpp
+#include <iostream>
+
 struct C {
     void f(int n) { std::cout << n << '\n'; }
 };
@@ -276,10 +282,10 @@ int main() {
 }
 ```
 
-成员函数指针可以通过`std::mem_fn`或`std::bind`包装为函数对象，详见第6节。
+成员函数指针可以通过`std::mem_fn`或`std::bind`包装为函数对象，详见6.3和6.4节。
 
 ## 5.Lambda表达式
-**Lambda表达式**(lambda expression)即（可以捕获当前作用域中变量的）匿名函数，也叫做**闭包**(closure)，在C++11中引入。它提供了一种方便的方式来编写函数，是函数式编程的一种重要特性。
+**Lambda表达式**(lambda expression)是（可以捕获当前作用域中变量的）匿名函数，也叫做**闭包**(closure)，在C++11中引入。它提供了一种方便的方式来编写函数，是函数式编程的一种重要特性。
 
 Lambda表达式的语法如下：
 
@@ -357,7 +363,7 @@ Lambda表达式的**捕获**(captures)是逗号分隔的列表，可以包含零
 
 完整列表见[Lambda capture](https://en.cppreference.com/w/cpp/language/lambda#Lambda_capture)。
 
-以上捕获说明符可以组合，如果使用了`=`或`&`则必须出现在捕获列表的开头。例如：
+以上捕获说明符可以组合，`=`和`&`必须出现在捕获列表的开头。例如：
 
 | 捕获列表 | 含义 |
 | --- | --- |
@@ -380,7 +386,7 @@ void g(int n) {
 然而，从前面`find_if()`的例子中可以看出，带捕获和不带捕获的Lambda表达式都可以作为`find_if()`的第三个参数。
 
 针对以上两个问题，需要理解Lambda表达式的实现原理。实际上，**编译器会为每个Lambda表达式生成一个匿名类**，也叫做闭包类型(closure type)，而Lambda表达式本身是这个类的对象。闭包类型具有以下成员：
-* 捕获列表中的变量作为数据成员
+* 捕获列表中的变量作为数据成员，以引用方式捕获的变量对应的数据成员是引用类型
 * `ret operator()(params) { body }` 重载了`()`运算符，执行Lambda表达式的函数体，从而可以作为函数对象
 * `using F = ret (*)(params); operator F() const noexcept;` 只有当捕获列表为空时才会定义函数指针类型转换运算符
 
@@ -398,7 +404,9 @@ void g(int n) {
 
 可以看到，编译器对于这个Lambda表达式生成的闭包类型定义与第2节中的`Larger_than`完全相同：具有数据成员`n`（对应捕获变量）和`operator()`，而并没有函数指针类型转换运算符，Lambda表达式被替换为`__lambda_7_9{n}`。
 
-由于`find_if()`的第三个参数的类型是模板参数，将Lambda表达式传递给`find_if()`时，模板参数将被自动推导为对应的闭包类型，因此Lambda表达式是否带捕获对STL算法没有影响。
+由此可见，Lambda表达式是否带捕获的区别仅仅是对应的闭包类型是否有数据成员、是否可转换为函数指针。
+
+回到前面的问题，由于`find_if()`的第三个参数的类型是模板参数，将Lambda表达式传递给`find_if()`时，模板参数将被自动推导为对应的闭包类型，因此Lambda表达式是否带捕获对STL算法没有影响。
 
 ## 6.标准库函数对象
 C++标准库提供了很多内置函数对象以及创建和操作函数对象的工具，定义在头文件[\<functional\>](https://en.cppreference.com/w/cpp/header/functional)中。
@@ -471,7 +479,7 @@ std::sort(v.begin(), v.end(), std::greater<int>());
 ```
 
 ### 6.2 std::function
-类模板`std::function`是一个通用函数包装器，可以存储、拷贝和调用任何函数对象，包括函数指针、Lambda表达式、成员指针或其他函数对象，声明如下：
+类模板`std::function`是一个通用的函数包装器，可以存储、拷贝和调用任何函数对象，包括函数指针、Lambda表达式、成员指针或其他函数对象。其声明如下：
 
 ```cpp
 template<class R, class... Args>
@@ -711,7 +719,7 @@ add_xy(u, 1, 2): 10
 
 其中，`print_num`大致等价于Lambda表达式`[](Foo& f, int i) { f.display_number(i); }`，调用`print_num(f, 42)`等价于`f.display_number(42)`，也可以写成`print_num(&f, 42)`。
 
-### 6.5 std::bind
+### 6.4 std::bind
 函数模板`std::bind`返回一个函数包装器，通过固定（绑定）函数的部分参数得到一个新的函数，即[部分应用](https://en.wikipedia.org/wiki/Partial_application)(partial application)（类似于Python的[`functools.partial()`](https://docs.python.org/3/library/functools.html#functools.partial)）。其声明如下：
 
 ```cpp
@@ -773,7 +781,7 @@ int main() {
 
 注：4.1节中提到，成员指针并未绑定到具体对象，而上面示例中的`std::bind(&Foo::print_add, foo, _1)`将成员函数指针`&Foo::print_add`绑定到对象`foo`，这类似于Java的方法引用：`c::f`等价于`(args) -> c.f(args)`。
 
-### 6.4 std::reference_wrapper
+### 6.5 std::reference_wrapper
 类模板`std::reference_wrapper`将引用包装为一个可拷贝、可赋值的对象，通常用于将引用存储在STL容器中，或者将对象按引用方式传递给`std::bind`、`std::thread`、`std::make_pair`等。
 
 注：普通引用本身无法拷贝和赋值，必须借助`std::reference_wrapper`实现，而指针本身就支持这些操作。实际上，`std::reference_wrapper`的底层实现就是保存了一个指针。
