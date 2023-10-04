@@ -3,6 +3,7 @@ title: C++函数式编程
 date: 2023-10-04 00:55 +0800
 categories: [C/C++]
 tags: [cpp, functional programming, function object, pointer to function, lambda expression]
+math: true
 ---
 ## 1.引言
 **函数式编程**(functional programming)是一种编程范式，通过函数的求值和组合来构造程序。在函数式编程中，函数被视为一等公民，可以像其他数据类型一样作为参数传递和从函数中返回。接受函数作为参数、或者返回函数的函数叫做**高阶函数**(high-order function)，是函数式编程的核心概念之一。函数式编程强调使用**纯函数**(pure function)，即没有状态和副作用、返回值只依赖于参数的函数。
@@ -35,7 +36,7 @@ val result = arr.filter(x => x % 2 == 0)
 ## 2.函数对象
 **函数对象**(function object)是指重载了**函数调用运算符**(function call operator) `operator()`的对象，从而能够像函数一样被调用。例如函数指针、Lambda表达式、`std::function`对象，以及任何重载了`operator()`的自定义类型的对象。函数调用运算符的参数列表和返回值可以是任意的。
 
-例如，`Linear`对象表示一次函数y = ax + b：
+例如，`Linear`对象表示一次函数 $y = ax + b$：
 
 ```cpp
 // An object of this type represents a linear function y = a * x + b.
@@ -191,6 +192,10 @@ pc->*pm
 
 在`C`的成员函数内部，`&(C::m)`和`&m`不是数据成员指针，而只是普通指针（前者仅用于静态数据成员）。
 
+注：虽然`::`运算符的优先级高于`$`，但C++标准规定对于非静态数据成员，`&C::m`和`&(C::m)`是不同的：前者在类外是数据成员指针，在类内是普通指针，后者无论在类内还是类外都是非法的；而对于静态数据成员，二者无论在类内还是类外都是等价的。
+
+> A pointer to non-static member object `m` which is a member of class `C` can be initialized with the expression `&C::m` exactly. Expressions such as `&(C::m)` or `&m` inside `C`'s member function do not form pointers to members.
+
 例如：
 
 ```cpp
@@ -229,7 +234,7 @@ int main() {
 }
 ```
 
-注意：**数据成员指针并未绑定到具体对象**，实际存储的仅仅是数据成员的偏移量，其值在编译时就是已知的。通过对象和数据成员指针访问数据成员时，实际上就是将对象的地址加上数据成员指针的值（偏移量）得到数据成员的地址。使用[Compiler Explorer](https://godbolt.org/)可以验证：
+注意：**数据成员指针并未绑定到具体对象**，存储的仅仅是数据成员的偏移量（并不一定是这样，取决于编译器具体实现，但有助于理解），其值在编译时就是已知的。通过对象和数据成员指针访问数据成员时，实际上就是将对象的地址加上数据成员指针的值（偏移量）得到数据成员的地址。使用[Compiler Explorer](https://godbolt.org/)可以验证gcc编译器的实现方式：
 
 ```cpp
 struct Point { int x; int y; };
@@ -720,7 +725,9 @@ add_xy(u, 1, 2): 10
 其中，`print_num`大致等价于Lambda表达式`[](Foo& f, int i) { f.display_number(i); }`，调用`print_num(f, 42)`等价于`f.display_number(42)`，也可以写成`print_num(&f, 42)`。
 
 ### 6.4 std::bind
-函数模板`std::bind`返回一个函数包装器，通过固定（绑定）函数的部分参数得到一个新的函数，即[部分应用](https://en.wikipedia.org/wiki/Partial_application)(partial application)（类似于Python的[`functools.partial()`](https://docs.python.org/3/library/functools.html#functools.partial)）。其声明如下：
+函数模板`std::bind`返回一个函数包装器，通过固定（绑定）函数的部分参数得到一个新的函数，即[部分应用](https://en.wikipedia.org/wiki/Partial_application)(partial application)（类似于Python的[`functools.partial()`](https://docs.python.org/3/library/functools.html#functools.partial)）。例如，设 $f(x, y) = x + y$，固定 $y = 1$，得到 $g(x) = f(x, 1) = x + 1$。
+
+其声明如下：
 
 ```cpp
 template<class F, class... Args>
