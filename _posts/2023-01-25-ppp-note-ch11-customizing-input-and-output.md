@@ -2,7 +2,7 @@
 title: 《C++程序设计原理与实践》笔记 第11章 定制输入/输出
 date: 2023-01-25 00:32:12 +0800
 categories: [C/C++, PPP]
-tags: [cpp]
+tags: [cpp, io, file access]
 ---
 在本章中，我们重点关注如何使第10章中介绍的通用iostream框架适配特定的需求和偏好。
 

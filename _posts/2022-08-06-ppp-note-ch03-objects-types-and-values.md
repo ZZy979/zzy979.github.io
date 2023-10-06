@@ -2,7 +2,7 @@
 title: 《C++程序设计原理与实践》笔记 第3章 对象、类型和值
 date: 2022-08-06 21:20:48 +0800
 categories: [C/C++, PPP]
-tags: [cpp]
+tags: [cpp, data type, operator]
 ---
 本章介绍程序中的数据存储和使用的基本知识。
 

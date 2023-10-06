@@ -249,7 +249,7 @@ void Axis::move(int dx, int dy)
 
 $$e^x = \sum_{n=0}^{\infty} \frac{x^n}{n!} = 1 + x + \frac{x^2}{2!} + \frac{x^3}{3!} + ...$$
 
-我们计算的项越多，得到的e^x^的值就越精确。我们要做的是计算这个序列，并在计算每一项之后图形化显示其结果。也就是说，我们要按顺序绘制以下函数：
+我们计算的项越多，得到的e<sup>x</sup>的值就越精确。我们要做的是计算这个序列，并在计算每一项之后图形化显示其结果。也就是说，我们要按顺序绘制以下函数：
 
 ```
 exp0(x) = 0      // no terms
@@ -261,7 +261,7 @@ exp5(x) = 1 + x + x^2/2! + x^3/3! + x^4/4!
 ...
 ```
 
-每个函数都是比前一个更好的e^x^的**近似**(approximation)。
+每个函数都是比前一个更好的e<sup>x</sup>的**近似**(approximation)。
 
 [指数函数近似](https://github.com/ZZy979/PPP-code/blob/main/ch15/exp_approximation.cpp)
 

@@ -2,7 +2,7 @@
 title: 《C++程序设计原理与实践》笔记 第5章 错误
 date: 2022-09-25 00:44:25 +0800
 categories: [C/C++, PPP]
-tags: [cpp]
+tags: [cpp, exception]
 ---
 本章将讨论程序的正确性、错误和错误处理。
 

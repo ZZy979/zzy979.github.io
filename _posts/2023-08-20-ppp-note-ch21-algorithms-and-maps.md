@@ -2,7 +2,7 @@
 title: 《C++程序设计原理与实践》笔记 第21章 算法和映射
 date: 2023-08-20 14:24:44 +0800
 categories: [C/C++, PPP]
-tags: [cpp, stl, function object]
+tags: [cpp, stl, algorithm, function object, associative container, binary search tree, hash table, sort, binary search]
 math: true
 ---
 本章将完成我们对STL基本思想及其所提供的功能的介绍。本章重点关注算法。
@@ -273,7 +273,7 @@ struct Cmp_by_addr {
 };
 ```
 
-`Cmp_by_name`直接使用`string`的`<`运算符比较`name`字符串。而`addr`既不是`string`，也不是C风格字符串，而是长度为24的字符数组（非0结尾）。因此`Cmp_by_addr`使用了C标准库头文件<string.h>中的函数`strncmp()`。
+`Cmp_by_name`直接使用`string`的`<`运算符比较`name`字符串。而`addr`既不是`string`，也不是C风格字符串，而是长度为24的字符数组（非0结尾）。因此`Cmp_by_addr`使用了C标准库头文件\<string.h\>中的函数`strncmp()`。
 
 ### 21.4.3 Lambda表达式
 在程序中定义一次性使用的函数或函数对象（例如`odd()`、`larger_than_42()`、`Larger_than`和`Cmp_by_name`）有点繁琐。在这种情况下，可以使用Lambda表达式（15.3.3节）。例如：

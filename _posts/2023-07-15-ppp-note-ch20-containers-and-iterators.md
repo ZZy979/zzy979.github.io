@@ -2,7 +2,7 @@
 title: 《C++程序设计原理与实践》笔记 第20章 容器和迭代器
 date: 2023-07-15 17:19:56 +0800
 categories: [C/C++, PPP]
-tags: [cpp, stl]
+tags: [cpp, stl, container, sequence, iterator, linked list]
 ---
 本章和下一章将介绍STL，即C++标准库的容器和算法部分。关键概念序列和迭代器用于将容器（数据）和算法（处理）联系在一起。
 
@@ -302,7 +302,7 @@ for (auto i = v.size() - 1; i >= 0; --i)  // infinite loop!
     cout << v[i] << '\n';
 ```
 
-因为无符号的0减1等于2^32^-1（即4294967295）。
+因为无符号的0减1等于2<sup>32</sup>-1（即4294967295）。
 
 ### 20.5.1 容器遍历
 使用`size()`和下标，我们可以从头到尾遍历`vector`元素。例如：

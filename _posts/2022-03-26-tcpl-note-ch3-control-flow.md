@@ -2,7 +2,7 @@
 title: 《C程序设计语言》笔记 第3章 控制流
 date: 2022-03-26 21:17:41 +0800
 categories: [C/C++, TCPL]
-tags: [c]
+tags: [c, if statement, binary search, switch statement, while statement, for statement, sort, do-while statement, break statement, continue statement, goto statement]
 ---
 ## 3.1 语句与程序块
 在表达式之后加上一个分号就变成了**语句**(statement)（表达式语句）。例如：
@@ -181,7 +181,7 @@ for (i = 0; i < n; ++i)
 
 [atoi函数](https://github.com/ZZy979/TCPL-code/blob/main/ch3/atoi.c)
 
-标准库<stdlib.h>中提供了两个更完善的函数`atoi`和`strtol`。
+标准库\<stdlib.h\>中提供了两个更完善的函数`atoi`和`strtol`。
 
 把循环控制部分集中在一起，对于多重嵌套循环，优势更为明显。下面的函数是对整型数组排序的Shell排序算法。其基本思想是：先比较距离较远的元素，而不是像简单交换排序算法那样先比较相邻的元素。这样可以快速减少大量的无序情况，从而减轻后续的工作。被比较的元素之间的距离逐步减少，直到减少为1，这时排序变成了相邻元素的互换。
 
@@ -221,7 +221,7 @@ while (表达式);
 
 [itoa函数](https://github.com/ZZy979/TCPL-code/blob/main/ch3/itoa.c)
 
-[练习3-4](https://github.com/ZZy979/TCPL-code/blob/main/ch3/itoa2.c) 在数的对二的补码表示中，我们编写的`itoa`函数不能处理最小的负数，即n等于-2^字长-1^的情况。请解释其原因。修改该函数，使它在任何机器上运行时都能打印出正确的值。
+[练习3-4](https://github.com/ZZy979/TCPL-code/blob/main/ch3/itoa2.c) 在数的对二的补码表示中，我们编写的`itoa`函数不能处理最小的负数，即n等于-2<sup>字长-1</sup>的情况。请解释其原因。修改该函数，使它在任何机器上运行时都能打印出正确的值。
 
 [练习3-5](https://github.com/ZZy979/TCPL-code/blob/main/ch3/itob.c) 编写函数`itob(n, s, b)`，将整数n转换为b进制数，并将结果以字符串的形式保存到s中。
 

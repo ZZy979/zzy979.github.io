@@ -2,7 +2,7 @@
 title: 《C++程序设计原理与实践》笔记 第9章 类相关的技术细节
 date: 2023-01-01 14:49:44 +0800
 categories: [C/C++, PPP]
-tags: [cpp]
+tags: [cpp, class, struct, constructor, enumeration, operator overloading]
 ---
 在本章中，我们继续关注主要的程序设计工具——C++语言。本章主要介绍与用户自定义类型（即类和枚举）相关的语言技术细节。这些语言特性大部分是以逐步改进一个Date类型的方式来介绍的。采用这种方式，我们还可以顺便介绍一些有用的类设计技术。
 

@@ -2,7 +2,7 @@
 title: 《C++程序设计原理与实践》笔记 第4章 计算
 date: 2022-08-26 00:09:30 +0800
 categories: [C/C++, PPP]
-tags: [cpp]
+tags: [cpp, symbolic constant, if statement, switch statement, while statement, for statement, function, vector]
 ---
 本章将介绍一些与计算相关的基本概念。
 

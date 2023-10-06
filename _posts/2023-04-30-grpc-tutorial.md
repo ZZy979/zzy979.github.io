@@ -322,7 +322,7 @@ Status GetFeature(ServerContext* context, const Point* point,
 }
 ```
 
-注：纬度的范围是[-90, 90]，经度的范围是[-180, 180]，乘以10^7^表示。
+注：纬度的范围是[-90, 90]，经度的范围是[-180, 180]，乘以10<sup>7</sup>表示。
 
 第二个方法`ListFeatures()`是服务端流式RPC，从客户端获取一个`Rectangle`，返回该矩形区域覆盖的所有`Feature`：
 

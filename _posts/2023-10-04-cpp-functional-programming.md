@@ -663,7 +663,7 @@ std::invoke_result_t<decltype(pm), Args&&...> operator()(Args&&... args) {
 }
 ```
 
-其中`args`的第一个参数是被调用对象的引用或指针。
+其中`args`的第一个参数是被调用对象的引用或指针。注意，对于`const`成员函数，第一个参数也必须是`const`。
 
 注：这类似于Python的[实例方法](https://docs.python.org/3/reference/datamodel.html#instance-methods)：`c.f(args)`等价于`C.f(c, args)`，以及Java的[方法引用]({% post_url 2019-08-24-java-8-method-reference %})：`C::f`等价于`(c, args) -> c.f(args)`。
 
@@ -672,6 +672,7 @@ std::invoke_result_t<decltype(pm), Args&&...> operator()(Args&&... args) {
 ```cpp
 #include <functional>
 #include <iostream>
+#include <memory>
 
 struct Foo {
     void display_greeting() {
@@ -723,6 +724,16 @@ add_xy(u, 1, 2): 10
 ```
 
 其中，`print_num`大致等价于Lambda表达式`[](Foo& f, int i) { f.display_number(i); }`，调用`print_num(f, 42)`等价于`f.display_number(42)`，也可以写成`print_num(&f, 42)`。
+
+注：对于成员函数来说，`std::function`和`std::mem_fn`的调用语法完全相同。区别在于前者是通用的，用于成员函数时需要写复杂的模板参数，而后者是专门给成员函数用的：
+
+```cpp
+std::function<void(const Foo&, int)> f1 = &Foo::print_add;
+f1(foo, 1);
+
+auto f2 = std::mem_fn(&Foo::print_add);
+f2(foo, 1);
+```
 
 ### 6.4 std::bind
 函数模板`std::bind`返回一个函数包装器，通过固定（绑定）函数的部分参数得到一个新的函数，即[部分应用](https://en.wikipedia.org/wiki/Partial_application)(partial application)（类似于Python的[`functools.partial()`](https://docs.python.org/3/library/functools.html#functools.partial)）。例如，设 $f(x, y) = x + y$，固定 $y = 1$，得到 $g(x) = f(x, 1) = x + 1$。
@@ -786,7 +797,9 @@ int main() {
 2 42 1 7 7
 ```
 
-注：4.1节中提到，成员指针并未绑定到具体对象，而上面示例中的`std::bind(&Foo::print_add, foo, _1)`将成员函数指针`&Foo::print_add`绑定到对象`foo`，这类似于Java的方法引用：`c::f`等价于`(args) -> c.f(args)`。
+注：
+* 4.1节中提到，成员指针并未绑定到具体对象，而上面示例中的`std::bind(&Foo::print_add, foo, _1)`将成员函数指针`&Foo::print_add`绑定到对象`foo`，这类似于Java的方法引用：`c::f`等价于`(args) -> c.f(args)`。
+* 优先考虑使用Lambda表达式而不是`std::bind`。
 
 ### 6.5 std::reference_wrapper
 类模板`std::reference_wrapper`将引用包装为一个可拷贝、可赋值的对象，通常用于将引用存储在STL容器中，或者将对象按引用方式传递给`std::bind`、`std::thread`、`std::make_pair`等。

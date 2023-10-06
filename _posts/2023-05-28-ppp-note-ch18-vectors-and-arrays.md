@@ -2,7 +2,7 @@
 title: 《C++程序设计原理与实践》笔记 第18章 向量和数组
 date: 2023-05-28 11:54:48 +0800
 categories: [C/C++, PPP]
-tags: [cpp, move semantics]
+tags: [cpp, vector, copy constructor, copy assignment, rvalue reference, move semantics, array]
 ---
 本章将介绍如何拷贝以及通过下标访问向量。为此，我们讨论一般的拷贝技术，并考虑向量与底层数组表示之间的关系。我们将展示数组与指针的关系及其使用引发的问题。我们还将讨论对于每种类型必须考虑的五种基本操作：构造、默认构造、拷贝构造、拷贝赋值和析构。另外，容器还需要移动构造函数和移动赋值。
 

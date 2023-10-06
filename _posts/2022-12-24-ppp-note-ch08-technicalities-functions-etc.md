@@ -2,7 +2,7 @@
 title: 《C++程序设计原理与实践》笔记 第8章 函数相关的技术细节
 date: 2022-12-24 23:43:43 +0800
 categories: [C/C++, PPP]
-tags: [cpp]
+tags: [cpp, function, header file, scope, reference, namespace]
 ---
 在本章和下一章中，我们将注意力从程序设计转移到主要的编程工具——C++语言上。我们会介绍一些语言的技术细节，来给出一个C++的基本功能的稍宽的视角，并从更系统化的角度讨论这些功能。
 
