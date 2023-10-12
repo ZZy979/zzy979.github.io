@@ -373,6 +373,113 @@ cc_test(
 
 具体用法见8.1节。
 
+##### 6.3.1.4 resource_library
+构建静态资源库，以便在C++代码中（以字符串格式）访问资源文件。语法：
+
+```
+resource_library(
+    name = 'foo',
+    srcs = ['foo.txt', 'bar/bar.txt', ...],
+)
+```
+
+* `srcs`：资源文件列表，只能是相对路径，且必须位于当前目录或子目录下
+
+该目标将输出一对头文件和源文件：\<name\>.h和\<name\>.c，其中定义了包含资源文件内容的字符数组，并将其编译为库文件lib\<name\>.a。每个资源文件对应的变量名为`RESOURCE_<dir>_<file>`，其中`dir`是完整路径，`file`是文件名，并将非字母字符替换为下划线。
+
+例如，在resource_demo目录下有两个资源文件a.txt和b.txt，内容分别为 "foo123" 和 "bar456" ，BUILD文件如下：
+
+```
+resource_library(
+    name = 'foo',
+    srcs = ['a.txt', 'b.txt'],
+)
+```
+
+在resource_demo目录下执行
+
+```bash
+$ blade build :foo
+```
+
+将在blade-demo/build64_release/resource_demo目录下生成foo.h、foo.c和libfoo.a。目录结构如下：
+
+```
+blade-demo/
+    BLADE_ROOT
+    resource_demo/
+        BUILD
+        a.txt
+        b.txt
+    build64_release/
+        resource_demo/
+            a.txt.c
+            b.txt.c
+            foo.h
+            foo.c
+            libfoo.a
+```
+
+其中，foo.h中声明了变量`RESOURCE_resource_demo_a_txt`和`RESOURCE_resource_demo_b_txt`，分别为a.txt和b.txt的文件内容：
+
+```c
+// a.txt
+extern const char RESOURCE_resource_demo_a_txt[6];
+extern const unsigned RESOURCE_resource_demo_a_txt_len;
+// b.txt
+extern const char RESOURCE_resource_demo_b_txt[6];
+extern const unsigned RESOURCE_resource_demo_b_txt_len;
+```
+
+这两个变量分别定义在a.txt.c和b.txt.c中：
+
+```c
+const char RESOURCE_resource_demo_a_txt[] = {
+  0x66, 0x6f, 0x6f, 0x31, 0x32, 0x33
+};
+const unsigned int RESOURCE_resource_demo_a_txt_len = 6;
+```
+
+```c
+const char RESOURCE_resource_demo_b_txt[] = {
+  0x62, 0x61, 0x72, 0x34, 0x35, 0x36
+};
+const unsigned int RESOURCE_resource_demo_b_txt_len = 6;
+```
+
+注意：这两个字符数组并不是C风格字符串，因为不是以0结尾，必须和长度变量一起使用。
+
+例如，test.cc读取并打印这两个资源文件的内容：
+
+```cpp
+#include <iostream>
+#include <string>
+
+#include "resource_demo/foo.h"
+
+int main() {
+    std::string a(RESOURCE_resource_demo_a_txt, RESOURCE_resource_demo_a_txt_len);
+    std::string b(RESOURCE_resource_demo_b_txt, RESOURCE_resource_demo_b_txt_len);
+    std::cout << a << '\n' << b << '\n';
+    return 0;
+}
+```
+
+```
+cc_binary(
+    name = 'test',
+    srcs = 'test.cc',
+    deps = '//resource_demo:foo',
+)
+```
+
+执行`blade run :test`，程序输出：
+
+```
+foo123
+bar456
+```
+
 #### 6.3.2 Protobuf
 ##### 6.3.2.1 proto_library
 构建[protobuf](https://developers.google.com/protocol-buffers)库，使用protoc编译器。语法：
