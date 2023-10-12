@@ -495,7 +495,7 @@ proto_library(
 
 * `target_languages`：字符串列表，生成指定语言的源代码。默认只生成C++代码，当protobuf库被其他构建目标依赖，或者`blade build`指定了`--generate-*`选项时也会生成对应语言的代码。例如，如果被`java_library`目标依赖，或指定了`--generate-java`选项，则会生成Java代码，对应protoc编译器的`--java_out`选项。
 
-具体示例见[Protocol Buffers入门教程]({% post_url 2022-04-26-protocol-buffers-tutorial %}) 3.1.7.1 (3)和4.1.2节。
+具体示例见[Protocol Buffers入门教程]({% post_url 2022-04-26-protocol-buffers-tutorial %}) “编译和运行”（3）和4.1.2节。
 
 #### 6.3.3 Java
 （官方文档很不全，很多细节根本没有说明）

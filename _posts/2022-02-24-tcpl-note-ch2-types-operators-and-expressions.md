@@ -2,7 +2,7 @@
 title: 《C程序设计语言》笔记 第2章 类型、运算符与表达式
 date: 2022-02-24 23:31:46 +0800
 categories: [C/C++, TCPL]
-tags: [c, data type, enumeration, operator]
+tags: [c, data type, enumeration, operator, type conversion]
 ---
 变量和常量是程序处理的两种基本数据对象。声明语句说明变量的名字及类型，也可以指定变量的初值。运算符指定要对变量进行的操作。表达式把变量与常量组合起来生成新的值。本章将详细讲述这些内容。
 

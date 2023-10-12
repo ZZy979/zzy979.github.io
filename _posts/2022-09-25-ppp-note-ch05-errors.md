@@ -2,7 +2,7 @@
 title: 《C++程序设计原理与实践》笔记 第5章 错误
 date: 2022-09-25 00:44:25 +0800
 categories: [C/C++, PPP]
-tags: [cpp, exception]
+tags: [cpp, error handling, exception]
 ---
 本章将讨论程序的正确性、错误和错误处理。
 
@@ -340,7 +340,7 @@ catch (...) {
 
 注意`try`块和`catch`块的大括号均不能省略。
 
-标准库头文件\<exception\>和\<stdexcept\>中定义了一组标准异常类型，其中`exception`是所有标准异常的基类，`invalid_argument`是专门表示参数错误的异常类（`area()`可以也使用该异常）。但C++并未要求抛出的异常必须是`exception`的子类，而可以是任何类型（甚至可以抛出一个`int`，但这并没有什么意义）。详见第14章习题17。
+标准库头文件\<exception\>和\<stdexcept\>中定义了一组标准异常类型，其中`exception`是所有标准异常的基类，`invalid_argument`是专门表示参数错误的异常类（`area()`可以也使用该异常）。但C++并未要求抛出的异常必须是`exception`的子类，而可以是任何类型（甚至可以抛出一个`int`，但这并没有什么意义）。详见习题[14-17](https://github.com/ZZy979/PPP-code/blob/main/ch14/standard_exception_class_hierarchy.png)。
 
 ### 5.6.2 范围错误
 在C++中，通常把“数据集合(collections of data)”称为**容器**(container)，最常用的标准库容器是`vector`。大小为n的向量的元素下标范围是[0, n)，访问这个范围之外的下标将导致**范围错误**(range error)，**这类错误是非常普遍的**，例如：

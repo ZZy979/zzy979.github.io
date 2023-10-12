@@ -2,7 +2,7 @@
 title: 《C++程序设计原理与实践》笔记 第17章 向量和自由存储
 date: 2023-04-22 21:58:03 +0800
 categories: [C/C++, PPP]
-tags: [cpp, vector, pointer, reference, dynamic memory allocation, destructor, linked list]
+tags: [cpp, vector, pointer, reference, dynamic memory allocation, destructor, type conversion, linked list]
 ---
 本章和后面四章介绍C++标准库的容器和算法部分（通常称为STL）。本章和后面两张的重点是最常用、最有用的STL容器——向量的设计和实现。
 

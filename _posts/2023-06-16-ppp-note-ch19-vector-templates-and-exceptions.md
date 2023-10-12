@@ -974,8 +974,8 @@ void vector<T, A>::reserve(int newalloc) {
 [drill19](https://github.com/ZZy979/PPP-code/blob/main/ch19/drill19.cpp)
 
 ## 习题
-* [19-1](https://github.com/ZZy979/PPP-code/blob/main/ch19/vector_add.cpp) （实现`std::valarray`的`operator+`）
-* [19-2](https://github.com/ZZy979/PPP-code/blob/main/ch19/inner_product.cpp) （实现`std::inner_product()`）
+* [19-1](https://github.com/ZZy979/PPP-code/blob/main/ch19/vector_add.h) （实现`std::valarray`的`operator+`）
+* [19-2](https://github.com/ZZy979/PPP-code/blob/main/ch19/inner_product.h) （实现`std::inner_product()`）
 * 19-3 （实现`std::pair`）
     * [Pair](https://github.com/ZZy979/PPP-code/blob/main/ch19/pair.h)
     * [Symbol_table](https://github.com/ZZy979/PPP-code/blob/main/ch19/symbol_table.h)

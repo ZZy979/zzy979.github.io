@@ -197,14 +197,16 @@ public:
 
 注：`repeated`基本类型字段有不同的函数，编译器为每种类型的字段生成的函数的详细信息见[C++ Generated Code Guide](https://protobuf.dev/reference/cpp/cpp-generated/)
 
-##### 枚举和嵌套类
+（1）枚举和嵌套类
+
 生成的代码包含一个与.proto中的`PhoneType`枚举对应的枚举类，可以将此类型称为`Person::PhoneType`，其值可以称为`Person::MOBILE`、`Person::HOME`和`Person::WORK`。
 
 注：通过查看代码可知，真正的枚举类名为`Person_PhoneType`，是定义在`Person`类外部的，另外在`Person`类内部又通过`typedef`定义了一个别名`PhoneType`。这些类型都定义在命名空间`tutorial`中（对应.proto文件的包名），因此完整名称为`tutorial::Person::PhoneType`（等价于`tutorial::Person_PhoneType`）、`tutorial::Person::MOBILE`（等价于`tutorial::Person_PhoneType_MOBILE`）。
 
 编译器还生成了一个名为`Person::PhoneNumber`的“嵌套类”。类似地，真实类名为`Person_PhoneNumber`，但在`Person`类内部的`typedef`定义了一个别名`PhoneNumber`，因此可以将其视为内部类。
 
-##### 标准消息函数
+（2）标准消息函数
+
 每个消息类还包含许多其他函数，可以检查或操作整个消息，包括：
 * `bool IsInitialized() const`：检查是否已设置所有`required`字段
 * `string DebugString() const`：返回消息的人类可读的表示，对于调试特别有用
@@ -214,7 +216,8 @@ public:
 
 以上函数和下一节描述的I/O函数来自基类`google::protobuf::Message`，详见[Message类API文档](https://protobuf.dev/reference/cpp/api-docs/google.protobuf.message/#Message)。
 
-##### 序列化和解析
+（3）序列化和解析
+
 每个消息类都有使用[二进制格式](https://protobuf.dev/programming-guides/encoding/)读写消息的函数，包括：
 * `bool SerializeToString(string* output) const`：序列化消息，并将字节序列存储在字符串中（注意字节序列是二进制格式，不是文本格式，只是使用`string`类作为容器）
 * `string SerializeAsString() const`：序列化消息，并返回字节序列
@@ -404,10 +407,11 @@ int main(int argc, char* argv[]) {
 }
 ```
 
-##### 3.1.7.1 编译
+#### 编译和运行
 官方文档中并没有介绍如何编译并运行该示例。这里介绍命令行编译-动态链接、命令行编译-静态链接和Blade构建工具三种方式。
 
-###### 命令行编译-动态链接
+（1）命令行编译-动态链接
+
 假设写入和读取程序分别保存在文件write.cpp和read.cpp中，与生成的.pb.h和.pb.cc在同一目录下：
 
 ```
@@ -449,7 +453,8 @@ Usage: ./write ADDRESS_BOOK_FILE
 
 read程序同理。
 
-###### 命令行编译-静态链接
+（2）命令行编译-静态链接
+
 静态链接的编译命令为：
 
 ```bash
@@ -460,7 +465,8 @@ g++ -o write write.cpp addressbook.pb.cc -static -lprotobuf -pthread
 
 静态链接直接将库文件包含进生成的可执行文件，因此可以直接运行，但生成的可执行文件比动态链接更大（动态链接120 KB、静态链接18 MB）。
 
-###### Blade构建工具
+（3）Blade构建工具
+
 Blade构建工具的安装及使用参考[Blade构建工具]({% post_url 2022-01-20-blade-build-tool %})。
 
 首先按照Blade要求的形式组织工作目录：
@@ -540,8 +546,7 @@ blade run :write -- data.bin
 
 其中`--`后的参数将被传递给write程序，这里的文件路径data.bin是相对于protobuf-demo目录，如果想保存到其他目录可使用绝对路径。如果在protobuf-demo目录下运行则将`:write`改为`addressbook:write`或`//addressbook:write`。
 
-##### 3.1.7.2 运行
-write程序：
+write程序运行结果：
 
 ```bash
 $ ./write data.bin
@@ -566,7 +571,7 @@ Is this a mobile, home, or work phone? work
 Enter a phone number (or leave blank to finish):
 ```
 
-read程序：
+read程序运行结果：
 
 ```bash
 $ ./read data.bin 
@@ -723,7 +728,7 @@ protobuf-demo/
 #### 4.1.2 使用Blade
 上一节中的做法实际上就是Blade使用的方法——**让所有相对路径都相对于项目根目录，并将构建产物单独放在build目录下**。Blade能够自动处理proto库之间的依赖关系，并生成正确的编译命令。
 
-要在上一节的示例中使用Blade，首先要在项目根目录protobuf-demo中创建一个BLADE_ROOT文件，内容如3.1.7.1 (3)节所示。另外，在foo和bar目录下分别创建一个BUILD文件，内容如下：
+要在上一节的示例中使用Blade，首先要在项目根目录protobuf-demo中创建一个BLADE_ROOT文件，内容如“编译和运行”（3）所示。另外，在foo和bar目录下分别创建一个BUILD文件，内容如下：
 
 foo/BUILD
 

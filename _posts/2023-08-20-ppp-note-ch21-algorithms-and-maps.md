@@ -453,6 +453,7 @@ T inner_product(
 * `m.at(key) = value` 将key映射到value并覆盖原有值，如果key不存在则抛出`out_of_range`异常
 * `m.size()` 返回键值对个数
 * `m.find(key)` 查找指定的key并返回迭代器，如果不存在则返回`m.end()`
+* `m.count(key)` 返回指定key的出现次数（对于`map`只能是0或1）
 * `m.contains(key)` (C++20)判断指定的key是否存在 
 * `m.insert(make_pair(key, value))`或`m.emplace(key, value)` 插入(key, value)，如果已存在则不插入
 * `m.erase(key)` 删除指定的key

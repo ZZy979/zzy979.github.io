@@ -216,12 +216,20 @@ T(arg1, arg2, ...)          // (2)
 （2）[列表初始化](https://en.cppreference.com/w/cpp/language/list_initialization)
 
 ```cpp
-T object{arg1, arg2, ...};     // (1) 
-T{arg1, arg2, ...}             // (2)
-T object = {arg1, arg2, ...};  // (3)
+// 直接列表初始化
+T object{arg1, arg2, ...};
+T{arg1, arg2, ...}
+new T{arg1, arg2, ...}
+C::C :m{arg1, arg2, ...} {...}
+
+// 拷贝列表初始化
+T object = {arg1, arg2, ...};
+object = {arg1, arg2, ...};
+f({arg1, arg2, ...})
+return {arg1, arg2, ...};
 ```
 
-其中，形式(2)等价于直接初始化的形式(2)，形式(1)和(3)这种初始化语法有多种解释：
+列表初始化语法有多种解释：
 * 如果类`T`没有定义构造函数，则参数为各个公有成员的初始值，称为[聚合初始化](https://en.cppreference.com/w/cpp/language/aggregate_initialization)。
     * 例如 `Token t{'8', 3.14};`（见6.3.3节）
 * 如果类`T`定义了只接受一个`std::initializer_list`类型参数的构造函数，则调用该构造函数。
