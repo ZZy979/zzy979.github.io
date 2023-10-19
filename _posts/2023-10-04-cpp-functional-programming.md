@@ -192,7 +192,7 @@ pc->*pm
 
 在`C`的成员函数内部，`&(C::m)`和`&m`不是数据成员指针，而只是普通指针（前者仅用于静态数据成员）。
 
-注：虽然`::`运算符的优先级高于`$`，但C++标准规定对于非静态数据成员，`&C::m`和`&(C::m)`是不同的：前者在类外是数据成员指针，在类内是普通指针，后者无论在类内还是类外都是非法的；而对于静态数据成员，二者无论在类内还是类外都是等价的。
+注：虽然`::`运算符的优先级高于`&`，但C++标准规定对于非静态数据成员，`&C::m`和`&(C::m)`是不同的：前者在类外是数据成员指针，在类内是普通指针，后者无论在类内还是类外都是非法的；而对于静态数据成员，二者无论在类内还是类外都是等价的。
 
 > A pointer to non-static member object `m` which is a member of class `C` can be initialized with the expression `&C::m` exactly. Expressions such as `&(C::m)` or `&m` inside `C`'s member function do not form pointers to members.
 
