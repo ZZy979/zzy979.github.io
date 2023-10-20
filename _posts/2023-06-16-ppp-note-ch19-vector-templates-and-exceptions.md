@@ -424,13 +424,47 @@ void f(vector<Shape*>& v) {
 [简单数组](https://github.com/ZZy979/PPP-code/blob/main/ch19/simple_array.h)
 
 注：
+* 标准库提供了具有相同功能的`std::array`，定义在头文件\<array\>中。
 * 模板参数是类型的一部分，因此`array<int, 5>`和`array<int, 10>`是两种不同的类型。
 * 由于`array`的大小`N`在编译时是已知的，因此不需要使用自由存储，而是直接将`elem`成员声明为数组；相反，`vector`需要使用自由存储，`elem`成员只是一个指针。因此，`array`的元素是其本身的一部分，而`vector`的元素不是（见17.3.1节）：
     * `sizeof(array<int, 100>) = 100 * sizeof(int) = 400`
     * `sizeof(vector<int>(100)) = sizeof(int) + sizeof(int*) + sizeof(int) = 4 + 4 + 4 = 12`（对于19.2.6节中的`vector`、32位系统）。
 * `array`支持列表初始化，是因为它只有一个数组类型的公有成员，见[Aggregate initialization](https://en.cppreference.com/w/cpp/language/aggregate_initialization)。
-* `array`的默认构造函数、拷贝构造函数、拷贝赋值和析构函数都是由编译器自动生成的。由于`elem`是数组而不是指针，因此默认拷贝操作就是深拷贝，析构函数什么都不用做（内置数组本身不支持拷贝，但将其作为对象成员可以间接拷贝）。
-* 标准库提供了具有相同功能的`std::array`，定义在头文件\<array\>中。
+* `array`的默认构造函数、拷贝构造函数、拷贝赋值和析构函数都是由编译器自动生成的。由于`elem`是数组而不是指针，因此默认拷贝操作就是深拷贝，析构函数什么都不用做。
+* **内置数组本身不支持拷贝，但作为对象成员可以通过对象间接拷贝。** 例如：
+
+```cpp
+#include <iostream>
+
+struct Foo {
+    char s[8];
+};
+
+struct Bar {
+    char* s;
+};
+
+int main() {
+    Foo f1{"hello"}, f2 = f1;
+    Bar b1{new char[]{"hello"}}, b2 = b1;
+    f1.s[0] = b1.s[0] = '\0';
+    std::cout << "f2.s = " << f2.s << '\n'
+            << "b2.s = " << b2.s << '\n';
+    delete b1.s;
+    return 0;
+}
+```
+
+程序输出
+
+```
+f2.s = hello
+b2.s = 
+```
+
+![数组作为成员拷贝-修改前](/assets/images/ppp-note-ch19-vector-templates-and-exceptions/数组作为成员拷贝-修改前.png)
+
+![数组作为成员拷贝-修改后](/assets/images/ppp-note-ch19-vector-templates-and-exceptions/数组作为成员拷贝-修改后.png)
 
 我们可以这样使用`array`：
 
