@@ -48,7 +48,7 @@ void fct() {
 ### 20.1.2 一般化代码
 我们希望使用统一的方式来访问和操作数据。下面以Jack和Jill的代码为例，讨论如何让我们的代码更加抽象和统一。
 
-显然，我们对Jack和Jill的数据的处理方法非常相似。但是，有一些令人讨厌的差异：`jack_count`和`jill_data–>size()`以及`jack_data[i]`和`(*jill_data)[i]`。
+显然，我们对Jack和Jill的数据的处理方法非常相似。但是，有一些令人讨厌的差异：`jack_count`和`jill_data->size()`以及`jack_data[i]`和`(*jill_data)[i]`。
 
 如何编写一个可以同时处理Jack和Jill的数据的函数？出于通用性的原因（这将在接下来的两章中变得清楚），我们选择了基于指针的解决方案：
 

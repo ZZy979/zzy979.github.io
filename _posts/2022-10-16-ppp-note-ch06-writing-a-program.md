@@ -202,7 +202,7 @@ T = {float-literal, "+", "-", "*", "/", "%", "(", ")"}
 Expression:
     Term
     Expression "+" Term
-    Expression "–" Term
+    Expression "-" Term
 Term:
     Primary
     Term "*" Primary

@@ -287,7 +287,7 @@ void increase_power(int level);  // increase_power doesn’t return a value
 double my_abs(int x) {
     // warning: buggy code
     if (x < 0)
-        return –x;
+        return -x;
     else if (x > 0)
         return x;
     // error: no value returned if x is 0
@@ -345,7 +345,7 @@ void print(vector<double> v) {
     cout << "{ ";
     for (int i = 0; i < v.size(); ++i) {
         cout << v[i];
-        if (i != v.size() – 1) cout << ", ";
+        if (i != v.size() - 1) cout << ", ";
     }
     cout << " }\n";
 }
@@ -373,7 +373,7 @@ void print(const vector<double>& v) {
     cout << "{ ";
     for (int i = 0; i < v.size(); ++i) {
         cout << v[i];
-        if (i != v.size() – 1) cout << ", ";
+        if (i != v.size() - 1) cout << ", ";
     }
     cout << " }\n";
 }
@@ -433,7 +433,7 @@ i = 10;
 cout << *p << ' ' << i << '\n';  // write: 10 10
 ```
 
-注：C++的引用和指针类似，本质上都是变量的内存地址，也是一个整数。只是在语法上，引用不需要使用`&`取地址、`*`解引用。另外，引用必须初始化、不能改变指向，指针可以不初始化、非`const`指针可以改变指向。作为函数参数时，本质上仍然是传值，只不过拷贝的是一个4字节的地址整数，而不是其指向的对象本身。详见[《C程序设计语言》笔记 第5章 指针与数组]({% post_url 2022-04-26-tcpl-note-ch5-pointers-and-arrays %})。
+注：C++的引用和指针类似，本质上都是变量的内存地址，也是一个整数。只是在语法上，引用不需要使用`&`取地址、`*`解引用。另外，引用必须初始化、不能改变指向，指针可以不初始化、非`const`指针可以改变指向。作为函数参数时，本质上仍然是传值，只不过拷贝的是一个4字节的地址整数，而不是其指向的对象本身。详见17.9节以及[《C程序设计语言》笔记 第5章 指针与数组]({% post_url 2022-04-26-tcpl-note-ch5-pointers-and-arrays %})。
 
 引用的一个用途是作为简写形式。例如：
 

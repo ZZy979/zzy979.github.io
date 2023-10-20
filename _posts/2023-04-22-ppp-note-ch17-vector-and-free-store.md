@@ -603,8 +603,11 @@ r = &y2;       // error: you can't change the value of a reference
 注意：
 * `r2 = r`相当于`*p2 = *p`，而不是`p2 = p`。
 * `r = &y2`是类型错误，不存在给引用本身赋值使其引用另一个对象的操作。
+* 对引用变量取地址得到的是被引用对象的地址（例如`&r`等于`&y`），无法获取引用变量本身的地址。C++标准甚至不要求编译器为引用变量分配内存，详见[Reference declaration](https://en.cppreference.com/w/cpp/language/reference)：
 
-**指针和引用都是使用内存地址实现的**，只是在用法上稍有不同。
+> References are not objects; they do not necessarily occupy storage, although the compiler may allocate storage if it is necessary to implement the desired semantics (e.g. a non-static data member of reference type usually increases the size of the class by the amount necessary to store a memory address).
+
+总之：**指针和引用都是使用内存地址实现的**，只是在用法上稍有不同。
 
 ### 17.9.1 指针参数和引用参数
 当你希望将一个变量的值改为由函数计算的结果时，有三种选择：返回值、指针参数和引用参数。例如：

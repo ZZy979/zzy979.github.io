@@ -59,13 +59,13 @@ int x = var.mf(9);  // call var's member function mf()
 class X {  // this class's name is X
 public:
     // public members:
-    //     – the interface to users (accessible by all)
+    //     - the interface to users (accessible by all)
     // functions
     // types
     // data (often best kept private)
 private:
     // private members:
-    //     – the implementation details (used by members of this class only)
+    //     - the implementation details (used by members of this class only)
     // functions
     // types
     // data
@@ -563,7 +563,7 @@ ostream& operator<<(ostream& os, Month m) {
 }
 ```
 
-你可以为自己的类型定义几乎所有的C++运算符，如`+`, `–`, `*`, `/`, `%`, `[]`, `()`, `^`, `!`, `&`, `<`, `<=`, `>`, `>=`等。
+你可以为自己的类型定义几乎所有的C++运算符，如`+`, `-`, `*`, `/`, `%`, `[]`, `()`, `^`, `!`, `&`, `<`, `<=`, `>`, `>=`等。
 
 注意：
 * 不能定义新的运算符，例如`**`、`$=`。

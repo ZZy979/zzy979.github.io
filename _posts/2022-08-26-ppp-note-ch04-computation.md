@@ -396,7 +396,7 @@ square(2);               // probably a mistake: unused return value
 int v1 = square();       // error: argument missing
 int v2 = square;         // error: parentheses missing
 int v3 = square(1, 2);   // error: too many arguments
-int v4 = square("two");  // error: wrong type of argument – int expected
+int v4 = square("two");  // error: wrong type of argument - int expected
 ```
 
 参数表可以为空，如果不需要返回任何结果，返回值类型可以设置为`void`。例如：
