@@ -267,7 +267,7 @@ myRdd.map(MyFunctions.func1)
 ```
 
 ##### 4.2.3.3 使用键值对
-在Scala中，使用包含`scala.Tuple2`对象的RDD即可实现键值对操作。例如，下面的代码使用`reduceByKey`操作统计单词出现次数：
+在Scala中，使用`RDD[Tuple2]`即可实现键值对操作。例如，下面的代码使用`reduceByKey`操作统计单词出现次数：
 
 ```scala
 val lines = sc.textFile("to-be-or-not-to-be.txt")
@@ -396,7 +396,13 @@ scala> df.groupBy("age").count.show
 +----+-----+
 ```
 
-注：`df.filter($"age" > 21)`也可以写成`df.filter("age > 21")`
+注：
+* `$"name"`等价于`col("name")`
+* `df.select($"name", $"age" + 1)`等价于`df.select(col("name"), expr("age + 1"))`和`df.selectExpr("name", "age + 1")`
+* `df.filter($"age" > 21)`等价于`df.filter("age > 21")`
+
+其中`col()`、`expr()`等函数定义在[
+org.apache.spark.sql.functions](https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/functions$.html)。
 
 下面是一些常用的DataFrame操作：
 
@@ -594,44 +600,228 @@ Spark SQL支持从多种不同的数据源加载数据，包括文本文件、CS
 ## 6.Spark Streaming
 <https://spark.apache.org/docs/latest/streaming-programming-guide.html>
 
-处理流式数据，按照固定时间间隔划分为多个批次，称为离散流(discretized stream, DStream)，表示为RDD序列。
+注：Spark Streaming是上一代的Spark流引擎，已经不再更新。流式引用应该使用新的流引擎[Structured Streaming](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html)。
 
-依赖：spark-streaming
+Spark Streaming用于处理流式数据，可以从多种数据源（例如Kafka、TCP套接字）消费数据，使用高层次函数（例如`map`、`reduce`、`join`和`window`）处理数据，并将处理后的数据输出到文件系统、数据库等。
 
-初始化StreamingContext：
+![Spark Streaming architecture](https://spark.apache.org/docs/latest/img/streaming-arch.png)
+
+Spark Streaming内部将输入数据流划分成批次(batch)，之后使用Spark引擎处理。
+
+![Spark Streaming data flow](https://spark.apache.org/docs/latest/img/streaming-flow.png)
+
+Spark Streaming提供的高层次抽象称为**离散流**(discretized stream, DStream)，内部表示为RDD序列。
+
+下面介绍如何编写Spark Streaming程序。
+
+### 6.1 简单示例
+假设我们希望统计从TCP套接字接收到的文本数据中的单词数，步骤如下。
+
+首先，创建流式应用的主入口[StreamingContext](https://spark.apache.org/docs/latest/api/scala/org/apache/spark/streaming/StreamingContext.html)，具有2个执行线程、分批间隔为1秒：
 
 ```scala
 import org.apache.spark.SparkConf
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 
-val sparkConf = new SparkConf().setAppName("WordCount")
-val ssc = new StreamingContext(sparkConf, Seconds(1))
-// ...
+// Create a local StreamingContext with two working threads and batch interval of 1 second.
+// The master requires 2 cores to prevent a starvation scenario.
+val conf = new SparkConf().setMaster("local[2]").setAppName("NetworkWordCount")
+val ssc = new StreamingContext(conf, Seconds(1))
+```
+
+之后创建一个DStream，表示来自TCP套接字的流式数据，指定主机名和端口号：
+
+```scala
+// Create a DStream that will connect to hostname:port, like localhost:9999
+val lines = ssc.socketTextStream("localhost", 9999)
+```
+
+DStream中的每条记录是一行文本。接下来，使用空格将文本行分割为单词：
+
+```scala
+// Split each line into words
+val words = lines.flatMap(_.split(" "))
+```
+
+`flatMap`是一个一对多操作，创建了一个新的DStream。下面统计单词数：
+
+```scala
+// Count each word in each batch
+val pairs = words.map(word => (word, 1))
+val wordCounts = pairs.reduceByKey(_ + _)
+
+// Print the first ten elements of each RDD generated in this DStream to the console
+wordCounts.print()
+```
+
+注：在流式应用中，数据是源源不断到达的，通常是无尽的，因此需要对数据流分批处理。该示例是将每秒内到达的数据作为一个批次，对每个批次分别统计单词数。
+
+注意，（类似于RDD操作）Spark Streaming操作也是懒惰执行的，上面几行代码只记录了要执行的计算，而不会立即执行。要开始处理，需要调用
+
+```scala
 ssc.start()             // Start the computation
 ssc.awaitTermination()  // Wait for the computation to terminate
 ```
 
-创建DStream：
+完整示例代码：[NetworkWordCount](https://github.com/apache/spark/blob/master/examples/src/main/scala/org/apache/spark/examples/streaming/NetworkWordCount.scala)
 
-```scala
-// 网络数据流
-val lines = ssc.socketTextStream("localhost", 9999)
+要运行该示例，首先运行Netcat：
 
-// HDFS目录下的文件
-val lines = ssc.textFileStream("hdfs://...")
+```bash
+$ nc -lk 9999
 ```
 
-自定义输入流：[InputDStream](https://spark.apache.org/docs/latest/api/scala/org/apache/spark/streaming/dstream/InputDStream.html)
+在另一个终端运行：
 
-接收器：[Receiver](https://spark.apache.org/docs/latest/api/scala/org/apache/spark/streaming/receiver/Receiver.html)
+```bash
+$ ./bin/run-example streaming.NetworkWordCount localhost 9999
+```
 
-DStream操作：
+之后在Netcat终端输入任意文本，Spark终端将会每秒统计并打印单词数：
 
-[Transformations](https://spark.apache.org/docs/latest/streaming-programming-guide.html#transformations-on-dstreams)
+```bash
+$ nc -lk 9999
+hello world
+hello world hello world
+^C
+```
 
-[window](https://spark.apache.org/docs/latest/streaming-programming-guide.html#window-operations)
+```bash
+$ ./bin/run-example streaming.NetworkWordCount localhost 9999
+...
+-------------------------------------------
+Time: 1697455022000 ms
+-------------------------------------------
+(world,1)
+(hello,1)
 
-[output](https://spark.apache.org/docs/latest/streaming-programming-guide.html#output-operations-on-dstreams)
+-------------------------------------------
+Time: 1697455023000 ms
+-------------------------------------------
+
+-------------------------------------------
+Time: 1697455024000 ms
+-------------------------------------------
+(world,2)
+(hello,2)
+...
+```
+
+注：为了便于观察输出，可以将日志级别改为`warn`。将conf目录下的log4j2.properties.template拷贝到log4j2.properties，并将其中的`rootLogger.level = info`改为`rootLogger.level = warn`。详见[Configuring Logging](https://spark.apache.org/docs/latest/configuration.html#configuring-logging)。
+
+### 6.2 依赖
+Spark Streaming应用需要添加以下依赖：
+
+```xml
+<dependency>
+    <groupId>org.apache.spark</groupId>
+    <artifactId>spark-streaming_2.12</artifactId>
+    <version>3.4.0</version>
+    <scope>provided</scope>
+</dependency>
+```
+
+如果要从Kafka等数据源消费数据，还需要添加对应的依赖，例如spark-streaming-kafka-0-10_2.12。
+
+### 6.3 初始化StreamingContext
+Spark Streaming程序的主入口是`StreamingContext`，可以从`SparkConf`对象创建，并指定分批间隔：
+
+```scala
+val conf = new SparkConf().setMaster(master).setAppName(appName)
+val ssc = new StreamingContext(conf, Seconds(1))
+```
+
+其中`master`是集群的[Master URL](https://spark.apache.org/docs/latest/submitting-applications.html#master-urls)，如果运行在本地模式则为 "local[*]" 。通过[spark-submit](https://spark.apache.org/docs/latest/submitting-applications.html)启动应用时，可以使用`--master`选项指定Master URL。分批间隔应当根据应用的延迟要求和可用集群资源来设置。
+
+`StreamingContext`将会自动创建`SparkContext`，可以通过`ssc.sparkContext`访问。
+
+初始化`StreamingContext`之后：
+1. 通过输入DStream定义输入源。
+2. 通过DStream转换和输出操作定义流式计算。
+3. 使用`ssc.start()`开始接收和处理数据。
+4. 使用`ssc.awaitTermination()`等待处理结束（手动停止或遇到错误）。
+5. 或者使用`ssc.stop()`手动停止处理。
+
+### 6.4 离散流(DStream)
+**离散流**(discretized stream, DStream)是Spark Streaming提供的基本抽象，表示连续的数据流。DStream在内部表示为RDD序列，每个RDD包含来自一定时间间隔的数据，如下图所示。
+
+![DStream](https://spark.apache.org/docs/latest/img/streaming-dstream.png)
+
+作用于DStream上的任何操作都会转换为底层RDD上的操作。例如，在6.1节的例子中，`lines.flatMap()`生成`words`，如下图所示。
+
+![DStream ops](https://spark.apache.org/docs/latest/img/streaming-dstream-ops.png)
+
+### 6.5 输入DStream和接收器
+[输入DStream](https://spark.apache.org/docs/latest/api/scala/org/apache/spark/streaming/dstream/InputDStream.html)表示输入数据流。在6.1节的例子中，`lines`是表示从netcat接收到的数据流的输入DStream。每个输入DStream（除文件流外）都关联了一个**接收器**([Receiver](https://spark.apache.org/docs/latest/api/scala/org/apache/spark/streaming/receiver/Receiver.html))对象。
+
+Spark Streaming提供了两种类型的内置数据源：
+
+（1）基本数据源：`StreamingContext` API直接提供的数据源，例如：
+* `socketTextStream()`：来自TCP套接字的文本数据
+* `textFileStream()`：读取HDFS目录下的文本文件
+
+（2）高级数据源：需要添加依赖的数据源，例如[Kafka](https://spark.apache.org/docs/latest/streaming-kafka-0-10-integration.html)、[Kinesis](https://spark.apache.org/docs/latest/streaming-kinesis-integration.html)等。
+
+另外，也可以[自定义接收器](https://spark.apache.org/docs/latest/streaming-custom-receivers.html)。
+
+### 6.6 DStream操作
+完整列表见API文档[DStream](https://spark.apache.org/docs/latest/api/scala/org/apache/spark/streaming/dstream/DStream.html)和[PairDStreamFunctions](https://spark.apache.org/docs/latest/api/scala/org/apache/spark/streaming/dstream/PairDStreamFunctions.html)。
+
+#### 6.6.1 转换操作
+与RDD类似，DStream允许通过**转换**(transformation)操作修改其中的数据。常用的转换操作：`map`、`flatMap`、`filter`、`repartition`、`union`、`count`、`reduce`、`countByValue`、`reduceByKey`、`join`、`cogroup`、`transform`、`updateStateByKey`等。
+
+#### 6.6.2 窗口操作
+Spark Streaming还提供了窗口操作，可以在数据的滑动窗口上执行转换操作，如下图所示。
+
+![DStream window](https://spark.apache.org/docs/latest/img/streaming-dstream-window.png)
+
+落在窗口中的RDD将被组合并执行转换操作，以生成输出DStream中的RDD。
+
+窗口操作需要指定两个参数：窗口长度和滑动距离。在这个例子中，窗口长度为3个时间单位，滑动距离为2个时间单位。这两个参数必须是输入DStream分批间隔的整数倍。
+
+例如，在6.1节的例子中，如果希望每10秒钟计算过去30秒的单词数，可以对`pairs` DStream执行`reduceByKeyAndWindow()`操作：
+
+```scala
+// Reduce last 30 seconds of data, every 10 seconds
+val windowedWordCounts = pairs.reduceByKeyAndWindow((a: Int, b: Int) => (a + b), Seconds(30), Seconds(10))
+```
+
+常用的窗口操作：`window`、`countByWindow`、`reduceByWindow`、`reduceByKeyAndWindow`、`reduceByKeyAndWindow`、`countByValueAndWindow`等。
+
+#### 6.6.3 join操作
+在Spark Streaming中可以很容易地执行join操作。
+
+(1) DStream-DStream join
+
+```scala
+val stream1: DStream[String, String] = ...
+val stream2: DStream[String, String] = ...
+val joinedStream = stream1.join(stream2)
+```
+
+在每个批次中，`stream1`的RDD与`stream2`的RDD进行join。另外，也可以执行outer join：`leftOuterJoin`、`rightOuterJoin`、`fullOuterJoin`。
+
+(2) DStream-DataSet join
+
+```scala
+val dataset: RDD[String, String] = ...
+val windowedStream = stream.window(Seconds(20))...
+val joinedStream = windowedStream.transform { rdd => rdd.join(dataset) }
+```
+
+#### 6.6.4 输出操作
+DStream的输出操作将数据输出到外部系统，例如数据库或文件系统。输出操作会触发DStream转换操作的执行（类似于RDD的action）。目前支持的输出操作：`print`、`saveAsTextFiles`、`saveAsObjectFiles`、`saveAsHadoopFiles`、`foreachRDD`。
+
+### 6.7 DataFrame和SQL操作
+在`foreachRDD`中，可以对RDD使用DataFrame和SQL操作。
+
+例如：[SqlNetworkWordCount.scala](https://github.com/apache/spark/blob/v3.5.0/examples/src/main/scala/org/apache/spark/examples/streaming/SqlNetworkWordCount.scala)
+
+### 6.8 缓存/持久化
+与RDD类似，DStream可以通过`persist()`方法将数据保存在内存中，这将自动保存DStream中的每个RDD。如果DStream中的数据将被多次计算（例如窗口操作），这会非常有用。窗口操作生成的DStream会自动保存在内存中，不需要手动调用`persist()`。
+
+### 6.9 检查点
+https://spark.apache.org/docs/latest/streaming-programming-guide.html#checkpointing
 
 ## 7.Structured Streaming
 <https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html>
