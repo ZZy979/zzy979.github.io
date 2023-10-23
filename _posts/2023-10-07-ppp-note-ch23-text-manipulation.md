@@ -82,7 +82,7 @@ using stringstream = basic_stringstream<char>;
 
 [Example messages](https://github.com/ZZy979/PPP-code/blob/main/ch23/testdata/example.eml)
 
-每封邮件以一行 "----" （4个连字符）结束。我们将编写一个“玩具程序”，查找所有 "John Doe" 发送的邮件，并输出其主题(Subject)。如果能做到这一点，我们就能做很多有趣的事情。
+每封邮件以一行`----`（4个连字符）结束。我们将编写一个“玩具程序”，查找所有 "John Doe" 发送的邮件，并输出其主题(Subject)。如果能做到这一点，我们就能做很多有趣的事情。
 
 基本思路是读取一个完整的邮件文件，保存到一个名为`Mail_file`的结构中。该结构使用`vector<string>`保存所有的行，并使用`vector<Message>`指明每个邮件消息的起止位置（行号）：
 
@@ -126,7 +126,11 @@ struct Mail_file {
 * 首先，构造一个通用的数据结构，可以用来做很多事
 * 之后，在一个特定的应用中使用它
 
-这样可以构建或多或少**可重用**的组件。例如，如果要增加“根据接收人查询邮件”的功能，仍然可以使用这个`vector<Message>`来构造另一个`multimap`（收件人到邮件消息的映射），而这里的`multimap`只能用于“根据发件人查询邮件”这一个特定的应用。
+这样可以构建或多或少**可重用**的组件。例如，如果要增加“根据收件人查询邮件”的功能，仍然可以使用这个`vector<Message>`来构造另一个`multimap`（收件人到邮件消息的映射），而这里的`multimap`只能用于“根据发件人查询邮件”这一个特定的应用。
+
+（所以为什么不直接遍历`vector<Message>`查询指定发件人的邮件，而要先构造一个`multimap`？因为这样可以多次查询不同发件人的邮件。）
+
+注意，`find_from_add()`区分了有地址行但内容为空和无地址行两种情况。对于第一种情况，返回`true`并将`s`置为`""`；对于第二种情况，返回`false`。
 
 ## 23.5 一个问题
 处理文本时，通常需要考虑字符串的上下文。考虑一个简单的例子：判断一个字符串是否包含美国州的缩写和邮政编码（“两个字母加五个数字”，例如`TX77845`）：
@@ -489,4 +493,14 @@ regex pat3("[a");      // mismatched [ and ]
 注：在这个程序中，数据行模式、字段分隔符以及用于识别最后一行的标签都是硬编码的，因此只能用于这一种结构的表格。
 
 ## 简单练习
+* [查找邮政编码](https://github.com/ZZy979/PPP-code/blob/main/ch23/find_postal_codes.cpp)
+
 ## 习题
+* [23-1](https://github.com/ZZy979/PPP-code/blob/main/ch23/testdata/test.eml)
+* [23-2~23-4](https://github.com/ZZy979/PPP-code/blob/main/ch23/find_email_v2.cpp)
+* [23-6](https://github.com/ZZy979/PPP-code/blob/main/ch23/exec23-6.cpp)
+* [23-8](https://github.com/ZZy979/PPP-code/blob/main/ch23/exec23-8.cpp)
+* [23-10](https://github.com/ZZy979/PPP-code/blob/main/ch23/exec23-10.cpp)
+* [23-12](https://github.com/ZZy979/PPP-code/blob/main/ch23/exec23-12.cpp)
+* [23-13](https://github.com/ZZy979/PPP-code/blob/main/ch23/exec23-13.cpp)
+* [23-15~16](https://github.com/ZZy979/PPP-code/blob/main/ch23/exec23-15.txt)
