@@ -365,7 +365,7 @@ cc_test(
     name = 'foo_test',
     srcs = 'foo_test.cc',
     deps = [':foo', ...],
-    testdata = testdata = ['data1.txt', '//path/to/data2.txt'],
+    testdata = ['data1.txt', '//path/to/data2.txt'],
 )
 ```
 
@@ -536,7 +536,15 @@ java_library(
 * `provided_deps`：字符串列表，指定**由运行环境提供**的依赖（例如Hadoop、Spark等）
   * 如果当前目标被`java_binary`、`java_test`、`java_fat_library`或`scala_fat_library`目标依赖或传递依赖，则`provided_deps`及其上游依赖不会被打包进上述目标中。
 
-生成的jar文件名为{name}.jar，仅包含类文件，**不包含依赖**。`srcs`和`resources`支持[glob函数](https://github.com/chen3feng/blade-build/blob/master/doc/en/functions.md#glob)。三种依赖的区别详见6.3.3.6节。
+生成的jar文件名为{name}.jar，仅包含类文件，**不包含依赖**。`srcs`和`resources`支持[glob](https://github.com/chen3feng/blade-build/blob/master/doc/en/functions.md#glob)函数。三种依赖的区别详见6.3.3.6节。
+
+`resources`属性中的资源文件路径可以是字符串或二元组：
+
+| 资源文件路径 | jar内路径 |
+| --- | --- |
+| `'resources/foo.conf'` | resources/foo.conf |
+| `'//path/to/foo.conf'` | path/to/foo.conf |
+| `('//path/to/foo.conf', 'conf/foo.conf')` | conf/foo.conf |
 
 ##### 6.3.3.3 java_binary
 从Java源代码构建可执行jar文件，包含依赖。语法：
@@ -596,7 +604,7 @@ java_test(
     resources = ['resources/foo.conf', ...],
     deps = [':Foo', ...],
     exclusions = ['org.slf4j:*:*', 'org.apache.hadoop:*:*', ...],
-    testdata = testdata = ['data1.txt', '//path/to/data2.txt'],
+    testdata = ['data1.txt', '//path/to/data2.txt'],
 )
 ```
 
@@ -669,6 +677,7 @@ java_library(
     deps = ':Say',
 )
 
+# 方法1
 java_binary(
     name = 'HelloWorld',
     srcs = 'HelloWorld.java',
@@ -676,6 +685,7 @@ java_binary(
     main_class = 'hello.HelloWorld',
 )
 
+# 方法2
 java_fat_library(
     name = 'HelloWorldFat',
     srcs = 'HelloWorld.java',
@@ -683,7 +693,7 @@ java_fat_library(
 )
 ```
 
-BLADE_ROOT中需要添加`one_jar_boot_jar`配置，如6.3.3.3节所述。
+要创建包含主类的jar文件，可以使用`java_binary`或者`java_fat_library`。如果使用`java_binary`，则BLADE_ROOT中需要添加`one_jar_boot_jar`配置，如6.3.3.3节所述。
 
 目录结构：
 
@@ -698,13 +708,13 @@ blade-demo/
             HelloWorld.java
 ```
 
-在blade-demo/java/hello目录下执行
+（1）如果使用`java_binary`，在blade-demo/java/hello目录下执行
 
 ```bash
-blade build :HelloWorld :HelloWorldFat
+blade build :HelloWorld
 ```
 
-则在blade-demo/build64_release/java/hello目录下会生成HelloWorld.one.jar和HelloWorldFat.fat.jar两个文件：
+则在blade-demo/build64_release/java/hello目录下会生成HelloWorld.one.jar文件：
 
 ```bash
 $ jar -tf HelloWorld.one.jar
@@ -716,7 +726,40 @@ com/simontuffs/onejar/JarClassLoader.class
 main/HelloWorld.jar
 lib/Hello.jar
 lib/Say.jar
+```
 
+要运行程序，可以使用`blade run`命令：在blade-demo/java/hello目录下执行
+
+```bash
+$ blade run :HelloWorld
+...
+Blade(info): Run '['.../blade-demo/build64_release/java/hello/HelloWorld']'
+Hello, world
+```
+
+或者直接执行one-jar：在blade-demo/build64_release/java/hello目录下执行
+
+```bash
+$ java -jar HelloWorld.one.jar 
+Hello, world
+```
+
+或者手动指定类路径：
+
+```bash
+$ java -cp Say.jar:Hello.jar:HelloWorld.jar hello.HelloWorld
+Hello, world
+```
+
+（2）如果使用`java_fat_library`，在blade-demo/java/hello目录下执行
+
+```bash
+blade build :HelloWorldFat
+```
+
+则在blade-demo/build64_release/java/hello目录下会生成HelloWorldFat.fat.jar文件：
+
+```bash
 $ jar -tf HelloWorldFat.fat.jar
 META-INF/
 hello/
@@ -728,24 +771,9 @@ META-INF/blade/MERGE-INFO
 META-INF/MANIFEST.MF
 ```
 
-要运行程序，可以使用`blade run`命令，直接执行one-jar，或者使用fat jar+手动指定类路径。可以在blade-demo/java/hello目录下执行
+要运行程序，必须将fat jar添加到类路径并使用`java`命令：在blade-demo/build64_release/java/hello目录下执行
 
 ```bash
-$ blade run :HelloWorld
-...
-Blade(info): Run '['.../blade-demo/build64_release/java/hello/HelloWorld']'
-Hello, world
-```
-
-或者在blade-demo/build64_release/java/hello目录下执行
-
-```bash
-$ java -jar HelloWorld.one.jar 
-Hello, world
-
-$ java -cp Say.jar:Hello.jar:HelloWorld.jar hello.HelloWorld
-Hello, world
-
 $ java -cp HelloWorldFat.fat.jar hello.HelloWorld
 Hello, world
 ```
@@ -795,7 +823,7 @@ scala_test(
     resources = ['resources/foo.conf', ...],
     deps = [':Foo', ...],
     exclusions = ['org.slf4j:*:*', 'org.apache.hadoop:*:*', ...],
-    testdata = testdata = ['data1.txt', '//path/to/data2.txt'],
+    testdata = ['data1.txt', '//path/to/data2.txt'],
 )
 ```
 
@@ -949,7 +977,7 @@ py_test(
     deps = [':name', '//path/to/dir:name', ...],
     base = '//path/to/base',
     main = 'foo_test.py',
-    testdata = testdata = ['data1.txt', '//path/to/data2.txt'],
+    testdata = ['data1.txt', '//path/to/data2.txt'],
 )
 ```
 
