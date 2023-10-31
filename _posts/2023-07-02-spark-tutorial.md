@@ -342,6 +342,22 @@ scala> df.show
 +---+------+
 ```
 
+如果要包含`null`，则必须使用`None`和`Some`：
+
+```scala
+scala> val df = Seq((None, "Michael"), (Some(30), "Andy"), (Some(19), "Justin")).toDF("age", "name")
+df: org.apache.spark.sql.DataFrame = [age: int, name: string]
+
+scala> df.show
++----+-------+
+| age|   name|
++----+-------+
+|null|Michael|
+|  30|   Andy|
+|  19| Justin|
++----+-------+
+```
+
 ### 5.2 DataFrame操作
 DataFrame提供了结构化数据操作。
 
@@ -408,15 +424,17 @@ org.apache.spark.sql.functions](https://spark.apache.org/docs/latest/api/scala/o
 
 | SQL子句 | DataFrame操作 |
 | --- | --- |
-| SELECT | `select()` |
+| SELECT | `select()`或`selectExpr()` |
+| 增加列 | `withColumn()` |
+| AS | `withColumnRenamed()` |
 | JOIN | `join()` |
 | WHERE | `filter()`或`where()` |
 | GROUP BY | `groupBy().agg()` |
-| ORDER BY | `sort()` |
+| ORDER BY | `sort()`或`orderBy()` |
 
 完整列表见[Dataset API文档](https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/Dataset.html)。
 
-除了引用列和表达式外，Spark SQL还提供了丰富的函数库，包括字符串操作、日期运算、常见数学函数等。完整列表见[DataFrame Function Reference](https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/functions$.html)。
+除了引用列和表达式外，Spark SQL还提供了丰富的函数库，包括字符串操作、日期运算、常见数学函数等，另外还支持用户自定义函数(UDF)。详见[DataFrame Function Reference](https://spark.apache.org/docs/latest/sql-ref-functions.html)。
 
 ### 5.3 SQL查询
 `SparkSession`的`sql()`方法可以运行SQL查询，并将结果作为DataFrame返回。例如：
