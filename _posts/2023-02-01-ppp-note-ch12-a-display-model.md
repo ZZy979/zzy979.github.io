@@ -95,7 +95,7 @@ win.wait_for_button();          // give control to the display engine
 
 注：书中的代码不是直接使用FLTK，而是使用了作者提供的GUI库。这个GUI库是在FLTK的基础上又封装了一层，提供了形状和GUI构件的接口类（如无特殊说明，后面提到“GUI库”就是指作者提供的这个GUI库）。
 
-GUI库的源代码可以从[作者网站](https://www.stroustrup.com/programming_support.html)上下载：<https://www.stroustrup.com/Programming/code.tar>
+GUI库的源代码可以从[作者网站](https://www.stroustrup.com/programming_support.html)上下载[code.tar](https://www.stroustrup.com/Programming/code.tar)，或者从[GitHub仓库](https://github.com/BjarneStroustrup/Programming-_Principles_and_Practice_Using_Cpp)下载。
 
 注：代码中存在几处编译错误，需要如下修改
 * Window.h：开头增加两个`#include`和两个`using`声明：
@@ -256,7 +256,7 @@ sudo make uninstall
 #### 12.8.1.2 编译GUI库
 安装好FLTK后，下面将作者提供的GUI库源代码编译为库文件。
 
-首先下载源代码[code.tar](https://www.stroustrup.com/Programming/code.tar)，解压出GUI目录，并按照12.4节的方式修正编译错误。由于作者提供的源代码中已经包含了Makefile，因此直接在GUI目录下执行`make`命令，即可构建出库文件libbookgui.a，与源代码在同一个目录下。
+首先从作者网站下载源代码[code.tar](https://www.stroustrup.com/Programming/code.tar)并解压出GUI目录，或者从[GitHub仓库](https://github.com/BjarneStroustrup/Programming-_Principles_and_Practice_Using_Cpp)下载源代码，并按照12.4节的方式修正编译错误。由于作者提供的源代码中已经包含了Makefile，因此直接在GUI目录下执行`make`命令，即可构建出库文件libbookgui.a，与源代码在同一个目录下。
 
 #### 12.8.1.3 编译自己的程序代码
 假设12.3节中的程序保存在ch12/draw_triangle.cpp，目录ch12与GUI在同级目录下：

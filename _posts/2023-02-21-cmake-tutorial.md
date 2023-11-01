@@ -638,13 +638,40 @@ add_executable(<name> <source>...)
 #### add_library
 添加库构建目标。
 
+（1）普通库
 ```cmake
 add_library(<name> [STATIC|SHARED] <source>...)
 ```
 
-可以指定库文件的类型：
+构建生成库文件，可以指定库文件的类型：
 * `STATIC`：静态链接库（默认），库文件名为`lib<name>.a` (Linux)或`<name>.lib` (Windows)
 * `SHARED`：动态链接库，库文件名为`lib<name>.so` (Linux)或`<name>.dll` (Windows)
+
+（2）对象库
+```cmake
+add_library(<name> OBJECT <source>...)
+```
+
+构建生成对象文件`<name>.o` (Linux)或`<name>.obj` (Windows)，只编译不链接（类似于GCC编译器的`-c`选项）。其他`add_library()`或`add_executable()`创建的目标可以通过`$<TARGET_OBJECTS:name>`的形式在输入源引用对象库。
+
+（3）接口库
+```cmake
+add_library(<name> INTERFACE)
+```
+
+[接口库](https://cmake.org/cmake/help/latest/manual/cmake-buildsystem.7.html#interface-libraries)不编译任何源文件，也不生成库文件。然而可以通过`target_link_libraries(INTERFACE)`、`target_include_directories(INTERFACE)`等命令设置接口属性。
+
+接口库的一个主要通途是创建只有头文件的库(header-only library)。CMake 3.23之后可以使用`target_sources()`命令关联头文件。例如：
+
+```cmake
+add_library(Eigen INTERFACE)
+
+target_sources(Eigen PUBLIC
+  FILE_SET HEADERS
+  BASE_DIRS src
+  FILES src/eigen.h src/vector.h src/matrix.h
+)
+```
 
 #### add_test
 添加测试，详见第7节。
