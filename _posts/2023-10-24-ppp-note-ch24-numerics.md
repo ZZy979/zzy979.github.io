@@ -336,6 +336,8 @@ Matrix<int> a3 = scale_and_add(a, 8, a2);   // fused multiply and add: a3[i]=a[i
 int r = dot_product(a3, a);                 // dot product: r=sum(a3[i]*a[i])
 ```
 
+其中，`scale_and_add()`称为乘加混合运算(fused multiply-add, FMA)，定义为`result(i)=arg1(i)*arg2+arg3(i)`。`dot_product()`是点积（内积），定义为`result=sum(arg1(i)*arg2(i))`，如21.5.3节所述。
+
 注：标准库头文件[\<valarray\>](https://en.cppreference.com/w/cpp/header/valarray)提供了支持数值运算的一维数组`std::valarray`。另外，[习题19-1](https://github.com/ZZy979/PPP-code/blob/main/ch19/vector_add.h)也实现过简单的向量加法。
 
 总之，`Matrix`的操作（例如拷贝、赋值、运算等）是对所有元素进行操作，使我们不必编写循环代码。
@@ -405,6 +407,14 @@ a.swap_rows(1, 2);  // swap rows a[1] <-> a[2]
 ```
 
 并没有`swap_columns()`，如果需要可以自己实现（习题11）。原因在于元素是按行主次序存储的，行和列并不是完全对称的概念。这也体现在`[i]`获取行，而没有获取列的运算符。
+
+注：作者提供的代码中`Matrix<T,1>::swap_rows()`实现有错误，应改为：
+
+```cpp
+void swap_rows(Index i, Index j) {
+    std::swap((*this)(i), (*this)(j));
+}
+```
 
 在现实世界中，有很多事物都是二维的，因此显然可以用二维矩阵来描述。例如，国际象棋的棋盘可以用8×8的二维矩阵来表示：
 
@@ -787,15 +797,30 @@ auto gen = bind(normal_distribution<double>(15, 4.0), default_random_engine());
 ```cpp
 errno = 0;
 double s2 = sqrt(-1);
-if (errno) cerr << "something went wrong with something somewhere";
+if (errno) cerr << "something went wrong with something somewhere\n";
 if (errno == EDOM)      // domain error
-    cerr << "sqrt() not defined for negative argument";
-pow(very_large, 2);     // not a good idea
+    cerr << "sqrt() not defined for negative argument\n";
+
+errno = 0;
+double p = pow(very_large, 2);     // not a good idea
 if (errno == ERANGE)    // range error
-    cerr << "pow(" << very_large << ",2) too large for a double";
+    cerr << "pow(" << very_large << ",2) too large for a double\n";
 ```
 
 如果需要做严格的数学计算，在计算完成之后应该检查`errno`，确保它仍然为0。哪些数学函数会设置`errno`以及会使用哪些值请查阅标准库文档。
+
+注意：标准数学函数遇到错误时会设置`errno`，但计算成功时并不会将其清零。因此下一次计算前必须通过`errno = 0`手动清零。
+
+注：标准数学函数支持两种类型的错误处理机制：错误码`errno`（定义在[\<cerrno\>](https://en.cppreference.com/w/cpp/header/cerrno)中）和浮点数异常(floating-point exception)（定义在[\<cfenv\>](https://en.cppreference.com/w/cpp/header/cfenv)中）。浮点数异常并不是真正的异常，而是用整数表示的状态标志位。
+
+头文件\<cmath\>定义了表示标准数学函数使用的错误处理机制的[宏常量](https://en.cppreference.com/w/cpp/numeric/math/math_errhandling)：
+
+| 宏常量 | 值 | 含义 |
+| --- | --- | --- |
+| `MATH_ERRNO` | 1 | 使用错误码`errno` |
+| `MATH_ERREXCEPT` | 2 | 使用浮点数异常 |
+
+宏常量`math_errhandling`表示编译器实际支持的错误处理机制，其值为`MATH_ERRNO`、`MATH_ERREXCEPT`或`MATH_ERRNO | MATH_ERREXCEPT`（即二者都支持）。可以通过位运算符`&`测试：如果`math_errhandling | MATH_ERRNO`非零，则编译器支持错误码机制，否则`errno`始终为0。
 
 ## 24.9 复数
 **复数**(complex number)及其标准数学函数定义在[\<complex\>](https://en.cppreference.com/w/cpp/header/complex)中：
@@ -830,5 +855,20 @@ void f(cmplx z, vector<cmplx>& vc) {
 
 注意，`complex`没有提供`<`和`%`。
 
+`complex`提供了`<<`和`>>`运算符，输出格式为`(real,imaginary)`，输入格式支持`real`、`(real)`和`(real,imaginary)`。
+
 ## 简单练习
+* [24-1~24-3](https://github.com/ZZy979/PPP-code/blob/main/ch24/drill24-1.cpp)
+* [24-4](https://github.com/ZZy979/PPP-code/blob/main/ch24/drill24-4.cpp)
+* [24-5, 24-8](https://github.com/ZZy979/PPP-code/blob/main/ch24/drill24-5.cpp)
+* [24-6](https://github.com/ZZy979/PPP-code/blob/main/ch24/drill24-6.cpp)
+* [24-7](https://github.com/ZZy979/PPP-code/blob/main/ch24/drill24-7.cpp)
+
 ## 习题
+* [24-1~24-2](https://github.com/ZZy979/PPP-code/blob/main/ch24/drill24-1.cpp)
+* [24-4](https://github.com/ZZy979/PPP-code/blob/main/ch24/solve_linear_equations.cpp)
+* [24-5](https://github.com/ZZy979/PPP-code/blob/main/ch24/testdata/solve_linear_equations_input6.txt)
+* [24-8](https://github.com/ZZy979/PPP-code/blob/main/ch24/exec24-8.cpp)
+* [24-10](https://github.com/ZZy979/PPP-code/blob/main/ch24/exec24-10.cpp)
+* [24-11](https://github.com/ZZy979/PPP-code/blob/main/ch24/exec24-11.cpp)
+* [24-12](https://github.com/ZZy979/PPP-code/blob/main/ch24/matrix_operation.h)
