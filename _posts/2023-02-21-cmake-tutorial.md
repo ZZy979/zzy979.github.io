@@ -902,14 +902,19 @@ CMake提供了很多内置变量，可以通过`set()`命令或`-D`选项指定�
 * `PROJECT_BINARY_DIR`：最近调用`project()`命令的项目构建目录
 
 ### 6.2 系统相关变量
-* `LINUX`：如果目标系统是Linux则设置为`TRUE`
-* `WIN32`：如果目标系统是Windows则设置为`TRUE`
-* `APPLE`：如果目标系统是macOS则设置为`TRUE`
+* `UNIX`：如果目标系统是UNIX或类UNIX则设置为`True`
+* `LINUX`：如果目标系统是Linux则设置为`True`
+* `WIN32`：如果目标系统是Windows则设置为`True`
+* `APPLE`：如果目标系统是macOS则设置为`True`
+* `CYGWIN`：如果使用Cygwin则设置为`True`
+* `MINGW`：如果编译器是MinGW则设置为`True`
+* `MSVC`：如果编译器是Microsoft Visual C++则设置为`True`
 
 ### 6.3 语言相关变量
 * `CMAKE_C_STANDARD`：默认C标准版本，可选的值为90、99、11、17、23等
 * `CMAKE_CXX_STANDARD`：默认C++标准版本，可选的值为98、11、14、17、20、23、26等
 * `CMAKE_<LANG>_COMPILER`：指定语言的编译器完整路径，`<LANG>`可以是C、CXX等
+* `CMAKE_<LANG>_COMPILER_ID`：指定语言的编译器名称，可能的值包括GNU、Clang、MSVC等，详见[文档](https://cmake.org/cmake/help/latest/variable/CMAKE_LANG_COMPILER_ID.html)
 * `CMAKE_<LANG>_FLAGS`：指定语言的编译选项
 
 ### 6.4 构建/安装相关变量
