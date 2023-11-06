@@ -108,6 +108,8 @@ Git 2.23.0引入了一个新的命令git restore，可替代git reset和git chec
 * `--pretty=<format>`：指定每次提交的展示格式，`<format>`可以是`oneline, short, medium, full, fuller, reference, email, raw, format:"<string>"`之一，其中最后一种是自定义格式，可以使用类似于printf的%占位符，详见git log --help的PRETTY FORMATS一节
 * `--oneline`：等价于`--pretty=oneline --abbrev-commit`
 
+例如，要获取指定提交的父提交id，可以使用`git log --pretty=%P -1 <commit>`或`git log -1 <commit>^`
+
 #### 限制提交范围选项
 * `-n <number>`或`-<number>`：只显示最后n次提交
 * `--since=<date>, --after=<date>`：只显示指定日期之后的提交，其中`<date>`可以是类似于"2008-01-15"的绝对日期，也可以是类似于"2 weeks ago"的相对日期
@@ -353,10 +355,9 @@ git push -u origin new-feat
   ```
 * 如果向远程仓库推送时master分支上已经有很多新的提交，则之后合并时可能产生合并冲突，可以先在本地rebase到master分支再推送，从而提前解决合并冲突
   ```
-  git checkout master
-  git pull origin master
-  git checkout new-feat
+  git fetch origin master
   git rebase master
+  git push origin new-feat
   ```
 （4）在GitHub或GitLab上创建PR、代码评审、合并到master分支
 
