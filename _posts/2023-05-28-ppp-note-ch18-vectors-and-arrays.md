@@ -245,7 +245,7 @@ void use() {
 
 ![移动](/assets/images/ppp-note-ch18-vectors-and-arrays/移动.png)
 
-移动之后，`vec`将引用`res`的元素，而`res`将被置空（换句话说，移动 = “窃取”资源 = 浅拷贝+置空原指针）。从而以仅仅拷贝一个`int`和一个指针的代价将10万个元素从`res`移动到`vec`。
+移动之后，`vec`将引用`res`的元素，而`res`将被置空。从而以仅仅拷贝一个`int`和一个指针的代价将10万个元素从`res`移动到`vec`。换句话说，移动 = “窃取”资源 = 浅拷贝+置空原指针。
 
 为了在C++中表达移动语义，需要定义**移动构造函数**(move constructor)和**移动赋值**(move assignment)运算符：
 
@@ -270,7 +270,7 @@ vector& operator=(vector&& v);  // move assignment
 
 [简单向量v2 - 移动构造函数和移动赋值](https://github.com/ZZy979/PPP-code/blob/b1a9d9b1a02947665630cbc2b476bb155efa7bc1/ch18/simple_vector.h)
 
-再次考虑前面的例子，在`fill()`返回时，`vector`的移动构造函数将被隐式调用（`fill()`和`use()`的代码均不需要修改）。
+再次考虑前面的例子。为`vector`实现了移动语义后，在`fill()`返回时，`vector`的移动构造函数将被隐式调用（`fill()`和`use()`的代码均不需要修改）。
 
 注：另见[【C++】右值引用、移动语义和完美转发]({% post_url 2023-06-02-cpp-rvalue-reference-move-semantics-and-perfect-forwarding %})
 

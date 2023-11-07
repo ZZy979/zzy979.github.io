@@ -4,12 +4,12 @@ date: 2023-06-02 01:50:58 +0800
 categories: [C/C++]
 tags: [cpp, rvalue reference, move semantics, perfect forwarding]
 ---
-在C++中，如果一个类获取了资源，则需要定义拷贝构造函数和拷贝赋值运算符以确保资源被正确地拷贝。然而，在某些情况下会存在不必要的拷贝，影响程序性能。为了解决这一问题，C++11引入了移动语义。本文首先介绍C++的左值和右值及其引用，之后介绍移动语义和完美转发及其实现。
+在C++中，如果一个类获取了资源（例如动态内存、文件、锁、线程、套接字等），则需要定义拷贝构造函数、拷贝赋值运算符和析构函数以确保资源被正确地拷贝和释放。然而，在某些情况下会存在不必要的拷贝，影响程序性能。为了解决这一问题，C++11引入了移动语义。本文首先介绍C++的左值和右值及其引用，之后介绍移动语义和完美转发及其实现。
 
 ## 1.左值和右值
 在C++中，每个表达式除了具有类型，还有**值类别**(value category)：
-* **左值**(lvalue)：可以出现在赋值表达式左侧的值，例如变量名`a`、数据成员`a.m`、下标表达式`a[n]`、解引用表达式`*p`、返回值是左值引用的函数调用等。**左值可以被赋值和取地址。**
-* **右值**(rvalue)：只能出现在赋值表达式右侧的值，例如字面值`42`、算术表达式`a+b`、临时对象`Point(3,4)`、返回值是值类型的函数调用等。**右值不能被赋值和取地址。**
+* **左值**(lvalue)：可以出现在赋值表达式左侧的值，例如变量名`a`、数据成员`a.m`、下标表达式`a[n]`、解引用表达式`*p`、返回类型是左值引用的函数调用等。**左值可以被赋值和取地址。**
+* **右值**(rvalue)：只能出现在赋值表达式右侧的值，例如字面值`42`、算术表达式`a+b`、临时对象`Point(3,4)`、返回类型不是引用类型的函数调用等。**右值不能被赋值和取地址。**
 
 例如：
 
@@ -22,7 +22,7 @@ p = &42;      // error, 42 is rvalue
 a + 1 = *p;   // error, a + 1 is rvalue
 ```
 
-注：实际上C++标准定义了三个基本类别——纯右值(prvalue)、将亡值(xvalue)和左值(lvalue)，纯右值和将亡值统称为右值(rvalue)，详见[Value categories - cppreference](https://en.cppreference.com/w/cpp/language/value_category)。“右值”只是沿用了C语言中的叫法。
+注：实际上C++标准定义了三个基本类别——左值(lvalue)、纯右值(prvalue)和将亡值(xvalue)，纯右值和将亡值统称为右值(rvalue)，详见[Value categories - cppreference](https://en.cppreference.com/w/cpp/language/value_category)。“右值”只是沿用了C语言中的叫法。
 
 ## 2.左值引用和右值引用
 C++的**引用**(reference)是一种类型，可以看作对象的别名。引用在本质上和指针一样，都是对象的地址（指针和引用的区别详见[《C++程序设计原理与实践》笔记 第17章]({% post_url 2023-04-22-ppp-note-ch17-vector-and-free-store %}) 17.9节）。
@@ -34,9 +34,11 @@ C++提供了两种类型的引用：
 注：左值/右值是表达式的属性，而左值引用/右值引用是类型。二者是完全不同的概念，但是存在一定的联系：
 * **左值引用必须使用左值初始化**（即左值引用只能绑定到左值），一个例外是`const`左值引用可以使用右值初始化；**右值引用必须使用右值初始化**。
 * 如果函数的返回类型是左值引用（例如`vector::operator[]`），则函数调用表达式是左值；如果函数的返回类型是右值引用（例如`std::move()`）或者不是引用（例如`vector::size()`），则函数调用表达式是右值。
-* **左值引用和有名字的右值引用都是左值**（这意味着有名字的右值引用可以被赋值和取地址）。
+* **左值引用和有名字的右值引用都是左值**（这意味着有名字的右值引用可以被赋值和取地址），详见[lvalue - cppreference](https://en.cppreference.com/w/cpp/language/value_category#lvalue)：
 
-小结：右值引用类型的表达式可能是左值或右值。有名字的右值引用（例如变量和形参）是左值，没有名字的右值引用（例如`std::move()`和`std::forward()`调用表达式）是右值。
+> Even if the variable's type is rvalue reference, the expression consisting of its name is an lvalue expression.
+
+小结：左值引用类型的表达式是左值，右值引用类型的表达式可能是左值或右值。有名字的右值引用（例如变量和形参）是左值，没有名字的右值引用（例如`std::move()`和`std::forward()`调用表达式）是右值。
 
 ### 2.1 示例
 下面是一个使用左值引用和右值引用的示例：
@@ -105,52 +107,103 @@ int main() {
 为了在特定情况下避免不必要的拷贝，C++11引入了移动语义。在介绍移动语义之前，下面通过一个`vector`的例子说明什么情况下存在不必要的拷贝，之后介绍如何实现移动语义。
 
 ### 3.1 拥有资源的类
-一个类可能会获取资源，例如自由存储（使用`new`创建的对象或数组）、文件、锁、线程、套接字等，这样的类通常具有指向资源的指针成员。
+一个类可能会获取资源，例如动态内存（使用`new`创建的对象或数组）、文件、锁、线程、套接字等，这样的类通常具有指向资源的指针成员。
 
-标准库`vector`是一个典型的例子。例如：
+标准库`std::vector`是一个典型的例子。简化的`std::vector<double>`实现如下：
 
 ```cpp
-vector<double> age = {0.33, 22.0, 27.2, 54.2};
+#include <algorithm>
+#include <initializer_list>
+
+// a very simplified vector of doubles
+class vector {
+public:
+    // constructor: allocate s elements, let elem point to them, store s in sz
+    explicit vector(int s) :sz(s), elem(new double[s]{0}) {}
+
+    // initializer-list constructor
+    vector(std::initializer_list<double> lst) :sz(lst.size()), elem(new double[sz]) {
+        std::copy(lst.begin(), lst.end(), elem);
+    }
+
+    vector(const vector& v);            // copy constructor
+    vector& operator=(const vector& v); // copy assignment
+
+    // destructor: free memory
+    ~vector() { delete[] elem; }
+
+    int size() const { return sz; }  // the current size
+
+    double& operator[](int i) { return elem[i]; }
+    double operator[](int i) const { return elem[i]; }
+
+private:
+    int sz;        // the size
+    double* elem;  // pointer to the elements
+};
 ```
 
-下图是（简化的）`age`内存示意图：
+例如：
+
+```cpp
+vector age = {0.33, 22.0, 27.2, 54.2};
+```
+
+下图是`age`在内存中的示意图：
 
 ![向量示意图](/assets/images/ppp-note-ch17-vector-and-free-store/向量示意图.png)
 
-其中，存储元素的数组是使用`new`在自由存储上分配的，`age`对象本身仅保存了元素个数和指向该数组的指针。
+其中，存储元素的数组是使用`new`在自由存储上分配的，`age`对象本身仅保存了元素个数`sz`和指向该数组的指针`elem`。
+
+`vector`类的拷贝构造函数和拷贝赋值运算符定义如下：
+
+```cpp
+// copy constructor
+vector::vector(const vector& v) :sz(v.sz), elem(new double[sz]) {
+    std::copy(v.elem, v.elem + sz, elem);
+}
+
+// copy assignment
+vector& vector::operator=(const vector& v) {
+    double* p = new double[v.sz];           // allocate new space
+    std::copy(v.elem, v.elem + v.sz, p);    // copy elements
+    delete[] elem;  // deallocate old space
+    elem = p;       // now we can reset elem
+    sz = v.sz;
+    return *this;   // return a self-reference
+}
+```
 
 拥有资源的类通常需要拷贝构造函数、拷贝赋值运算符和析构函数，以确保
 * 当对象被拷贝时，资源被正确拷贝。
 * 当对象被销毁时，资源被正确释放。
 
-否则可能会导致内存泄露、重复释放等问题，因为拷贝的默认含义是“拷贝所有数据成员”（即浅拷贝）。关于这一点，详见[《C++程序设计原理与实践》笔记 第18章]({% post_url 2023-05-28-ppp-note-ch18-vectors-and-arrays %}) 18.3.1和18.3.2节，这里不再详细介绍。
-
-[simple_vector.h](https://github.com/ZZy979/PPP-code/blob/main/ch18/simple_vector.h)给出了一个简化的`vector`实现，并且定义了拷贝构造函数和拷贝赋值运算符。
+否则可能会导致内存泄露、重复释放等问题，因为拷贝的默认含义是**浅拷贝**（即“拷贝所有数据成员”）。关于这一点，详见[《C++程序设计原理与实践》笔记 第18章]({% post_url 2023-05-28-ppp-note-ch18-vectors-and-arrays %}) 18.3.1和18.3.2节，这里不再详细介绍。
 
 然而，在某些情况下会存在**不必要的拷贝**。下面借用《C++程序设计原理与实践》第18章中的例子：
 
 ```cpp
-vector<double> fill(istream& is) {
-    vector<double> res;
+vector fill(istream& is) {
+    vector res;
     for (double x; is >> x;) res.push_back(x);
     return res;
 }
 
 void use() {
-    vector<double> vec = fill(cin);
+    vector vec = fill(cin);
     // ... use vec ...
 }
 ```
 
-由于函数`fill()`的返回类型是值类型，因此理论上会发生两次拷贝（`res`→返回值临时对象→`vec`）。假设`res`有10万个元素，则拷贝代价是很高的。但实际上，`use()`永远不会使用`res`，因为`res`在函数`fill()`返回后就会被销毁，因此从`res`到`vec`的拷贝就是不必要的——可以设法让`vec`直接复用`res`的资源。
+假设`res`有10万个元素，则将其拷贝到`vec`的代价是很高的。但实际上，`use()`永远不会使用`res`，因为`res`在函数`fill()`返回后就会被销毁，因此从`res`到`vec`的拷贝就是不必要的——可以设法让`vec`直接复用`res`的资源。
 
 为了解决这一问题，C++11引入了**移动语义**(move semantics)：通过“窃取”资源，直接将`res`的资源**移动**(move)到`vec`，如下图所示：
 
 ![移动](/assets/images/ppp-note-ch18-vectors-and-arrays/移动.png)
 
-移动之后，`vec`将引用`res`的元素，而`res`将被置空（换句话说，移动 = “窃取”资源 = 浅拷贝+置空原指针）。
+移动之后，`vec`将引用`res`的元素，而`res`将被置空。从而以仅仅拷贝一个`int`和一个指针的代价将10万个元素从`res`移动到`vec`。换句话说，**移动 = “窃取”资源 = 浅拷贝+置空原指针**。
 
-总之，移动语义是为了解决由**即将被销毁的对象**初始化或赋给其他对象时发生不必要的拷贝，**通过“窃取”资源（移动）来避免拷贝**。
+总之，移动语义是为了解决由即将被销毁的对象初始化或赋给其他对象时发生不必要的拷贝，通过“窃取”资源（移动）来避免拷贝。
 
 注：
 * 即使没有移动语义，这里的拷贝操作也可能被编译器的拷贝消除特性优化掉，但实际效果取决于具体编译器、使用的C++标准版本以及编译选项等，详见3.5节的示例。而移动语义可以保证得到一致的结果。
@@ -159,12 +212,12 @@ void use() {
 （1）传引用参数：
 
 ```cpp
-void fill(istream& is, vector<double>& v) {
+void fill(istream& is, vector& v) {
     for (double x; is >> x;) v.push_back(x);
 }
 
 void use() {
-    vector<double> vec;
+    vector vec;
     fill(cin, vec);
     // ... use vec ...
 }
@@ -176,13 +229,13 @@ void use() {
 
 ```cpp
 vector* fill(istream& is) {
-    vector<double>* res = new vector<double>;
+    vector* res = new vector;
     for (double x; is >> x;) res->push_back(x);
     return res;
 
 }
 void use() {
-    vector<double>* vec = fill(cin);
+    vector* vec = fill(cin);
     // ... use vec ...
     delete vec;
 }
@@ -190,7 +243,7 @@ void use() {
 
 缺点是必须记得`delete`这个向量。
 
-我们希望**使用返回值语法，同时避免拷贝**。移动语义可以做到这一点。
+我们希望使用返回值语法，同时避免拷贝。移动语义可以做到这一点。
 
 ### 3.2 移动构造函数和移动赋值
 为了在C++中表达移动语义，需要定义**移动构造函数**(move constructor)和**移动赋值**(move assignment)运算符：
@@ -200,7 +253,7 @@ T(T&& v);             // move constructor
 T& operator=(T&& v);  // move assignment
 ```
 
-移动构造函数和移动赋值运算符的参数都是右值引用，因为**右值正是前面提到的“即将被销毁的对象”**。
+移动构造函数和移动赋值运算符的参数都是右值引用，因为右值正是前面提到的“即将被销毁的对象”。
 
 **当使用一个右值初始化一个相同类型的对象时，移动构造函数将被调用。** 包括：
 * 初始化：`T a = std::move(b);`或`T a(std::move(b));`，其中`b`是`T`类型
@@ -211,9 +264,31 @@ T& operator=(T&& v);  // move assignment
 
 **当对象出现在赋值表达式左侧，并且右侧是一个相同类型的右值时，移动赋值运算符将被调用。**
 
-[simple_vector.cpp](https://github.com/ZZy979/PPP-code/blob/main/ch18/simple_vector.cpp)为简化的`vector`定义了移动构造函数和移动赋值运算符。
+`vector`类的移动构造函数和移动赋值运算符定义如下：
 
-再次考虑前面的例子，在`fill()`返回时，`vector`的移动构造函数将被隐式调用（`fill()`和`use()`的代码均不需要修改）。
+```cpp
+// move constructor
+vector::vector(vector&& v) :sz(v.sz), elem(v.elem) {
+    v.sz = 0;   // make v the empty vector
+    v.elem = nullptr;
+}
+
+// move assignment
+vector& vector::operator=(vector&& v) {
+    delete[] elem;      // deallocate old space
+    elem = v.elem;      // copy v's elem and sz
+    sz = v.sz;
+    v.elem = nullptr;   // make v the empty vector
+    v.sz = 0;
+    return *this;       // return a self-reference
+}
+```
+
+再次考虑前面的例子。为`vector`实现了移动语义后，在`fill()`返回时，`vector`的移动构造函数将被隐式调用（`fill()`和`use()`的代码均不需要修改）。
+
+注意：
+* 移动语义只对拥有资源的类（例如`vector`等STL容器）有意义，对于[基本类型](https://en.cppreference.com/w/cpp/named_req/ScalarType)（例如`int`）和[平凡类型](https://en.cppreference.com/w/cpp/named_req/TrivialType)/[POD类型](https://en.cppreference.com/w/cpp/named_req/PODType)（例如`struct Point { int x, y; };`）无意义。
+* 移动构造函数和移动赋值只能省略资源的拷贝，而类本身的数据成员仍然需要拷贝。例如，`vector`的移动构造函数省略了数组元素的拷贝，但仍然需要拷贝`sz`和`elem`两个成员。
 
 ### 3.3 拷贝消除
 C++标准支持**拷贝消除**(copy elision)，允许编译器在某些情况下省略拷贝构造函数和移动构造函数的调用，从而提高程序的性能。拷贝消除的规则也随着C++标准版本的更新而不断扩展。
@@ -228,7 +303,7 @@ C++标准支持**拷贝消除**(copy elision)，允许编译器在某些情况�
 
 注：上面仅列出了常见情况，完整规则详见[Copy elision - cppreference](https://en.cppreference.com/w/cpp/language/copy_elision)。
 
-当拷贝消除发生时，被省略的拷贝/移动构造函数的源对象（参数）和目标对象(`this`)将变成同一个对象。
+当拷贝消除发生时，被省略的拷贝/移动构造函数的源对象（参数）和目标对象(`this`)将变成同一个对象，见3.5节示例。
 
 ### 3.4 std::move
 前面提到，右值引用不能绑定到左值，因此**左值不能被移动**。但是，标准库头文件\<utility\>提供了`std::move()`函数，作用是**将参数转换为右值引用**，即将参数“当作”右值，使其变成“可移动的”。
@@ -246,7 +321,7 @@ typename std::remove_reference<T>::type&& move(T&& t) noexcept {
 
 详见[std::move - cppreference](https://en.cppreference.com/w/cpp/utility/move)。
 
-虽然`std::move()`的返回类型是右值引用，但调用该函数的表达式是一个右值（准确来说是xvalue）。如果`a`是一个左值，则`std::move(a)`是一个右值，这意味着该对象被认为是“可移动的”（可能被窃取资源），因此**不能再使用**。例如：
+C++标准规定：`std::move()`的调用表达式是一个右值（准确来说是xvalue）。如果`a`是一个左值，则`std::move(a)`是一个右值，这意味着该对象被认为是“可移动的”（可能被窃取资源），因此**不能再使用**。例如：
 
 ```cpp
 std::vector<int> a = {1, 2, 3};
@@ -562,8 +637,8 @@ int&& forward(int&& t) noexcept {
 
 | 实参 | 形参`x`（转发引用） | `std::forward(x)` | `std::move(x)` |
 | --- | --- | --- | --- |
-| 左值 | 左值引用（左值） | 左值引用（左值） | 右值引用（右值） |
-| 右值 | 右值引用（左值） | 右值引用（右值） | 右值引用（右值） |
+| 左值 | 左值引用、左值 | 左值引用、左值 | 右值引用、右值 |
+| 右值 | 右值引用、左值 | 右值引用、右值 | 右值引用、右值 |
 
 ### 4.4 示例
 标准库头文件\<memory\>提供了`make_unique()`函数，用于构造一个`T`类型的对象，并返回指向它的`unique_ptr`。其中一个重载的定义如下：
@@ -579,7 +654,7 @@ std::unique_ptr<T> make_unique(Args&&... args) {
 
 类似的函数还有`vector<T>::emplace_back()`、`allocator<T>::construct()`、`std::invoke()`、`std::function`构造函数等等。
 
-注：使用Python实现类似的功能则简单得多（虽然Python根本不需要`unique_ptr`），因为根本不存在值类别的概念：
+注：使用Python实现类似的功能则简单得多，因为根本不存在值类别的概念（虽然Python根本不需要`unique_ptr`）：
 
 ```python
 def make_unique(T, *args):
