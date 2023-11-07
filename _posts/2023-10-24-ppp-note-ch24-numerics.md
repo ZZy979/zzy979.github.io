@@ -820,7 +820,7 @@ if (errno == ERANGE)    // range error
 | `MATH_ERRNO` | 1 | 使用错误码`errno` |
 | `MATH_ERREXCEPT` | 2 | 使用浮点数异常 |
 
-宏常量`math_errhandling`表示编译器实际支持的错误处理机制，其值为`MATH_ERRNO`、`MATH_ERREXCEPT`或`MATH_ERRNO | MATH_ERREXCEPT`（即二者都支持）。可以通过位运算符`&`测试：如果`math_errhandling | MATH_ERRNO`非零，则编译器支持错误码机制，否则`errno`始终为0。
+宏常量`math_errhandling`表示编译器实际支持的错误处理机制，其值为`MATH_ERRNO`、`MATH_ERREXCEPT`或`MATH_ERRNO | MATH_ERREXCEPT`（即二者都支持）。可以通过位运算符`&`测试：如果`math_errhandling & MATH_ERRNO`非零，则编译器支持错误码机制，否则`errno`始终为0。
 
 注意：并非所有编译器都默认开启了errno和浮点数异常，必须通过特定的编译选项来开启或关闭。见简单练习24-4相关的问题[Issue #18](https://github.com/ZZy979/PPP-code/issues/18)。
 

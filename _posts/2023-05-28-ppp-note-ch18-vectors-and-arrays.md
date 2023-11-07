@@ -243,7 +243,9 @@ void use() {
 
 我们希望**使用返回值语法，同时避免拷贝**。为此，C++11引入了**移动语义**(move semantics)：通过“窃取”资源，直接将`res`的资源**移动**(move)到`vec`，如下图所示：
 
-![移动](/assets/images/ppp-note-ch18-vectors-and-arrays/移动.png)
+![移动前](/assets/images/ppp-note-ch18-vectors-and-arrays/移动前.png)
+
+![移动后](/assets/images/ppp-note-ch18-vectors-and-arrays/移动后.png)
 
 移动之后，`vec`将引用`res`的元素，而`res`将被置空。从而以仅仅拷贝一个`int`和一个指针的代价将10万个元素从`res`移动到`vec`。换句话说，移动 = “窃取”资源 = 浅拷贝+置空原指针。
 
