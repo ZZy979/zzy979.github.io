@@ -2,7 +2,7 @@
 title: 《C++程序设计原理与实践》笔记 第8章 函数相关的技术细节
 date: 2022-12-24 23:43:43 +0800
 categories: [C/C++, PPP]
-tags: [cpp, function, header file, scope, reference, namespace]
+tags: [cpp, function, inline function, header file, scope, reference, namespace]
 ---
 在本章和下一章中，我们将注意力从程序设计转移到主要的编程工具——C++语言上。我们会介绍一些语言的技术细节，来给出一个C++的基本功能的稍宽的视角，并从更系统化的角度讨论这些功能。
 
@@ -29,7 +29,7 @@ double sqrt(double);           // function declaration
 
 其中关键字`extern`表示这个全局变量的声明不是定义，即定义在其他地方。
 
-变量定义会为该变量分配内存空间，函数定义会为函数指定函数体（也需要保存在内存中），因此**不能重复定义**。相反，声明不会分配内存或指定函数体，因此可以重复任意多次，只要一致即可。
+变量定义会为该变量分配内存空间，函数定义会为函数指定函数体（也需要保存在内存中），因此**不能重复定义**（一个例外是内联函数，见本节结尾）。相反，声明不会分配内存或指定函数体，因此可以重复任意多次，只要一致即可。
 
 **C++程序中的名字都必须先声明后使用。** 一个名字只要声明了就可以在代码中使用，即可以编译通过；但每个声明必须在代码的其他位置给出对应的定义，否则会导致链接错误。
 
@@ -114,7 +114,28 @@ $ ./main
 9
 ```
 
+另见：[C++重定义问题]({% post_url 2022-10-12-cpp-redefinition %})。
+
 为什么C++同时提供声明和定义？这两者之间的区别反映了接口（“如何使用一个实体”）和实现（“这个实体如何完成它应该做的事情”）之间的本质区别。
+
+可以使用关键字`inline`将函数声明为**内联**(inline)的，即编译器直接将函数体嵌入到调用点，而不是生成函数调用指令，从而**避免函数调用的开销**，但可能导致可执行文件体积增大。详见[`inline` specifier - cppreference](https://en.cppreference.com/w/cpp/language/inline)。例如：
+
+```cpp
+inline int sum(int a, int b) {
+    return a + b;
+}
+```
+
+则函数调用`sum(1, 2)`将被替换为`1 + 2`。
+
+注意：
+* 关键字`inline`必须放在函数定义中，放在函数声明中不起任何作用。
+* **内联函数的定义在调用它的源文件中必须是可见的。** 因此内联的非成员函数必须在头文件中定义；如果成员函数在类内定义，则隐式是内联的。
+* 内联函数可以（在不同源文件中）多次定义，链接时不会产生重定义错误，但所有定义必须一致。
+* `inline`只适合频繁调用的、简单的函数，不适合包含复杂语句（例如循环或`switch`）或递归的函数。
+* `inline`只是一个“建议”，实际是否进行内联替换由编译器决定：
+
+> Since this meaning of the keyword inline is non-binding, compilers are free to use inline substitution for any function that's not marked inline, and are free to generate function calls to any function marked inline.
 
 ### 8.2.1 声明的种类
 C++允许程序员定义很多种实体，我们最关心的有：
