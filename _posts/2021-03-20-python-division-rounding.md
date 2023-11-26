@@ -2,7 +2,7 @@
 title: 【Python】除法舍入问题
 date: 2021-03-20 09:49:53 +0800
 categories: [Python]
-tags: [python, division rounding]
+tags: [python, division rounding, integer division]
 ---
 Python的除法分为普通除法(`/`)和整数除法(`//`)，普通除法返回浮点数，整数除法只保留整数部分（向下取整）
 取整函数：`int()`是向零取整，`math.floor()`是向下取整

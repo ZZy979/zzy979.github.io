@@ -2,7 +2,7 @@
 title: Python高效字符串拼接
 date: 2019-03-03 16:39:50 +0800
 categories: [Python]
-tags: [python]
+tags: [python, string]
 ---
 参考：[https://waymoot.org/home/python_string/](https://waymoot.org/home/python_string/)
 

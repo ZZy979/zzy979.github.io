@@ -11,7 +11,7 @@ tags: [python]
 * 源代码：<https://github.com/Apress/beginning-python-3ed>
 
 ## 目录
-* 第1章 基础知识
+* [第1章 基础知识]({% post_url 2023-11-05-python-note-ch01-instant-hacking-the-basics %})
 * 第2章 列表和元组
 * 第3章 使用字符串
 * 第4章 字典：当索引行不通时
