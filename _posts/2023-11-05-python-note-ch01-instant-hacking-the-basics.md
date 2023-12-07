@@ -4,7 +4,7 @@ date: 2023-11-05 16:47:23 +0800
 categories: [Python, Beginning Python]
 tags: [python, hello world, expression, integer division, variable, statement, io, if statement, function, module, mathematical function, complex number, turtle graphics, comment, string, raw string, unicode]
 ---
-在本章中，你将学习如何借助计算机能够听懂的语言——Python来控制计算机。Python的官方网站是 <https://www.python.org/>。
+在本章中，你将学习如何借助计算机能够听懂的语言——Python来控制计算机。Python的官方网站是 <https://www.python.org/>，官方文档：<https://docs.python.org/3/index.html>。
 
 首先，需要安装Python，或者验证是否已经安装。如果你使用的是macOS或Linux/UNIX，那么系统已经默认安装了Python。打开终端，输入`python3`并按回车键。你应该看到欢迎消息和提示符`>>>`：
 
@@ -204,7 +204,11 @@ Python的整除运算始终是**向下取整**。例如，`10 // -3`等于-3.33.
 
 这称为**赋值**(assignment)。我们将值`3`赋给变量`x`。换句话说，我们将变量`x` **绑定**(bind)到值`3`。
 
-注：值并不是存储在变量中，而是存储在变量引用的计算机内存中。多个变量可以引用同一个值。
+注：
+* 值并不是存储在变量中，而是存储在变量引用的计算机内存中。多个变量可以引用同一个值。
+* 在Python中，**一切皆对象**，包括整数、字符串、列表、函数、类等。Python变量相当于C++的指针变量，赋值操作是**浅拷贝**，如下图所示。对于不可变类型（例如整数、字符串和元组），这种区别没有影响；而对于可变类型（例如列表和字典），这种区别影响很大。另见2.2.4节和4.2.4节。
+
+![变量声明和赋值](/assets/images/python-note-ch01-instant-hacking-the-basics/变量声明和赋值.png)
 
 给变量赋值后，就可以在表达式中使用它：
 
@@ -383,7 +387,7 @@ TypeError: must be real number, not str
 >>> from math import sqrt
 >>> sqrt(-1)
 Traceback (most recent call last):
-...
+  File "<stdin>", line 1, in <module>
 ValueError: math domain error
 ```
 
@@ -704,7 +708,7 @@ Python的`bytes`字面值只支持ASCII标准的128个字符，而剩余的128�
 b'H\xc3\xa6ll\xc3\xa5, w\xc3\xb8rld!'
 >>> 'Hællå, wørld!'.encode('ASCII')
 Traceback (most recent call last):
-...
+  File "<stdin>", line 1, in <module>
 UnicodeEncodeError: 'ascii' codec can't encode character '\xe6' in position 1: ordinal not in range(128)
 ```
 
