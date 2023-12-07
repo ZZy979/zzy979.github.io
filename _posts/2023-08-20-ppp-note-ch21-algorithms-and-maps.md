@@ -650,7 +650,7 @@ inventory.insert(Fruit("apple", 200, 0.37));
 由于`set`没有`map`的(key, value)对，因此可以直接对key迭代：
 
 ```cpp
-for (auto p = inventory.begin(), p != inventory.end(); ++p)
+for (auto p = inventory.begin(); p != inventory.end(); ++p)
     cout << *p << '\n';
 ```
 

@@ -235,7 +235,9 @@ blade-demo/
 
 注：该示例只有quick-start一个子目录和一个BUILD文件。实际的项目会按模块将文件分为多个不同的子目录，每个子目录下都包含一个BUILD文件。
 
-完整代码：<https://github.com/chen3feng/blade-build/blob/master/example/quick-start>
+完整代码：
+* <https://github.com/chen3feng/blade-build/blob/master/example/quick-start>
+* <https://github.com/ZZy979/blade-demo/tree/main/quick-start>
 
 ## 5.代码组织结构
 Blade要求项目有一个显式的根目录，即BLADE_ROOT文件所在目录。根目录下是自己的模块子目录和第三方库目录，每个子目录下都有一个BUILD文件来声明该模块所包含的构建目标。
@@ -369,7 +371,18 @@ cc_test(
 )
 ```
 
-* `testdata`：字符串列表，测试代码只能访问列表指定的文件（例如测试数据）
+* `testdata`：字符串或二元组列表，测试代码只能访问列表指定的文件或目录（例如测试数据）
+
+`testdata`指定的文件将被拷贝到对应构建目录下的xxx.runfiles目录，运行测试时的工作目录也是该目录（因此测试代码和BUILD文件可以使用同样的相对路径）。例如，测试目标//path/to:foo_test的测试文件将被拷贝到build64_release/path/to/foo_test.runfiles目录下。
+
+测试文件路径支持以下格式：
+
+| 测试文件路径 | xxx.runfiles目录内相对路径 |
+| --- | --- |
+| `'data.txt'` | data.txt |
+| `'data_dir'` | data_dir |
+| `'//path/to/data.txt'` | path/to/data.txt |
+| `('//path/to/data.txt', 'data/data.txt')` | data/data.txt |
 
 具体用法见8.1节。
 

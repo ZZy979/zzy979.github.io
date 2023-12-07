@@ -16,11 +16,11 @@ Protocol Buffers（简称为protobuf）是Google开发的用于**序列化结构
 下载地址：<https://github.com/protocolbuffers/protobuf/releases>
 
 ### 2.1 安装protoc编译器
-protoc编译器用于将.proto文件编译成特定编程语言的源代码。如果只需要protoc编译器，则下载protoc-{版本}-{平台}.zip（例如protoc-3.20.1-linux-x86_64.zip），解压后将bin目录下的protoc可执行文件拷贝到PATH环境变量包含的目录下即可（例如/usr/local/bin）：
+protoc编译器用于将.proto文件编译成特定编程语言的源代码。如果只需要protoc编译器，则下载protoc-{版本}-{平台}.zip（例如protoc-3.20.3-linux-x86_64.zip），解压后将bin目录下的protoc可执行文件拷贝到PATH环境变量包含的目录下即可（例如/usr/local/bin）：
 
 ```bash
 $ protoc --version
-libprotoc 3.20.1
+libprotoc 3.20.3
 ```
 
 protoc编译器只负责将.proto文件转换为源代码（.cc、.java或.py等），转换后的源代码需要依赖protobuf运行时环境才能运行。
@@ -38,7 +38,7 @@ protobuf运行时环境由一些类库组成。对于C++就是一组头文件和
 下载protobuf-cpp-{版本}.zip，解压后依次执行以下命令：
 
 ```bash
-cd protobuf-3.20.1/
+cd protobuf-3.20.3/
 ./configure
 make -j$(nproc)  # $(nproc) ensures it uses all cores for compilation
 make check
@@ -75,52 +75,24 @@ make clean
 为了序列化和检索这样的结构化数据，可以使用JSON、XML或自定义的格式将数据编码为字符串。可以使用protobuf来代替这些方式。Protobuf是专门用于解决这种问题的灵活、高效、自动化的解决方案。使用protobuf，首先编写.proto文件来描述要存储的数据结构（称为**消息**(message)或proto）。之后，protobuf编译器(protoc)创建一个类，该类以高效的二进制格式实现消息数据的自动编码和解析。生成的类为消息字段提供了getter和setter，并处理读写消息数据的细节。重要的是，protobuf格式支持随着时间的推移扩展格式（添加字段），而代码仍然可以读取使用旧格式编码的数据。
 
 #### 3.1.2 示例代码
-<https://github.com/protocolbuffers/protobuf/tree/main/examples>
+* 官方：<https://github.com/protocolbuffers/protobuf/tree/main/examples>
+* 个人：<https://github.com/ZZy979/protobuf-demo>
 
 #### 3.1.3 定义消息格式
 要创建地址簿应用，首先要编写.proto文件：为每个想要序列化的数据结构定义一个**消息**(`message`)，之后为其中的每个**字段**指定名称和类型。
 
-addressbook.proto的定义如下：
-
-```protobuf
-syntax = "proto2";
-
-package tutorial;
-
-message Person {
-  optional string name = 1;
-  optional int32 id = 2;
-  optional string email = 3;
-
-  enum PhoneType {
-    MOBILE = 0;
-    HOME = 1;
-    WORK = 2;
-  }
-
-  message PhoneNumber {
-    optional string number = 1;
-    optional PhoneType type = 2 [default = HOME];
-  }
-
-  repeated PhoneNumber phones = 4;
-}
-
-message AddressBook {
-  repeated Person people = 1;
-}
-```
+地址簿应用需要的消息定义在[addressbook.proto](https://github.com/ZZy979/protobuf-demo/blob/main/addressbook/addressbook.proto)中。
 
 下面对文件的每个部分进行解释。
 
-文件开头是proto语法版本（这里是proto2）和包声明，包声明助于防止不同项目之间的命名冲突。在C++中，生成的类将被放在包名对应的命名空间中（包名可以包含"."，例如包名`foo.bar`对应命名空间`foo::bar`）。
+文件开头是proto语法版本（这里是proto2）和包声明，包声明助于防止不同项目之间的命名冲突。在C++中，生成的类将被放在包名对应的命名空间中（包名可以包含`.`，例如包名`foo.bar`对应命名空间`foo::bar`）。
 
-接下来是消息定义。消息就是一组字段的集合。字段类型可以使用标准的简单数据类型，包括`bool`、`int32`、`int64`、`float`、`double`、`string`等；也可以使用其他的消息类型作为字段类型——在上面的示例中，`Person`消息包含`PhoneNumber`消息，而`AddressBook`消息包含`Person`消息。甚至可以定义嵌套在其他消息中的消息类型——`PhoneNumber`类型是在`Person`中定义的。如果希望一个字段具有一组预定义的值之一，可以定义`enum`类型——在这里指定电话号码类型可以是`MOBILE`、`HOME`和`WORK`之一。
+接下来是消息定义。消息就是一组字段的集合。字段类型可以使用标准的简单数据类型，包括`bool`、`int32`、`int64`、`float`、`double`、`string`等；也可以使用其他的消息类型作为字段类型——在上面的示例中，`Person`消息包含`PhoneNumber`消息，而`AddressBook`消息包含`Person`消息。甚至可以定义嵌套在其他消息中的消息类型——`PhoneNumber`类型是在`Person`中定义的。如果希望一个字段具有一组预定义的值之一，可以定义`enum`类型——在这里指定电话号码类型可以是`PHONE_TYPE_MOBILE`、`PHONE_TYPE_HOME`和`PHONE_TYPE_WORK`之一。
 
-每个字段后的" = 1"、" = 2"标记表示该字段在二进制编码中使用的唯一“标签”。标签编号1-15比更高的编号少用一个字节来编码。因此作为一种优化，可以将这些标签用于常用的或`repeated`字段，而将标签16及以上用于不太常用的`optional`字段。
+每个字段后的 " = 1" 、 " = 2" 标记表示该字段在二进制编码中使用的唯一“标签”。标签编号1-15比更高的编号少用一个字节来编码。因此作为一种优化，可以将这些标签用于常用的或`repeated`字段，而将标签16及以上用于不太常用的`optional`字段。
 
 每个字段都必须使用以下修饰符之一：
-* `optional`：该字段可以设置也可以不设置。**如果未设置optional字段的值，则使用默认值**。对于简单类型，可以指定自己的默认值（如上面例子中的电话号码类型字段）；否则使用系统默认值：对于数字类型为0，对于字符串类型为空串，对于布尔类型为false。对于消息类型，默认值始终是消息的“默认实例”，即没有设置任何字段。调用getter获取未显式设置的字段的值始终返回该字段的默认值。
+* `optional`：该字段可以设置也可以不设置。**如果未设置optional字段的值，则使用默认值**。对于简单类型，可以指定自己的默认值（如上面例子中的电话号码`type`字段）；否则使用系统默认值：对于数字类型为0，对于字符串类型为空串，对于布尔类型为false。对于消息类型，默认值始终是消息的“默认实例”或“原型”(prototype)，即没有设置任何字段。调用getter获取未显式设置的字段的值始终返回该字段的默认值。
 * `repeated`：该字段可以重复任意次数（包括零次），重复值的顺序将被保持。可以将`repeated`字段视为动态大小的数组。
 * `required`：必须提供该字段的值，否则该消息将被视为“未初始化”。如果libprotobuf库在调试模式下编译，序列化未初始化的消息将导致断言失败；否则会跳过检查并直接写入消息。但是，解析未初始化的消息总是会失败（解析函数返回false）。除此之外，`required`字段的行为与`optional`字段完全相同。
 
@@ -129,7 +101,7 @@ message AddressBook {
 完整的proto语言规范见[Language Guide (proto 2)](https://protobuf.dev/programming-guides/proto2/)及[Language Guide (proto 3)](https://protobuf.dev/programming-guides/proto3/)。
 
 #### 3.1.4 编译.proto文件
-有了.proto文件之后，接下来需要生成读写`AddressBook`（以及由此产生的`Person`和`PhoneNumber`）消息所需的类。为此，需要运行protobuf编译器：
+有了.proto文件之后，接下来需要生成读写`AddressBook`（以及由此产生的`Person`和`PhoneNumber`）消息所需的类。为此，需要运行protobuf编译器`protoc`：
 
 ```bash
 protoc --cpp_out=. addressbook.proto
@@ -187,7 +159,7 @@ public:
 
 可以看到，getter函数的名称与小写的字段名完全相同，setter函数以`set_`开头。每个`optional`或`required`字段也有`has_`函数，如果该字段已设置则返回true。最后，每个字段都有一个`clear_`函数，可以将字段恢复为空状态。
 
-数值类型的`id`字段只有上述基本的访问器，而字符串类型的`name`和`email`字段有两个额外的函数——一个`mutable_` getter可以直接获得指向字符串的指针，以及一个参数为`const char*`类型的setter。注意，即使未设置`email`字段也可以调用`mutable_email()`，它将自动初始化为空字符串。对于非`repeated`消息类型的字段，将会有一个`mutable_`函数，而没有`set_`函数。
+数值类型的`id`字段只有上述基本的访问器，而字符串类型的`name`和`email`字段有两个额外的函数——一个`mutable_` getter可以直接获得指向字符串的指针，以及一个参数为`const char*`类型的setter。注意，即使未设置`email`字段也可以调用`mutable_email()`，它将自动初始化为空字符串。对于`repeated`消息类型的字段，也将会有一个`mutable_`函数，而没有`set_`函数。
 
 `repeated`消息字段（例如`phones`）也有一些特殊的函数：
 * `_size`：返回元素个数
@@ -199,9 +171,9 @@ public:
 
 （1）枚举和嵌套类
 
-生成的代码包含一个与.proto中的`PhoneType`枚举对应的枚举类，可以将此类型称为`Person::PhoneType`，其值可以称为`Person::MOBILE`、`Person::HOME`和`Person::WORK`。
+生成的代码包含一个与.proto中的`PhoneType`枚举对应的枚举类，可以将此类型称为`Person::PhoneType`，其值可以称为`Person::PHONE_TYPE_MOBILE`、`Person::PHONE_TYPE_HOME`和`Person::PHONE_TYPE_WORK`。
 
-注：通过查看代码可知，真正的枚举类名为`Person_PhoneType`，是定义在`Person`类外部的，另外在`Person`类内部又通过`typedef`定义了一个别名`PhoneType`。这些类型都定义在命名空间`tutorial`中（对应.proto文件的包名），因此完整名称为`tutorial::Person::PhoneType`（等价于`tutorial::Person_PhoneType`）、`tutorial::Person::MOBILE`（等价于`tutorial::Person_PhoneType_MOBILE`）。
+注：通过查看代码可知，真正的枚举类名为`Person_PhoneType`，是定义在`Person`类外部的，另外在`Person`类内部又通过`typedef`定义了一个别名`PhoneType`。这些类型都定义在命名空间`tutorial`中（对应.proto文件的包名），因此完整名称为`tutorial::Person::PhoneType`（等价于`tutorial::Person_PhoneType`）、`tutorial::Person::PHONE_TYPE_WORK`（等价于`tutorial::Person_PhoneType_PHONE_TYPE_WORK`）。
 
 编译器还生成了一个名为`Person::PhoneNumber`的“嵌套类”。类似地，真实类名为`Person_PhoneNumber`，但在`Person`类内部的`typedef`定义了一个别名`PhoneNumber`，因此可以将其视为内部类。
 
@@ -236,206 +208,44 @@ public:
 
 下面的程序从文件读取一个（现有的）`AddressBook`对象，根据用户输入向其中添加一个新的`Person`，然后再将新的`AddressBook`写回到文件中。
 
-```cpp
-#include <iostream>
-#include <fstream>
-#include <string>
-
-#include "addressbook.pb.h"
-
-using namespace std;
-
-// This function fills in a Person message based on user input.
-void PromptForAddress(tutorial::Person* person) {
-    cout << "Enter person ID number: ";
-    int id;
-    cin >> id;
-    person->set_id(id);
-    cin.ignore(256, '\n');
-
-    cout << "Enter name: ";
-    getline(cin, *person->mutable_name());
-
-    cout << "Enter email address (blank for none): ";
-    string email;
-    getline(cin, email);
-    if (!email.empty()) {
-        person->set_email(email);
-    }
-
-    while (true) {
-        cout << "Enter a phone number (or leave blank to finish): ";
-        string number;
-        getline(cin, number);
-        if (number.empty()) {
-            break;
-        }
-
-        tutorial::Person::PhoneNumber* phone_number = person->add_phones();
-        phone_number->set_number(number);
-
-        cout << "Is this a mobile, home, or work phone? ";
-        string type;
-        getline(cin, type);
-        if (type == "mobile") {
-            phone_number->set_type(tutorial::Person::MOBILE);
-        } else if (type == "home") {
-            phone_number->set_type(tutorial::Person::HOME);
-        } else if (type == "work") {
-            phone_number->set_type(tutorial::Person::WORK);
-        } else {
-            cout << "Unknown phone type. Using default." << endl;
-        }
-    }
-}
-
-// Main function: Reads the entire address book from a file,
-// adds one person based on user input, then writes it back out to the same file.
-int main(int argc, char* argv[]) {
-    // Verify that the version of the library that we linked against is
-    // compatible with the version of the headers we compiled against.
-    GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-    if (argc != 2) {
-        cerr << "Usage: " << argv[0] << " ADDRESS_BOOK_FILE" << endl;
-        return -1;
-    }
-
-    tutorial::AddressBook address_book;
-
-    {
-        // Read the existing address book.
-        fstream input(argv[1], ios::in | ios::binary);
-        if (!input) {
-            cout << argv[1] << ": File not found. Creating a new file." << endl;
-        } else if (!address_book.ParseFromIstream(&input)) {
-            cerr << "Failed to parse address book." << endl;
-            return -1;
-        }
-    }
-
-    // Add an address.
-    PromptForAddress(address_book.add_people());
-
-    {
-        // Write the new address book back to disk.
-        fstream output(argv[1], ios::out | ios::trunc | ios::binary);
-        if (!address_book.SerializeToOstream(&output)) {
-            cerr << "Failed to write address book." << endl;
-            return -1;
-        }
-    }
-
-    // Optional:  Delete all global objects allocated by libprotobuf.
-    google::protobuf::ShutdownProtobufLibrary();
-
-    return 0;
-}
-```
+[add_person.cc](https://github.com/ZZy979/protobuf-demo/blob/main/addressbook/add_person.cc)
 
 #### 3.1.7 读取消息
 下面的程序读取上述程序创建的文件，并打印其中的信息：
 
-```cpp
-#include <iostream>
-#include <fstream>
-#include <string>
-
-#include "addressbook.pb.h"
-
-using namespace std;
-
-// Iterates though all people in the AddressBook and prints info about them.
-void ListPeople(const tutorial::AddressBook& address_book) {
-    for (int i = 0; i < address_book.people_size(); i++) {
-        const tutorial::Person& person = address_book.people(i);
-
-        cout << "Person ID: " << person.id() << endl;
-        cout << "  Name: " << person.name() << endl;
-        if (person.has_email()) {
-            cout << "  E-mail address: " << person.email() << endl;
-        }
-
-        for (int j = 0; j < person.phones_size(); j++) {
-            const tutorial::Person::PhoneNumber& phone_number = person.phones(j);
-
-            switch (phone_number.type()) {
-                case tutorial::Person::MOBILE:
-                    cout << "  Mobile phone #: ";
-                    break;
-                case tutorial::Person::HOME:
-                    cout << "  Home phone #: ";
-                    break;
-                case tutorial::Person::WORK:
-                    cout << "  Work phone #: ";
-                    break;
-            }
-            cout << phone_number.number() << endl;
-        }
-    }
-}
-
-// Main function:  Reads the entire address book from a file and prints all
-//   the information inside.
-int main(int argc, char* argv[]) {
-    // Verify that the version of the library that we linked against is
-    // compatible with the version of the headers we compiled against.
-    GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-    if (argc != 2) {
-        cerr << "Usage: " << argv[0] << " ADDRESS_BOOK_FILE" << endl;
-        return -1;
-    }
-
-    tutorial::AddressBook address_book;
-
-    {
-        // Read the existing address book.
-        fstream input(argv[1], ios::in | ios::binary);
-        if (!address_book.ParseFromIstream(&input)) {
-            cerr << "Failed to parse address book." << endl;
-            return -1;
-        }
-    }
-
-    ListPeople(address_book);
-    
-    // Optional:  Delete all global objects allocated by libprotobuf.
-    google::protobuf::ShutdownProtobufLibrary();
-
-    return 0;
-}
-```
+[list_people.cc](https://github.com/ZZy979/protobuf-demo/blob/main/addressbook/list_people.cc)
 
 #### 编译和运行
 官方文档中并没有介绍如何编译并运行该示例。这里介绍命令行编译-动态链接、命令行编译-静态链接和Blade构建工具三种方式。
 
 （1）命令行编译-动态链接
 
-假设写入和读取程序分别保存在文件write.cpp和read.cpp中，与生成的.pb.h和.pb.cc在同一目录下：
+假设add_person.cc和list_people.cc与生成的.pb.h和.pb.cc在同一目录下：
 
 ```
 addressbook/
     addressbook.proto
     addressbook.pb.h
     addressbook.pb.cc
-    write.cpp
-    read.cpp
+    add_person.cc
+    list_people.cc
 ```
+
+并将包含语句`#include "addressbook/addressbook.pb.h"`改为`#include "addressbook.pb.h"`。
 
 在addressbook目录下执行以下命令：
 
 ```bash
-g++ -o write write.cpp addressbook.pb.cc -lprotobuf -pthread
+g++ -o add_person add_person.cc addressbook.pb.cc -lprotobuf -pthread
 ```
 
-从而得到可执行文件write。链接参数`-lprotobuf -pthread`表示需要protobuf库和pthread系统库。如果protobuf库文件不在链接器的默认搜索目录下，还需要使用`-L`参数指定库文件所在目录。
+从而得到可执行文件add_person。链接参数`-lprotobuf -pthread`表示需要protobuf库和pthread系统库。如果protobuf库文件不在链接器的默认搜索目录下，还需要使用`-L`参数指定库文件所在目录。
 
 动态链接生成的可执行程序依赖动态链接库文件，不能直接运行：
 
 ```bash
-$ ./write
-./write: error while loading shared libraries: libprotobuf.so.17: cannot open shared object file: No such file or directory
+$ ./add_person
+./add_person: error while loading shared libraries: libprotobuf.so.17: cannot open shared object file: No such file or directory
 ```
 
 需要将protobuf库文件的安装目录（例如/usr/local/lib）添加到LD_LIBRARY_PATH环境变量：
@@ -444,21 +254,21 @@ $ ./write
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
 ```
 
-之后即可运行write程序：
+之后即可运行add_person程序：
 
 ```bash
-$ ./write 
-Usage: ./write ADDRESS_BOOK_FILE
+$ ./add_person 
+Usage: ./add_person ADDRESS_BOOK_FILE
 ```
 
-read程序同理。
+list_people程序同理。
 
 （2）命令行编译-静态链接
 
 静态链接的编译命令为：
 
 ```bash
-g++ -o write write.cpp addressbook.pb.cc -static -lprotobuf -pthread
+g++ -o add_person add_person.cc addressbook.pb.cc -static -lprotobuf -pthread
 ```
 
 与动态链接相比只是增加了一个`-static`参数，用于告诉链接器使用静态链接库libprotobuf.a而不是动态链接库libprotobuf.so。
@@ -480,14 +290,14 @@ proto_library(
 )
 
 cc_binary(
-    name = 'write',
-    srcs = 'write.cpp',
+    name = 'add_person',
+    srcs = 'add_person.cc',
     deps = ':addressbook_proto',
 )
 
 cc_binary(
-    name = 'read',
-    srcs = 'read.cpp',
+    name = 'list_people',
+    srcs = 'list_people.cc',
     deps = ':addressbook_proto',
 )
 ```
@@ -501,7 +311,7 @@ proto_library_config(
 )
 ```
 
-* 将read.cpp和write.cpp中的包含语句`#include "addressbook.pb.h"`改为`#include "addressbook/addressbook.pb.h"`（这里的文件路径是相对于protobuf-demo/build64_release目录，将由Blade自动创建）
+* 注意：在add_person.cc和list_people.cc中，包含语句`#include "addressbook/addressbook.pb.h"`的文件路径是相对于protobuf-demo/build64_release目录，将由Blade自动创建
 * 在protobuf-demo目录下创建一个thirdparty子目录（为了避免找不到包含目录而报错）
 
 最终的目录结构如下：
@@ -512,15 +322,15 @@ protobuf-demo/
     addressbook/
         BUILD
         addressbook.proto
-        read.cpp
-        write.cpp
+        add_person.cc
+        list_people.cc
     thirtparty/
     build64_release/    # Blade自动创建
         addressbook/
             addressbook.pb.h
             addressbook.pb.cc
-            read
-            write
+            add_person
+            list_people
             ...
 ```
 
@@ -536,20 +346,20 @@ blade build
 blade build addressbook
 ```
 
-即可得到read和write两个可执行文件（在protobuf-demo/build64_release/addressbook目录下）。
+即可得到add_person和list_people两个可执行文件（在protobuf-demo/build64_release/addressbook目录下）。
 
-以write程序为例，要运行程序，在protobuf-demo/addressbook目录下执行以下命令（同样需要先设置LD_LIBRARY_PATH环境变量）：
+以add_person程序为例，要运行程序，在protobuf-demo/addressbook目录下执行以下命令（同样需要先设置LD_LIBRARY_PATH环境变量）：
 
 ```bash
-blade run :write -- data.bin
+blade run :add_person -- data.bin
 ```
 
-其中`--`后的参数将被传递给write程序，这里的文件路径data.bin是相对于protobuf-demo目录，如果想保存到其他目录可使用绝对路径。如果在protobuf-demo目录下运行则将`:write`改为`addressbook:write`或`//addressbook:write`。
+其中`--`后的参数将被传递给add_person程序，这里的文件路径data.bin是相对于protobuf-demo目录，如果想保存到其他目录可使用绝对路径。如果在protobuf-demo目录下运行则将`:add_person`改为`addressbook:add_person`或`//addressbook:add_person`。
 
-write程序运行结果：
+add_person程序运行结果：
 
 ```bash
-$ ./write data.bin
+$ ./add_person data.bin
 data.bin: File not found. Creating a new file.
 Enter person ID number: 1
 Enter name: Alice
@@ -560,7 +370,7 @@ Enter a phone number (or leave blank to finish): 5678
 Is this a mobile, home, or work phone? work
 Enter a phone number (or leave blank to finish): 
 
-$ ./write data.bin
+$ ./add_person data.bin
 Enter person ID number: 2
 Enter name: Bob
 Enter email address (blank for none): bob@example.com
@@ -568,13 +378,13 @@ Enter a phone number (or leave blank to finish): 4321
 Is this a mobile, home, or work phone? home
 Enter a phone number (or leave blank to finish): 8765
 Is this a mobile, home, or work phone? work
-Enter a phone number (or leave blank to finish):
+Enter a phone number (or leave blank to finish): 
 ```
 
-read程序运行结果：
+list_people程序运行结果：
 
 ```bash
-$ ./read data.bin 
+$ ./list_people data.bin 
 Person ID: 1
   Name: Alice
   E-mail address: alice@example.com
@@ -587,8 +397,10 @@ Person ID: 2
   Work phone #: 8765
 ```
 
+完整代码：<https://github.com/ZZy979/protobuf-demo/tree/main/addressbook>
+
 #### 3.1.8 扩展消息
-在发布代码之后，可能需要扩展消息的定义。如果希望新的消息向后兼容、旧的消息向前兼容，那么需要遵循一些规则：
+在发布代码之后，早晚会需要扩展消息的定义。如果希望新的消息向后兼容、旧的消息向前兼容，那么需要遵循一些规则：
 * 不能更改任何现有字段的标签号
 * 不能添加或删除任何`required`字段
 * 可以删除`optional`或`repeated`字段
@@ -609,8 +421,401 @@ Person ID: 2
 详见参考文档[Reflection](https://protobuf.dev/reference/cpp/api-docs/google.protobuf.message/#Reflection)。
 
 ### 3.2 Java
+[Protocol Buffer Basics: Java](https://protobuf.dev/getting-started/javatutorial/)
+
+注：Java版本的教程大部分与C++版本相同，因此只关注有差异的部分和运行方式。
+
+#### 3.2.3 定义消息格式
+对于Java，需要在.proto文件的`package`声明下方增加以下内容：
+
+```protobuf
+option java_multiple_files = false;
+option java_package = "com.example.tutorial.protos";
+option java_outer_classname = "AddressBookProtos";
+```
+
+这是三个Java特有的选项。`java_package`指定生成类的Java包名，如果未指定则使用`package`（但这通常不是合适的Java包名）。`java_outer_classname`选项指定代表该文件的包装类的类名，如果未指定则通过将文件名转换为大写的驼峰命名法来生成（例如，my_proto.proto默认使用`MyProto`）。`java_multiple_files`选项为true表示为每个消息生成一个单独的.java文件，否则只为包装类生成单个.java文件，并使用包装类作为外部类。
+
+#### 3.2.4 编译.proto文件
+使用`protoc`根据.proto文件生成Java类：
+
+```bash
+protoc --java_out=. addressbook.proto
+```
+
+在指定的输出目录中将会生成一个子目录com/example/tutorial/protos，包含一个文件AddressBookProtos.java。
+
+注：如果`java_multiple_files`为true，则会生成多个.java文件：
+* AddressBookProtos.java
+* AddressBook.java和AddressBookOrBuilder.java
+* Person.java和PersonOrBuilder.java
+
+#### 3.2.5 Protocol Buffers API
+下面看一下生成的代码，看看编译器生成了哪些类和方法。查看com/example/tutorial/protos/AddressBookProtos.java，可以看到addressbook.proto中的每个消息都生成了一个类，嵌套在`AddressBookProtos`类中。每个类都有自己的`Builder`类，用于创建该类的实例，详见下面的“建造者与消息”一节。
+
+消息和builder都为每个字段自动生成了访问器方法，但消息只有getter，而builder既有getter又有setter。例如，对于`Person`类有以下方法：
+
+```java
+package com.example.tutorial.protos;
+
+public final class AddressBookProtos {
+  public final class Person
+      extends com.google.protobuf.GeneratedMessageV3
+      implements PersonOrBuilder {
+    // ...
+  
+    // optional string name = 1;
+    public boolean hasName();
+    public String getName();
+  
+    // optional int32 id = 2;
+    public boolean hasId();
+    public int getId();
+  
+    // optional string email = 3;
+    public boolean hasEmail();
+    public String getEmail();
+  
+    // repeated PhoneNumber phones = 4;
+    public List<PhoneNumber> getPhonesList();
+    public int getPhonesCount();
+    public PhoneNumber getPhones(int index);
+  
+    public static Builder newBuilder();
+    @java.lang.Override
+    public Builder toBuilder();
+    // ...
+  
+    public static final class Builder
+        extends com.google.protobuf.GeneratedMessageV3.Builder<Builder>
+        implements PersonOrBuilder {
+      // ...
+  
+      @java.lang.Override
+      public Person build();
+  
+      // optional string name = 1;
+      public boolean hasName();
+      public String getName();
+      public Builder setName(String value);
+      public Builder clearName();
+  
+      // optional int32 id = 2;
+      public boolean hasId();
+      public int getId();
+      public Builder setId(int value);
+      public Builder clearId();
+  
+      // optional string email = 3;
+      public boolean hasEmail();
+      public String getEmail();
+      public Builder setEmail(String value);
+      public Builder clearEmail();
+  
+      // repeated PhoneNumber phones = 4;
+      public List<PhoneNumber> getPhonesList();
+      public int getPhonesCount();
+      public PhoneNumber getPhones(int index);
+      public Builder setPhones(int index, PhoneNumber value);
+      public Builder setPhones(int index, PhoneNumber.Builder builder);
+      public Builder addPhones(PhoneNumber value);
+      public Builder addPhones(int index, PhoneNumber value);
+      public Builder addPhones(PhoneNumber.Builder builder);
+      public Builder addPhones(int index, PhoneNumber.Builder builder);
+      public Builder addAllPhones(Iterable<PhoneNumber> values);
+      public Builder clearPhones();
+      public Builder removePhones(int index);
+      public Person.PhoneNumber.Builder getPhonesBuilder(int index);
+  
+      // ...
+    }
+  }
+}
+```
+
+可以看到，每个字段都有JavaBeans风格的getter和setter。每个`optional`或`required`字段也有`has`方法，如果该字段已设置则返回true。最后，每个字段都有一个`clear`方法，可以将字段恢复为空状态。
+
+`repeated`消息字段（例如`phones`）也有一些特殊的方法：
+* `Count`：返回元素个数
+* 带`index`参数的getter和setter：获取或设置指定索引的元素
+* `add`：添加一个元素
+* `addAll`：添加整个容器
+
+注意，这些访问器方法都使用了驼峰命名法，而.proto文件使用小写字母+下划线命名法。protobuf编译器会自动完成这一转换，使得生成的类符合Java风格习惯。详见文档[Style Guide](https://protobuf.dev/programming-guides/style/)。
+
+编译器为每种类型的字段生成的函数的详细信息见[Java Generated Code Guide](https://protobuf.dev/reference/java/java-generated/)
+
+（1）枚举和嵌套类
+
+生成的代码包含一个Java枚举`PhoneType`，嵌套在`Person`类中：
+
+```java
+public final class AddressBookProtos {
+  public final class Person
+      extends com.google.protobuf.GeneratedMessageV3
+      implements PersonOrBuilder {
+    // ...
+    public enum PhoneType
+        implements com.google.protobuf.ProtocolMessageEnum {
+      PHONE_TYPE_UNSPECIFIED(0),
+      PHONE_TYPE_MOBILE(1),
+      PHONE_TYPE_HOME(2),
+      PHONE_TYPE_WORK(3),
+      ;
+  
+      public static final int PHONE_TYPE_UNSPECIFIED_VALUE = 0;
+      public static final int PHONE_TYPE_MOBILE_VALUE = 1;
+      public static final int PHONE_TYPE_HOME_VALUE = 2;
+      public static final int PHONE_TYPE_WORK_VALUE = 3;
+  
+      public final int getNumber();
+      @java.lang.Deprecated
+      public static PhoneType valueOf(int value);
+      public static PhoneType forNumber(int value);
+      // ...
+    }
+  }
+}
+```
+
+生成的`PhoneNumber`类也嵌套在`Person`类中。
+
+（2）建造者与消息
+
+protobuf编译器生成的消息类是**不可变的**。消息对象一旦构造完成，就无法修改。要构造消息对象，必须首先构造一个**建造者**(builder)，设置需要的字段，然后调用builder的`build()`方法。
+
+builder的所有setter方法都返回自身，因此可以链式调用。
+
+下面是一个创建`Person`对象的示例：
+
+```java
+Person john = Person.newBuilder()
+  .setId(1234)
+  .setName("John Doe")
+  .setEmail("jdoe@example.com")
+  .addPhones(
+    Person.PhoneNumber.newBuilder()
+      .setNumber("555-4321")
+      .setType(Person.PhoneType.PHONE_TYPE_HOME))
+  .build();
+```
+
+注：对于消息`MyProto`，protobuf生成类的继承关系如下图所示：
+
+![proto类图](/assets/images/protocol-buffers-tutorial/proto类图.png)
+
+（3）标准消息方法
+
+每个消息和builder类还包含许多其他函数，可以检查或操作整个消息，包括：
+* `boolean isInitialized()`：检查是否已设置所有`required`字段
+* `String toString()`：返回消息的人类可读的表示，对于调试特别有用
+* `Builder mergeFrom(Message other)`：将给定消息与该消息合并
+* `Builder clear()`：将所有字段重置为空状态
+
+生成的消息和builder类分别实现了`Message`和`Message.Builder`接口，详见[Message类API文档](https://protobuf.dev/reference/java/api-docs/com/google/protobuf/Message.html)。
+
+（4）序列化和解析
+
+每个消息类都有使用[二进制格式](https://protobuf.dev/programming-guides/encoding/)读写消息的函数，包括：
+* `byte[] toByteArray()`：序列化消息，并返回字节数组
+* `void writeTo(OutputStream output)`：序列化消息，并写入给定的输出流
+* `static Person parseFrom(byte[] data)`：从字节数组解析消息
+* `static Person parseFrom(InputStream input)`：从输入流解析消息
+
+完整的序列化和反序列化函数列表见[MessageLite类API文档](https://protobuf.dev/reference/java/api-docs/com/google/protobuf/MessageLite.html)。
+
+注意：**永远不要通过继承生成的消息类来添加行为！**
+
+#### 3.2.6 写出消息
+下面的程序从文件读取一个（现有的）`AddressBook`对象，根据用户输入向其中添加一个新的`Person`，然后再将新的`AddressBook`写回到文件中。
+
+[AddPerson.java](https://github.com/ZZy979/protobuf-demo/blob/main/addressbook/AddPerson.java)
+
+#### 3.2.7 读取消息
+下面的程序读取上述程序创建的文件，并打印其中的信息：
+
+[ListPeople.java](https://github.com/ZZy979/protobuf-demo/blob/main/addressbook/ListPeople.java)
+
+#### 编译和运行
+（1）Maven
+
+首先，按照[Maven标准目录结构](https://maven.apache.org/guides/introduction/introduction-to-the-standard-directory-layout.html)组织代码：
+
+```
+addressbook/
+  pom.xml
+  src/
+    main/
+      java/
+        com/example/tutorial/
+          AddPerson.java
+          ListPeople.java
+          protos/
+            AddressBookProtos.java
+      resources/
+    test/
+      java/
+    target/    # Maven自动生成
+      addressbook-1.0.jar
+```
+
+pom.xml需要添加以下依赖：
+
+```xml
+<dependency>
+    <groupId>com.google.protobuf</groupId>
+    <artifactId>protobuf-java</artifactId>
+    <version>3.20.3</version>
+</dependency>
+```
+
+确保版本号与protoc相同（或者更新）。
+
+pom.xml的完整内容如下：
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.example.tutorial</groupId>
+    <artifactId>addressbook</artifactId>
+    <version>1.0</version>
+
+    <properties>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>3.20.3</version>
+        </dependency>
+    </dependencies>
+</project>
+```
+
+在项目根目录下执行打包命令
+
+```bash
+mvn package
+```
+
+将在target目录下生成addressbook-1.0.jar。
+
+之后可以这样执行AddPerson和ListPeople程序：
+
+```bash
+java -cp addressbook-1.0.jar:/home/yourname/.m2/repository/com/google/protobuf/protobuf-java/3.20.3/protobuf-java-3.20.3.jar com.example.tutorial.AddPerson data.bin 
+```
+
+```bash
+java -cp addressbook-1.0.jar:/home/yourname/.m2/repository/com/google/protobuf/protobuf-java/3.20.3/protobuf-java-3.20.3.jar com.example.tutorial.ListPeople data.bin
+```
+
+（2）Blade
+
+首先，按照Blade的要求组织代码：
+
+```
+protobuf-demo/
+    BLADE_ROOT
+    addressbook/
+        BUILD
+        addressbook.proto
+        AddPerson.java
+        ListPeople.java
+    thirtparty/
+    build64_release/    # Blade自动创建
+        addressbook/
+            addressbook_proto.jar
+            add_person_java
+            add_person_java.one.jar
+            list_people_java
+            list_people_java.one.jar
+            ...
+```
+
+注意：Blade不支持`java_multiple_files = true`。
+
+* addressbook/BUILD内容如下：
+
+```
+proto_library(
+    name = 'addressbook_proto',
+    srcs = 'addressbook.proto',
+)
+
+java_binary(
+    name = 'add_person_java',
+    srcs = 'AddPerson.java',
+    deps = ':addressbook_proto',
+    main_class = 'com.example.tutorial.AddPerson',
+)
+
+java_binary(
+    name = 'list_people_java',
+    srcs = 'ListPeople.java',
+    deps = ':addressbook_proto',
+    main_class = 'com.example.tutorial.ListPeople',
+)
+```
+
+* BLADE_ROOT文件添加以下配置：
+
+```
+java_binary_config(
+    one_jar_boot_jar = 'thirdparty/one-jar/one-jar-boot-0.97.jar'
+)
+
+proto_library_config(
+    protoc = 'protoc',
+    protobuf_java_libs = ['//thirdparty/protobuf:protobuf-java'],
+)
+```
+
+* 下载[one-jar-boot-0.97.jar](https://sourceforge.net/projects/one-jar/files/one-jar/one-jar-0.97/one-jar-boot-0.97.jar/download)，并放在thirdparty/one-jar目录下（详见[Blade构建工具]({% post_url 2022-01-20-blade-build-tool %}) 6.3.3.3节）。
+* 创建文件thirdparty/protobuf/BUILD，内容如下：
+
+```
+maven_jar (
+  name = 'protobuf-java',
+  id = 'com.google.protobuf:protobuf-java:3.20.3',
+  visibility = ['PUBLIC'],
+)
+```
+
+之后在protobuf-demo/addressbook目录下执行
+
+```bash
+blade build :add_person_java :list_people_java
+```
+
+即可得到add_person_java和list_people_java两个可执行文件（实际上是Shell脚本，在protobuf-demo/build64_release/addressbook目录下）。
+
+可以这样运行这两个程序：
+
+```bash
+blade run :add_person_java -- data.bin
+blade run :list_people_java -- data.bin
+```
+
+或者
+
+```bash
+build64_release/addressbook/add_person_java data.bin
+build64_release/addressbook/list_people_java data.bin
+```
+
+完整代码：<https://github.com/ZZy979/protobuf-demo/tree/main/addressbook>
 
 ### 3.3 Python
+[Protocol Buffer Basics: Python](https://protobuf.dev/getting-started/pythontutorial/)
 
 ## 4.Protocol Buffers语言
 [Language Guide (proto 2)](https://protobuf.dev/programming-guides/proto2/)

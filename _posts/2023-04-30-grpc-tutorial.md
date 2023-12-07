@@ -159,6 +159,8 @@ endforeach()
 
 其中，构建目标`helloworld_proto`将helloworld.proto编译为库文件，并链接到grpc和protobuf库；`greeter_client`和`greeter_server`分别将对应的源文件编译为可执行文件，并链接到`helloworld_proto`库。
 
+完整代码：<https://github.com/ZZy979/grpc-demo/tree/main/helloworld>
+
 在项目根目录下执行配置命令：
 
 ```bash
@@ -686,6 +688,8 @@ foreach(target route_guide_client route_guide_server)
   target_link_libraries(${target} route_guide_proto route_guide_helper grpc++ grpc++_reflection)
 endforeach()
 ```
+
+完整代码：<https://github.com/ZZy979/grpc-demo/tree/main/route_guide>
 
 之后在项目根目录下执行以下命令：
 

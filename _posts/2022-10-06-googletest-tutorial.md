@@ -258,6 +258,8 @@ googletest-demo/
         factorial_test.cc
 ```
 
+完整代码：<https://github.com/ZZy979/googletest-demo/tree/main/factorial>
+
 测试结果如下：
 
 ```bash
@@ -458,6 +460,8 @@ googletest-demo/
         queue.cc
         queue_test.cc
 ```
+
+完整代码：<https://github.com/ZZy979/googletest-demo/tree/main/queue>
 
 测试结果如下：
 
@@ -685,6 +689,8 @@ googletest-demo/
         painter.cc
         painter_test.cc
 ```
+
+完整代码：<https://github.com/ZZy979/googletest-demo/tree/main/graphics>
 
 测试结果如下：
 
