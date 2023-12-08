@@ -543,7 +543,7 @@ public final class AddressBookProtos {
 
 注意，这些访问器方法都使用了驼峰命名法，而.proto文件使用小写字母+下划线命名法。protobuf编译器会自动完成这一转换，使得生成的类符合Java风格习惯。详见文档[Style Guide](https://protobuf.dev/programming-guides/style/)。
 
-编译器为每种类型的字段生成的函数的详细信息见[Java Generated Code Guide](https://protobuf.dev/reference/java/java-generated/)
+编译器为每种类型的字段生成的方法的详细信息见[Java Generated Code Guide](https://protobuf.dev/reference/java/java-generated/)
 
 （1）枚举和嵌套类
 
@@ -606,7 +606,7 @@ Person john = Person.newBuilder()
 
 （3）标准消息方法
 
-每个消息和builder类还包含许多其他函数，可以检查或操作整个消息，包括：
+每个消息和builder类还包含许多其他方法，可以检查或操作整个消息，包括：
 * `boolean isInitialized()`：检查是否已设置所有`required`字段
 * `String toString()`：返回消息的人类可读的表示，对于调试特别有用
 * `Builder mergeFrom(Message other)`：将给定消息与该消息合并
@@ -616,13 +616,13 @@ Person john = Person.newBuilder()
 
 （4）序列化和解析
 
-每个消息类都有使用[二进制格式](https://protobuf.dev/programming-guides/encoding/)读写消息的函数，包括：
+每个消息类都有使用[二进制格式](https://protobuf.dev/programming-guides/encoding/)读写消息的方法，包括：
 * `byte[] toByteArray()`：序列化消息，并返回字节数组
 * `void writeTo(OutputStream output)`：序列化消息，并写入给定的输出流
 * `static Person parseFrom(byte[] data)`：从字节数组解析消息
 * `static Person parseFrom(InputStream input)`：从输入流解析消息
 
-完整的序列化和反序列化函数列表见[MessageLite类API文档](https://protobuf.dev/reference/java/api-docs/com/google/protobuf/MessageLite.html)。
+完整的序列化和反序列化方法列表见[MessageLite类API文档](https://protobuf.dev/reference/java/api-docs/com/google/protobuf/MessageLite.html)。
 
 注意：**永远不要通过继承生成的消息类来添加行为！**
 
@@ -816,6 +816,113 @@ build64_release/addressbook/list_people_java data.bin
 
 ### 3.3 Python
 [Protocol Buffer Basics: Python](https://protobuf.dev/getting-started/pythontutorial/)
+
+注：Python版本的教程大部分与C++版本相同，因此只关注有差异的部分和运行方式。
+
+#### 3.3.4 编译.proto文件
+使用`protoc`根据.proto文件生成Python类：
+
+```bash
+protoc --python_out=. addressbook.proto
+```
+
+这将在指定的输出目录中生成addressbook_pb2.py。
+
+#### 3.3.5 Protocol Buffers API
+与C++和Java不同，Python protobuf编译器不会直接生成数据访问代码，而是为每个消息动态生成一个类：
+
+```python
+Person = _reflection.GeneratedProtocolMessageType('Person', (_message.Message,), dict(
+
+  PhoneNumber = _reflection.GeneratedProtocolMessageType('PhoneNumber', (_message.Message,), dict(
+    DESCRIPTOR = _PERSON_PHONENUMBER,
+    __module__ = 'addressbook_pb2'
+  ))
+  ,
+  DESCRIPTOR = _PERSON,
+  __module__ = 'addressbook_pb2'
+))
+
+AddressBook = _reflection.GeneratedProtocolMessageType('AddressBook', (_message.Message,), dict(
+  DESCRIPTOR = _ADDRESSBOOK,
+  __module__ = 'addressbook_pb2'
+))
+```
+
+可以像这样使用`Person`类：
+
+```python
+import addressbook_pb2
+person = addressbook_pb2.Person()
+person.id = 1234
+person.name = "John Doe"
+person.email = "jdoe@example.com"
+phone = person.phones.add()
+phone.number = "555-4321"
+phone.type = addressbook_pb2.Person.PHONE_TYPE_HOME
+```
+
+如果给.proto文件中未定义的字段赋值，会产生`AttributeError`；如果给一个字段赋错误类型的值，会产生`TypeError`。
+
+```python
+person.no_such_field = 1  # raises AttributeError
+person.id = "1234"        # raises TypeError
+```
+
+编译器为每种类型的字段生成的方法的详细信息见[Python Generated Code Guide](https://protobuf.dev/reference/python/python-generated/)
+
+（1）枚举
+
+枚举被扩展为一组整数常量。例如，`addressbook_pb2.Person.PhoneType.PHONE_TYPE_WORK`的值为3。
+
+`PhoneNumber`仍然是`Person`的内部类：`addressbook_pb2.Person.PhoneNumber`。
+
+（2）标准消息方法
+
+每个消息类还包含许多其他方法，可以检查或操作整个消息，包括：
+* `IsInitialized()`：检查是否已设置所有`required`字段
+* `__str__()`：返回消息的人类可读的表示，对于调试特别有用
+* `CopyFrom(other_msg)`：用给定消息覆盖该消息
+* `MergeFrom(other_msg)`：将给定消息与该消息合并
+* `Clear()`：将所有字段重置为空状态
+
+生成的消息类实现了`Message`接口，详见[Message类API文档](https://googleapis.dev/python/protobuf/latest/google/protobuf/message.html#google.protobuf.message.Message)。
+
+（3）序列化和解析
+
+每个消息类都有使用[二进制格式](https://protobuf.dev/programming-guides/encoding/)读写消息的方法，包括：
+* `SerializeToString()`：序列化消息，并将字节序列作为字符串返回（注意字节序列是二进制格式，不是文本格式，只是使用`str`类作为容器）
+* `ParseFromString(data)`：从字符串解析消息
+
+完整的序列化和反序列化方法列表见[Message类API文档](https://googleapis.dev/python/protobuf/latest/google/protobuf/message.html#google.protobuf.message.Message)。
+
+注意：**永远不要通过继承生成的消息类来添加行为！**
+
+#### 3.3.6 写出消息
+下面的程序从文件读取一个（现有的）`AddressBook`对象，根据用户输入向其中添加一个新的`Person`，然后再将新的`AddressBook`写回到文件中。
+
+[add_person.py](https://github.com/ZZy979/protobuf-demo/blob/main/addressbook/add_person.py)
+
+#### 3.3.7 读取消息
+下面的程序读取上述程序创建的文件，并打印其中的信息：
+
+[list_people.py](https://github.com/ZZy979/protobuf-demo/blob/main/addressbook/list_people.py)
+
+#### 运行
+首先使用pip安装Python的protobuf库：
+
+```bash
+pip install protobuf==3.20.3
+```
+
+将add_person.py和list_people.py与生成的addressbook_pb2.py放在同一目录下。
+
+之后可以这样运行这两个程序：
+
+```bash
+python add_person.py data.bin
+python list_people.py data.bin
+```
 
 ## 4.Protocol Buffers语言
 [Language Guide (proto 2)](https://protobuf.dev/programming-guides/proto2/)
