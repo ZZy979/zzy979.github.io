@@ -2,7 +2,7 @@
 title: 《C++程序设计原理与实践》笔记 第19章 向量、模板和异常
 date: 2023-06-16 00:30:58 +0800
 categories: [C/C++, PPP]
-tags: [cpp, vector, template, generic programming, concept, raii]
+tags: [cpp, vector, template, generic programming, concept, memory error, memory leak, raii]
 ---
 本章将完成最常见、最有用的STL容器`vector`的设计与实现。我们将展示如何实现元素数量可变的容器，如何以参数形式指定容器的元素类型，以及如何处理越界错误。本章使用的技术依赖模板和异常，因此我们将介绍如何定义模板，并给出资源管理的基本技术，这些技术是正确使用异常的关键。
 
