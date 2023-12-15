@@ -118,7 +118,7 @@ mysite/
 
 ![create-repository-step2](/assets/images/creating-personal-blog-site/create-repository-step2.png)
 
-注：如果不需要自定义主题样式，则推荐使用这种方式，因为容易升级，并且能离无关文件，使你能够专注于文章内容写作。
+注：如果不需要自定义主题样式，则推荐使用这种方式，因为容易升级，并且能隔离无关文件，使你能够专注于文章内容写作。
 
 ### 4.2 安装依赖
 使用`git clone`将新创建的仓库克隆到本地，并在项目根目录下执行
