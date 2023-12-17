@@ -215,7 +215,7 @@ TypeError: can only concatenate list (not "str") to list
 [1, 2, 3, 1, 2, 3, 1, 2, 3]
 ```
 
-注：序列乘法操作是**浅拷贝**，重复的元素将引用相同的对象。对于可变类型的元素，这可能会导致意外的结果（另见4.2.4节字典的`copy`方法）。例如：
+注：序列乘法操作是**浅拷贝**，重复的元素将引用相同的对象。对于可变类型的元素，这可能会导致意外的结果（另见4.2.4节字典的`copy()`方法）。例如：
 
 ```python
 >>> a = [0] * 3
@@ -308,7 +308,7 @@ True
 [代码清单2-4 序列成员资格示例](https://github.com/ZZy979/Beginning-Python-code/blob/main/ch02/sequence_membership_example.py)
 
 ### 2.2.6 长度、最小值和最大值
-内置函数`len`返回序列包含的元素个数，`min`和`max`分别返回序列中最小和最大的元素。
+内置函数`len()`返回序列包含的元素个数，`min()`和`max()`分别返回序列中最小和最大的元素。
 
 ```python
 >>> numbers = [100, 34, 678]
@@ -324,13 +324,13 @@ True
 2
 ```
 
-在最后两个表达式中，调用`max`和`min`的参数并不是序列，而是直接将数字作为参数。
+在最后两个表达式中，调用`max()`和`min()`的参数并不是序列，而是直接将数字作为参数。
 
 ## 2.3 列表：Python的主力
 本节主要讨论列表与元组和字符串的不同之处：列表是可变的。另外，列表有很多有用的、特有的**方法**。
 
 ### 2.3.1 list函数
-由于字符串不能像列表一样被修改，因此有时从字符串创建列表会很有用。为此，可以使用`list`函数。
+由于字符串不能像列表一样被修改，因此有时从字符串创建列表会很有用。为此，可以使用`list()`函数。
 
 注：`list`实际上是一个类，而不是函数。
 
@@ -339,7 +339,7 @@ True
 ['H', 'e', 'l', 'l', 'o']
 ```
 
-注意，`list`适用于所有类型的序列，而不只是字符串。
+注意，`list()`适用于所有类型的序列，而不只是字符串。
 
 注：要将字符列表转换为字符串，可以使用`''.join(somelist)`。详见3.4.3节。
 
@@ -466,7 +466,7 @@ object.method(arguments)
 第7章将详细介绍方法是什么。列表提供了一些用于查询或修改其内容的方法。
 
 #### append
-`append`方法用于将一个对象附加到列表末尾。
+`append()`方法用于将一个对象附加到列表末尾。
 
 ```python
 >>> lst = [1, 2, 3]
@@ -475,10 +475,10 @@ object.method(arguments)
 [1, 2, 3, 4]
 ```
 
-注意：`append`等方法**原地**(in place)修改列表。这意味着它不是返回一个修改后的新列表，而是直接修改原列表。
+注意：`append()`等方法**原地**(in place)修改列表。这意味着它不是返回一个修改后的新列表，而是直接修改原列表。
 
 #### clear
-`clear`方法清空列表内容。
+`clear()`方法清空列表内容。
 
 ```python
 >>> lst = [1, 2, 3]
@@ -490,7 +490,7 @@ object.method(arguments)
 这类似于切片赋值`lst[:] = []`。
 
 #### copy
-`copy`方法拷贝一个列表。**普通赋值只是将另一个名字绑定到同一个对象**（即浅拷贝，见1.4节）。
+`copy()`方法拷贝一个列表。**普通赋值只是将另一个名字绑定到同一个对象**（即浅拷贝，见1.4节）。
 
 ```python
 >>> a = [1, 2, 3]
@@ -500,7 +500,7 @@ object.method(arguments)
 [1, 4, 3]
 ```
 
-要让`a`和`b`是不同的列表，必须使用`copy`方法。
+要让`a`和`b`是不同的列表，必须使用`copy()`方法。
 
 ```python
 >>> a = [1, 2, 3]
@@ -517,7 +517,7 @@ object.method(arguments)
 
 ![copy方法示例](/assets/images/python-note-ch02-lists-and-tuples/copy方法示例.png)
 
-* `copy`方法只深拷贝了列表对象，而列表元素仍然是浅拷贝。下面的例子可以证明这一点：
+* `copy()`方法只深拷贝了列表对象，而列表元素仍然是浅拷贝。下面的例子可以证明这一点：
 
 ```python
 >>> a = [[], [], []]
@@ -528,7 +528,7 @@ object.method(arguments)
 ```
 
 #### count
-`count`方法统计一个元素在列表中出现的次数。
+`count()`方法统计一个元素在列表中出现的次数。
 
 ```python
 >>> ['to', 'be', 'or', 'not', 'to', 'be'].count('to')
@@ -541,7 +541,7 @@ object.method(arguments)
 ```
 
 #### extend
-`extend`方法可以通过提供一个序列来一次性附加多个值。
+`extend()`方法可以通过提供一个序列来一次性附加多个值。
 
 ```python
 >>> a = [1, 2, 3]
@@ -551,12 +551,12 @@ object.method(arguments)
 [1, 2, 3, 4, 5, 6]
 ```
 
-这看起来类似于拼接(`a + b`)，但主要区别是`extend`方法会修改原列表，而拼接操作返回一个新列表。
+这看起来类似于拼接(`a + b`)，但主要区别是`extend()`方法会修改原列表，而拼接操作返回一个新列表。
 
 `a.extend(b)`等价于`a = a + b`、`a += b`或者`a[len(a):] = b`。
 
 #### index
-`index`方法用于在列表中查找指定值第一次出现的索引，如果未找到则引发`ValueError`。
+`index()`方法用于在列表中查找指定值第一次出现的索引，如果未找到则引发`ValueError`。
 
 ```python
 >>> knights = ['We', 'are', 'the', 'knights', 'who', 'say', 'ni']
@@ -569,7 +569,7 @@ ValueError: 'herring' is not in list
 ```
 
 #### insert
-`insert`方法用于将一个对象插入到列表中。`s.insert(i, x)`等价于`s[i:i] = [x]`。
+`insert()`方法用于将一个对象插入到列表中。`s.insert(i, x)`等价于`s[i:i] = [x]`。
 
 ```python
 >>> numbers = [1, 2, 3, 5, 6, 7]
@@ -579,7 +579,7 @@ ValueError: 'herring' is not in list
 ```
 
 #### pop
-`pop`方法从列表中删除一个元素（默认为最后一个）并将其返回。
+`pop()`方法从列表中删除一个元素（默认为最后一个）并将其返回。
 
 ```python
 >>> x = [1, 2, 3]
@@ -593,12 +593,12 @@ ValueError: 'herring' is not in list
 [2]
 ```
 
-使用`append`和`pop`方法，可以实现一种常见的数据结构——**栈**(stack)。栈就像一叠盘子，只能在顶部放盘子，也只能从顶部取走盘子，这个原则称为**后进先出**(last-in first-out, LIFO)。
+使用`append()`和`pop()`方法，可以实现一种常见的数据结构——**栈**(stack)。栈就像一叠盘子，只能在顶部放盘子，也只能从顶部取走盘子，这个原则称为**后进先出**(last-in first-out, LIFO)。
 
 注：如果需要先进先出(first-in first-out, FIFO)的队列(queue)，可以使用`insert(0, ...)`和`pop()`，或者`append()`和`pop(0)`。但更好的解决方案是使用`collections`模块中的`deque`，详见第10章。
 
 #### remove
-`remove`方法用于删除**第一个**等于给定值的元素，如果未找到则引发`ValueError`。`s.remove(x)`等价于`del s[s.index(x)]`。
+`remove()`方法用于删除**第一个**等于给定值的元素，如果未找到则引发`ValueError`。`s.remove(x)`等价于`del s[s.index(x)]`。
 
 ```python
 >>> x = ['to', 'be', 'or', 'not', 'to', 'be']
@@ -612,7 +612,7 @@ ValueError: list.remove(x): x not in list
 ```
 
 #### reverse
-`reverse`方法反转列表中的元素。
+`reverse()`方法反转列表中的元素。
 
 ```python
 >>> x = [1, 2, 3]
@@ -621,7 +621,7 @@ ValueError: list.remove(x): x not in list
 [3, 2, 1]
 ```
 
-注：如果要按逆序迭代一个序列，可以使用`reversed`函数。该函数不修改列表，而是返回一个迭代器。
+注：如果要按逆序迭代一个序列，可以使用`reversed()`函数。该函数不修改列表，而是返回一个迭代器。
 
 ```python
 >>> x = [1, 2, 3]
@@ -630,9 +630,9 @@ ValueError: list.remove(x): x not in list
 ```
 
 #### sort
-`sort`方法用于对列表原地排序。
+`sort()`方法用于对列表原地排序。
 
-注：从Python 2.3起，`sort`方法使用的是稳定排序算法。
+注：从Python 2.3起，`sort()`方法使用的是稳定排序算法。
 
 ```python
 >>> x = [4, 6, 2, 1, 7, 9]
@@ -641,7 +641,7 @@ ValueError: list.remove(x): x not in list
 [1, 2, 4, 6, 7, 9]
 ```
 
-注意，`sort`方法直接修改列表，没有返回值（实际上返回`None`）。如果需要排序后的列表副本并保留原列表不变，`y = x.sort()`这种写法是错误的（最终结果是`x`已排序，而`y`是`None`）。一种正确方法是先将`y`绑定到`x`的拷贝，然后对`y`进行排序：
+注意，`sort()`方法直接修改列表，没有返回值（实际上返回`None`）。如果需要排序后的列表副本并保留原列表不变，`y = x.sort()`这种写法是错误的（最终结果是`x`已排序，而`y`是`None`）。一种正确方法是先将`y`绑定到`x`的拷贝，然后对`y`进行排序：
 
 ```python
 >>> x = [4, 6, 2, 1, 7, 9]
@@ -653,7 +653,7 @@ ValueError: list.remove(x): x not in list
 [1, 2, 4, 6, 7, 9]
 ```
 
-另一种方法是使用`sorted`函数。
+另一种方法是使用`sorted()`函数。
 
 ```python
 >>> x = [4, 6, 2, 1, 7, 9]
@@ -672,7 +672,7 @@ ValueError: list.remove(x): x not in list
 ```
 
 #### 高级排序
-`sort`方法接受两个可选参数：`key`和`reverse`。要使用这两个参数，必须按名称指定（叫做**关键字参数**，详见第6章）。`key`参数提供一个函数，用于为每个元素提供一个键，再按照这些键对元素进行排序（即比较`key(a)`和`key(b)`而不是直接比较`a`和`b`，仍然使用`<`比较）。例如，要根据长度对元素进行排序，使用函数`len`作为`key`。
+`sort()`方法接受两个可选参数：`key`和`reverse`。要使用这两个参数，必须按名称指定（叫做**关键字参数**，详见第6章）。`key`参数提供一个函数，用于为每个元素提供一个键，再按照这些键对元素进行排序（即比较`key(a)`和`key(b)`而不是直接比较`a`和`b`，仍然使用`<`比较）。例如，要根据长度对元素进行排序，使用函数`len()`作为`key`。
 
 ```python
 >>> x = ['aardvark', 'abalone', 'acme', 'add', 'aerate']
@@ -681,7 +681,7 @@ ValueError: list.remove(x): x not in list
 ['add', 'acme', 'aerate', 'abalone', 'aardvark']
 ```
 
-另一个参数`reverse`是一个布尔值，指出是否按逆序排序。
+另一个参数`reverse()`是一个布尔值，指出是否按逆序排序。
 
 ```python
 >>> x = [4, 6, 2, 1, 7, 9]
@@ -690,7 +690,7 @@ ValueError: list.remove(x): x not in list
 [9, 7, 6, 4, 2, 1]
 ```
 
-`key`和`reverse`参数也可用于`sorted`函数。
+`key`和`reverse`参数也可用于`sorted()`函数。
 
 更多关于排序的内容可参考[Sorting HOW TO](https://docs.python.org/3/howto/sorting.html)。
 
@@ -738,7 +738,7 @@ ValueError: list.remove(x): x not in list
 (42, 42, 42)
 ```
 
-`tuple`函数与`list`很像：接受一个序列作为参数，并将其转换为元组。如果参数已经是元组，则原样返回。
+`tuple()`函数与`list()`很像：接受一个序列作为参数，并将其转换为元组。如果参数已经是元组，则原样返回。
 
 注：与`list`一样，`tuple`实际上是类型而不是函数。
 

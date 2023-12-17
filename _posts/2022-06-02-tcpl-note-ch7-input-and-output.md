@@ -2,7 +2,7 @@
 title: 《C程序设计语言》笔记 第7章 输入与输出
 date: 2022-06-02 23:00:09 +0800
 categories: [C/C++, TCPL]
-tags: [c, io, variadic argument, file access]
+tags: [c, io, formatting, variadic argument, file access]
 ---
 本章将讲述标准库，介绍输出/输出、字符串处理、存储管理与数学函数以及其他一些服务的函数。本章的重点将放在输入/输出上。
 
