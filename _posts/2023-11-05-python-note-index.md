@@ -14,7 +14,7 @@ tags: [python]
 * [第1章 基础知识]({% post_url 2023-11-05-python-note-ch01-instant-hacking-the-basics %})
 * [第2章 列表和元组]({% post_url 2023-11-27-python-note-ch02-lists-and-tuples %})
 * [第3章 使用字符串]({% post_url 2023-12-11-python-note-ch03-working-with-strings %})
-* 第4章 字典：当索引行不通时
+* [第4章 字典：当索引行不通时]({% post_url 2023-12-20-python-note-ch04-dictionaries-when-indices-wont-do %})
 * 第5章 条件、循环和其他语句
 * 第6章 抽象
 * 第7章 再谈抽象

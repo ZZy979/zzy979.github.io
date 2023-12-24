@@ -2,7 +2,7 @@
 title: 《Python基础教程》笔记 第2章 列表和元组
 date: 2023-11-27 21:38:21 +0800
 categories: [Python, Beginning Python]
-tags: [python, sequence, slice, list, tuple, method]
+tags: [python, sequence, slice, list, tuple, method, sort]
 ---
 本章将介绍一个新概念：**数据结构**(data structure)。数据结构是以某种方式组织起来的数据元素的集合。在Python中，最基本的数据结构是**序列**(sequence)。
 
@@ -253,7 +253,7 @@ TypeError: can only concatenate list (not "str") to list
 ![序列乘法-变量c](/assets/images/python-note-ch02-lists-and-tuples/序列乘法-变量c.png)
 
 #### None、空列表和初始化
-空列表用两个方括号表示(`[]`)。如果要创建一个包含10个元素的列表，但没有任何有用的内容，可以使用`None`。在Python中，`None`表示“什么都没有”(nothing here)。
+空列表用两个方括号表示(`[]`)（无参数的`list()`也返回一个空列表）。如果要创建一个包含10个元素的列表，但没有任何有用的内容，可以使用`None`。在Python中，`None`表示“什么都没有”(nothing here)。
 
 ```python
 >>> sequence = [None] * 10
@@ -709,7 +709,7 @@ ValueError: list.remove(x): x not in list
 (1, 2, 3)
 ```
 
-空元组用两个不包含任何内容的圆括号表示。
+空元组用两个不包含任何内容的圆括号表示（无参数的`tuple()`也返回空元组）。
 
 ```python
 >>> ()
