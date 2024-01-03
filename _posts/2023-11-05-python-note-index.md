@@ -15,7 +15,7 @@ tags: [python]
 * [第2章 列表和元组]({% post_url 2023-11-27-python-note-ch02-lists-and-tuples %})
 * [第3章 使用字符串]({% post_url 2023-12-11-python-note-ch03-working-with-strings %})
 * [第4章 字典：当索引行不通时]({% post_url 2023-12-20-python-note-ch04-dictionaries-when-indices-wont-do %})
-* 第5章 条件、循环和其他语句
+* [第5章 条件、循环和其他语句]({%post_url 2023-12-27-python-note-ch05-conditionals-loops-and-some-other-statements %})
 * 第6章 抽象
 * 第7章 再谈抽象
 * 第8章 异常

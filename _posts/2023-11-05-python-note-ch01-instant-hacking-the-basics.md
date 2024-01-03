@@ -2,7 +2,7 @@
 title: 《Python基础教程》笔记 第1章 基础知识
 date: 2023-11-05 16:47:23 +0800
 categories: [Python, Beginning Python]
-tags: [python, hello world, expression, integer division, variable, statement, io, if statement, function, module, mathematical function, complex number, turtle graphics, comment, string, raw string, unicode]
+tags: [python, hello world, expression, integer division, variable, assignment, io, if statement, function, module, import statement, mathematical function, complex number, turtle graphics, comment, string, raw string, unicode]
 ---
 在本章中，你将学习如何借助计算机能够听懂的语言——Python来控制计算机。Python的官方网站是 <https://www.python.org/>，官方文档：<https://docs.python.org/3/index.html>。
 
@@ -251,7 +251,7 @@ NameError: name 'y' is not defined
 ```
 
 ## 1.6 获取用户输入
-下面看看有用的函数`input()`。
+下面看看有用的函数`input()`。该函数首先输出给定的提示信息（如果有），之后从输入读取一行，将其转换为字符串（删除结尾的换行符）并返回。如果遇到EOF，则引发`EOFError`。
 
 ```python
 >>> input("The meaning of life: ")

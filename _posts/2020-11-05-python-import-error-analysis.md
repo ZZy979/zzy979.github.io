@@ -2,7 +2,7 @@
 title: Python导入模块报错问题的分析
 date: 2020-11-05 20:22:04 +0800
 categories: [Python]
-tags: [python, relative import, absolute import]
+tags: [python, import statement, relative import, absolute import]
 ---
 在Python代码中导入自定义模块时经常遇到报错问题，并且在PyCharm和命令行中会有不同的表现。本文通过实例分析两种常见的导入错误出现的原因及解决方法。
 
