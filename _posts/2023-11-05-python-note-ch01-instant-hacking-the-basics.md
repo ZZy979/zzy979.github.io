@@ -4,7 +4,7 @@ date: 2023-11-05 16:47:23 +0800
 categories: [Python, Beginning Python]
 tags: [python, hello world, expression, integer division, variable, assignment, io, if statement, function, module, import statement, mathematical function, complex number, turtle graphics, comment, string, raw string, unicode]
 ---
-在本章中，你将学习如何借助计算机能够听懂的语言——Python来控制计算机。Python的官方网站是 <https://www.python.org/>，官方文档：<https://docs.python.org/3/index.html>。
+在本章中，你将学习如何借助计算机能够听懂的语言——Python来控制计算机。Python的官方网站是 <https://www.python.org/>，官方文档：<https://docs.python.org/3/>。
 
 首先，需要安装Python，或者验证是否已经安装。如果你使用的是macOS或Linux/UNIX，那么系统已经默认安装了Python。打开终端，输入`python3`并按回车键。你应该看到欢迎消息和提示符`>>>`：
 
