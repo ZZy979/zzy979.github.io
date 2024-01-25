@@ -10,7 +10,7 @@ Django是一个免费、开源的Python web框架，解决了web开发的许多�
 
 * 网站：<https://www.djangoproject.com/>
 * 官方文档：<https://docs.djangoproject.com/>
-* 源代码：<https://docs.djangoproject.com/>
+* 源代码：<https://github.com/django/django>
 
 ## 2.安装
 使用pip安装最新版本的Django：
