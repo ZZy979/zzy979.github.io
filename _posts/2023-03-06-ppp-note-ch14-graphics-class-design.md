@@ -2,7 +2,7 @@
 title: 《C++程序设计原理与实践》笔记 第14章 设计图形类
 date: 2023-03-06 01:49:03 +0800
 categories: [C/C++, PPP]
-tags: [cpp, gui, fltk, inheritance, virtual function, object-oriented programming]
+tags: [cpp, gui, fltk, class, inheritance, polymorphism, virtual function, object-oriented programming]
 ---
 本章借助图形接口类介绍接口设计的思想和继承的概念。为此，本章将介绍与面向对象程序设计直接相关的语言特性：类派生、虚函数和访问控制。
 

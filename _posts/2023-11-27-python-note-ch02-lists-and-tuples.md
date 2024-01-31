@@ -346,7 +346,7 @@ True
 ### 2.3.2 基本的列表操作
 可以对列表执行所有的标准序列操作。此外，本节将介绍修改列表的方式。
 
-另见官方文档[Mutable Sequence Types](file:///D:/Python/Python311/Doc/html/library/stdtypes.html#mutable-sequence-types)。
+另见官方文档[Mutable Sequence Types](https://docs.python.org/3/library/stdtypes.html#mutable-sequence-types)。
 
 #### 元素赋值
 要给列表元素赋值，只需使用第1章介绍的赋值语句即可：`s[i] = x`将列表s的第i个元素赋值为x。

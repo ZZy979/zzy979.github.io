@@ -17,7 +17,7 @@ tags: [python]
 * [第4章 字典：当索引行不通时]({% post_url 2023-12-20-python-note-ch04-dictionaries-when-indices-wont-do %})
 * [第5章 条件、循环和其他语句]({%post_url 2023-12-27-python-note-ch05-conditionals-loops-and-some-other-statements %})
 * [第6章 抽象]({% post_url 2024-01-04-python-note-ch06-abstraction %})
-* 第7章 再谈抽象
+* [第7章 再谈抽象]({% post_url 2024-01-24-python-note-ch07-more-abstraction %})
 * 第8章 异常
 * 第9章 魔法方法、属性和迭代器
 * 第10章 自带电池
