@@ -25,7 +25,7 @@ a + 1 = *p;   // error, a + 1 is rvalue
 注：实际上C++标准定义了三个基本类别——左值(lvalue)、纯右值(prvalue)和将亡值(xvalue)，纯右值和将亡值统称为右值(rvalue)，详见[Value categories - cppreference](https://en.cppreference.com/w/cpp/language/value_category)。“右值”只是沿用了C语言中的叫法。
 
 ## 2.左值引用和右值引用
-C++的**引用**(reference)是一种类型，可以看作对象的别名。引用在本质上和指针一样，都是对象的地址（指针和引用的区别详见[《C++程序设计原理与实践》笔记 第17章]({% post_url 2023-04-22-ppp-note-ch17-vector-and-free-store %}) 17.9节）。
+C++的**引用**(reference)是一种类型，可以看作对象的别名。引用在本质上和指针一样，都是对象的地址（示例见[Compiler Explorer](https://godbolt.org/z/xx4vz4YWM)，指针和引用的区别详见[《C++程序设计原理与实践》笔记 第17章]({% post_url 2023-04-22-ppp-note-ch17-vector-and-free-store %}) 17.9节）。
 
 C++提供了两种类型的引用：
 * **左值引用**(lvalue reference)：使用`&`表示，`T&`是`T`类型的左值引用。左值引用是最常用的引用类型，可用于在函数调用中实现**传引用**(pass-by-reference)语义。
@@ -235,7 +235,7 @@ void use() {
 
 ![移动后](/assets/images/ppp-note-ch18-vectors-and-arrays/移动后.png)
 
-移动之后，`vec`将引用`res`的元素，而`res`将被置空。从而以仅仅拷贝一个`int`和一个指针的代价将10万个元素从`res`移动到`vec`。换句话说，**移动 = “窃取”资源 = 浅拷贝+置空原指针**。
+移动之后，`vec`将引用`res`的元素，而`res`将被置空。从而以仅仅拷贝一个`int`和一个指针的代价将10万个元素从`res`“移交”给`vec`。换句话说，**移动 = “窃取”资源/转移所有权 = 浅拷贝+置空原指针**。
 
 总之，移动语义是为了解决由即将被销毁的对象初始化或赋给其他对象时发生不必要的拷贝，通过“窃取”资源（移动）来避免拷贝。
 
@@ -364,11 +364,20 @@ std::cout << a.size() << ' ' << b.size() << std::endl;  // prints "0 3"
 ```
 
 注：
-* 在上面的例子中，移动并不是发生在`std::move(a)`，而是`b`的移动构造函数，**`std::move()`本身并不执行任何移动操作**。
+* 在上面的例子中，移动并不是发生在`std::move(a)`，而是`b`的移动构造函数，**`std::move()`本身并不执行任何移动操作**——这个名字相当具有误导性。 "std::move does not move."
 * 如果一个左值出现在`return`语句中，则它是[可移动的](https://en.cppreference.com/w/cpp/language/value_category#Move-eligible_expressions)(move-eligible)，因此不需要显式使用`std::move()`。例如3.1节中的`fill()`函数。
 * 对`const`左值调用`std::move()`没有任何效果（见下面的示例）。 参考[Beware of using std::move on a const lvalue](https://www.nextptr.com/tutorial/ta1211389378/beware-of-using-stdmove-on-a-const-lvalue)。
 
 ### 3.5 示例
+拷贝构造函数、拷贝赋值、移动构造函数和移动赋值这四个特殊成员函数被调用的时机如下：
+
+| 上下文 | 源表达式 | 调用 | 示例 |
+| --- | --- | --- | --- |
+| 初始化 | 左值 | 拷贝构造函数 | `T a = b;` |
+| 赋值 | 左值 | 拷贝赋值 | `a = b;` |
+| 初始化 | 右值 | 移动构造函数 | `T a = std::move(b);` |
+| 赋值 | 右值 | 移动赋值 | `a = std::move(b);` |
+
 下面是一个测试示例：
 
 ```cpp
