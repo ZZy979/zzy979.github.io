@@ -121,6 +121,14 @@ namespace tutorial {
 class Person : public ::google::protobuf::Message {
   // ...
 public:
+  Person();
+  ~Person();
+  Person(const Person& from);
+  Person& operator=(const Person& from);
+  Person(Person&& from) noexcept;
+  Person& operator=(Person&& from) noexcept;
+  void Swap(Person* other);
+
   // optional string name = 1;
   bool has_name() const;
   void clear_name();
@@ -167,7 +175,11 @@ public:
 * 带`index`参数的`mutable_` getter：返回指定索引元素的指针
 * `add_`：添加一个元素并返回其指针
 
-注：`repeated`基本类型字段有不同的函数，编译器为每种类型的字段生成的函数的详细信息见[C++ Generated Code Guide](https://protobuf.dev/reference/cpp/cpp-generated/)
+注：
+* protobuf生成的消息类定义了默认构造函数、拷贝操作、移动操作和`Swap()`。拷贝操作等价于`CopyFrom()`，移动操作等价于`Swap()`。
+* 消息类的`Swap()`函数：对于基本类型字段，交换字段的值；对于`repeated`字段，交换底层指针；对于消息类型字段，递归调用子消息的`Swap()`函数。因此，对于仅包含基本类型字段的消息，移动操作的性能与拷贝操作基本相同。
+
+编译器为每种类型的字段生成的函数的详细信息见[C++ Generated Code Guide](https://protobuf.dev/reference/cpp/cpp-generated/)
 
 （1）枚举和嵌套类
 

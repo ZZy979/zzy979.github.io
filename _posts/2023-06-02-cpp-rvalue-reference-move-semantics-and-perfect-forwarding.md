@@ -34,11 +34,9 @@ C++提供了两种类型的引用：
 注：左值/右值是表达式的**值类别**，而左值引用/右值引用是表达式的**类型**。二者是完全不同的概念，但是存在一定的联系：
 * **左值引用必须使用左值初始化**（即左值引用只能绑定到左值），一个例外是`const`左值引用可以使用右值初始化；**右值引用必须使用右值初始化**。
 * 如果函数的返回类型是左值引用（例如`vector::operator[]`），则函数调用表达式是左值；如果函数的返回类型是右值引用（例如`std::move()`）或者不是引用（例如`vector::size()`），则函数调用表达式是右值。
-* **左值引用和有名字的右值引用都是左值**（这意味着有名字的右值引用可以被赋值和取地址），详见[lvalue - cppreference](https://en.cppreference.com/w/cpp/language/value_category#lvalue)：
+* 左值引用类型的表达式是左值；右值引用类型的表达式可能是左值或右值：**有名字的右值引用（例如变量和形参）是左值**，没有名字的右值引用（例如`std::move()`和`std::forward()`调用表达式）是右值。详见[lvalue - cppreference](https://en.cppreference.com/w/cpp/language/value_category#lvalue)：
 
 > Even if the variable's type is rvalue reference, the expression consisting of its name is an lvalue expression.
-
-小结：左值引用类型的表达式是左值，右值引用类型的表达式可能是左值或右值。有名字的右值引用（例如变量和形参）是左值，没有名字的右值引用（例如`std::move()`和`std::forward()`调用表达式）是右值。
 
 ### 2.1 示例
 下面是一个使用左值引用和右值引用的示例：
@@ -79,7 +77,7 @@ g(a) = 1;   // OK, g(a) is lvalue
 | `g(a)` | `int&` | 左值 |
 | `std::move(a)` | `int&&` | 右值 |
 
-其中，`std::move()`函数将左值转换为右值引用，详见3.4节。
+其中，`std::move()`函数将在3.3节介绍。
 
 ### 2.2 重载解析
 如果函数实参是右值，那么重载解析规则会优先选择右值引用版本的重载。例如：
@@ -208,7 +206,7 @@ vector& vector::operator=(const vector& v) {
 | `push_back(v)` | `elem[sz++] = v` | `new(&elem[sz++]) T(v)` (placement new) | 赋值操作假设目标对象是已初始化的，而`elem[sz]`是未初始化的 |
 | 拷贝构造函数 | `new[]` + `std::copy()` | `malloc()` + `std::uninitialized_copy()` | 同上 |
 | `pop_back()` | `--sz` | `elem[--sz].~T()` | 删除元素时必须销毁对象 |
-| 析构函数 | `delete[] elem` | 各元素`~T()` + `free(elem)` | 同上 |
+| 析构函数 | `delete[] elem` | 逐元素`~T()` + `free(elem)` | 同上 |
 
 * [simple_vector.h](https://github.com/ZZy979/PPP-code/blob/main/ch19/simple_vector.h)提供了一个接近标准库的`vector`实现。
 
@@ -314,32 +312,18 @@ vector& vector::operator=(vector&& v) {
 * 函数参数传递：`f(std::move(a))`，其中`a`和函数参数都是`T`类型
 * 函数返回值：`return a;`，其中函数返回值是`T`类型，且`T`有移动构造函数
 
-注：如果初始值是纯右值(prvalue)（例如`T a = T();`、`f(T())`、`return T();`），则移动构造函数调用可能会被拷贝消除优化掉，详见3.3节。
+注：如果初始值是纯右值(prvalue)（例如`T a = T();`、`f(T())`、`return T();`），则移动构造函数调用可能会被拷贝消除优化掉，详见3.4节。
 
 **当对象出现在赋值表达式左侧，并且右侧是一个相同类型的右值时，移动赋值运算符将被调用。**
 
-再次考虑前面的例子。为`vector`实现了移动语义后，在`fill()`返回时，`vector`的移动构造函数将被隐式调用（`fill()`和`use()`的代码均不需要修改）。
+再次考虑前面的例子。为`vector`实现了移动语义后，在`fill()`返回时，`vector`的移动构造函数将被隐式调用，因为表达式`fill(cin)`是右值（`fill()`和`use()`的代码均不需要修改）。
 
 注意：
 * 移动语义只对拥有资源的类（例如`vector`等STL容器）有意义，对于[基本类型](https://en.cppreference.com/w/cpp/named_req/ScalarType)（例如`int`）和[平凡类型](https://en.cppreference.com/w/cpp/named_req/TrivialType)/[POD类型](https://en.cppreference.com/w/cpp/named_req/PODType)（例如`struct Point { int x, y; };`）无意义。
-* 移动构造函数和移动赋值只能省略资源的拷贝，而类本身的数据成员仍然需要拷贝。例如，`vector`的移动构造函数省略了数组元素的拷贝，但仍然需要拷贝`sz`和`elem`两个成员。
+* 对于拥有资源的类，移动语义只能省略资源的拷贝，而类本身的数据成员仍然需要拷贝。例如，`vector`的移动构造函数省略了数组元素的拷贝，但仍然需要拷贝`sz`和`elem`两个成员。
+* 如果一个类没有定义移动操作且满足特定条件，编译器会自动生成移动构造函数和（或）移动赋值。见[Implicitly-declared move constructor](https://en.cppreference.com/w/cpp/language/move_constructor#Implicitly-declared_move_constructor)和[Implicitly-declared move assignment operator](https://en.cppreference.com/w/cpp/language/move_assignment#Implicitly-declared_move_assignment_operator)。
 
-### 3.3 拷贝消除
-C++标准支持**拷贝消除**(copy elision)，允许编译器在某些情况下省略拷贝构造函数和移动构造函数的调用，从而提高程序的性能。拷贝消除的规则也随着C++标准版本的更新而不断扩展。
-
-从C++17开始，在下列情况下编译器会强制进行拷贝消除：
-* 在`return`语句中，操作数是与返回类型相同的纯右值。例如，`T f() { return T(); }`
-* 在对象初始化中，初始值是相同类型的纯右值。例如，`T x = T();`
-
-在下列情况下，编译器允许但不强制进行拷贝消除：
-* 在`return`语句中，操作数是与返回类型相同的变量的名字，但不能是函数参数。这一规则称为**命名返回值优化**(named return value optimization, NRVO)。例如，`T f() { T x; return x; }`
-* 在对象初始化中，源对象是一个相同类型的无名的临时对象。当这个临时对象来自`return`语句时，这一规则称为**返回值优化**(return value optimization, RVO)。例如，`T x = f();`
-
-注：上面仅列出了常见情况，完整规则详见[Copy elision - cppreference](https://en.cppreference.com/w/cpp/language/copy_elision)。
-
-当拷贝消除发生时，被省略的拷贝/移动构造函数的源对象（参数）和目标对象(`this`)将变成同一个对象，见3.5节示例。
-
-### 3.4 std::move
+### 3.3 std::move
 前面提到，右值引用不能绑定到左值，因此**左值不能被移动**。但是，标准库头文件\<utility\>提供了`std::move()`函数，作用是**将参数转换为右值引用**，即将参数“当作”右值，使其变成“可移动的”。
 
 实际上，`std::move()`仅仅是一个强制类型转换：
@@ -355,7 +339,23 @@ typename std::remove_reference<T>::type&& move(T&& t) noexcept {
 
 详见[std::move - cppreference](https://en.cppreference.com/w/cpp/utility/move)。
 
-C++标准规定：`std::move()`的调用表达式是一个右值（准确来说是xvalue）。如果`a`是一个左值，则`std::move(a)`是一个右值，这意味着该对象被认为是“可移动的”（可能被窃取资源），因此**不能再使用**。例如：
+以`int`类型为例，当实参是左值时，函数`std::move()`的实例化如下：
+
+```cpp
+int&& move(int& t) {
+    return static_cast<int&&>(t);
+}
+```
+
+当实参是右值时，函数`std::move()`的实例化如下：
+
+```cpp
+int&& move(int&& t) {
+    return static_cast<int&&>(t);
+}
+```
+
+C++标准规定：**`std::move()`的调用表达式是右值**（准确来说是xvalue）。如果`a`是一个左值，则`std::move(a)`是一个右值，这意味着该对象被认为是“可移动的”（可能被窃取资源），因此**不能再使用**。例如：
 
 ```cpp
 std::vector<int> a = {1, 2, 3};
@@ -364,9 +364,87 @@ std::cout << a.size() << ' ' << b.size() << std::endl;  // prints "0 3"
 ```
 
 注：
-* 在上面的例子中，移动并不是发生在`std::move(a)`，而是`b`的移动构造函数，**`std::move()`本身并不执行任何移动操作**——这个名字相当具有误导性。 "std::move does not move."
-* 如果一个左值出现在`return`语句中，则它是[可移动的](https://en.cppreference.com/w/cpp/language/value_category#Move-eligible_expressions)(move-eligible)，因此不需要显式使用`std::move()`。例如3.1节中的`fill()`函数。
-* 对`const`左值调用`std::move()`没有任何效果（见下面的示例）。 参考[Beware of using std::move on a const lvalue](https://www.nextptr.com/tutorial/ta1211389378/beware-of-using-stdmove-on-a-const-lvalue)。
+* 在上面的例子中，移动并不是发生在`std::move(a)`，而是`b`的移动构造函数。
+* **`std::move()`本身并不执行任何移动操作**。只有将`std::move()`的结果用于初始化或赋值给另一个对象时才会执行移动操作，否则没有任何作用—— "std::move doesn't move anything." （`move`这个名字相当具有误导性，或许叫`make_movable`更合适）
+
+#### 何时使用/不使用
+不要过度使用`std::move()`！
+
+经验法则：**当需要将左值传递给右值引用类型的参数、通过转移资源所有权的方式避免拷贝时，应该使用`std::move()`**。
+
+不适合使用`std::move()`的情况：
+* 不要对未实现移动操作的类型使用，因为移动操作会退化为拷贝操作，这种类型只能通过传指针/引用来避免拷贝。STL容器和protobuf生成的类都实现了移动操作（见[Protocol Buffers入门教程]({% post_url 2022-04-26-protocol-buffers-tutorial %}) 3.1.5节）。
+* 不要对右值或`const`对象使用，因为没有任何作用。
+* 不要对基本类型或POD类型使用，因为移动操作的性能与拷贝操作相同。
+* 不要在`return`语句中使用，因为会影响NRVO。见[Move-eligible expressions](https://en.cppreference.com/w/cpp/language/value_category#Move-eligible_expressions)和[Automatic move from local variables and parameters](https://en.cppreference.com/w/cpp/language/return#Automatic_move_from_local_variables_and_parameters)。
+
+适合使用`std::move()`的情况：
+
+（1）为自定义类型实现移动构造函数和移动赋值。例如：
+
+```cpp
+struct A {
+    std::string s;
+    int k;
+
+    A(const std::string& s, int k) :s(s), k(k) {}
+
+    A(A&& a) noexcept
+        :s(std::move(a.s)),  // calls move constructor of std::string
+        k(std::exchange(a.k, 0)) {}
+
+    A& operator=(A&& a) noexcept {
+        s = std::move(a.s);  // calls move assignment of std::string
+        k = std::exchange(a.k, 0);
+        return *this;
+    }
+};
+```
+
+注：对于这个示例，即使没有提供移动构造函数和移动赋值，编译器也会自动生成——逐个成员移动。
+
+（2）将局部对象传递给接受右值引用参数的函数。例如：
+
+```cpp
+bool f(std::vector<A>& v) {
+    A a(x, y);
+    if (!a.init())
+        return false;
+    v.push_back(std::move(a));  // calls push_back(A&&) overload
+    return true;
+}
+```
+
+注：如果不需要额外的初始化操作，可用`v.push_back(A(x, y))`或`v.emplace_back(x, y)`来代替。前者也会调用移动构造函数（即使类`A`不可拷贝），而后者直接原地构造。
+
+（3）对于不再需要的对象，将其资源转移给另一个对象。例如：
+
+```cpp
+void process(Data data);
+
+void f() {
+    Data foo_data(...);
+    process(std::move(foo_data));  // calls move constructor of Data
+    // foo_data can no longer be used
+}
+```
+
+调用`process()`函数时，将`foo_data`的资源转移给了形参`data`，因此在调用之后不能再使用`foo_data`。
+
+### 3.4 拷贝消除
+C++标准支持**拷贝消除**(copy elision)，允许编译器在某些情况下省略拷贝构造函数和移动构造函数的调用，从而提高程序的性能。拷贝消除的规则也随着C++标准版本的更新而不断扩展。
+
+从C++17开始，在下列情况下编译器会强制进行拷贝消除：
+* 在`return`语句中，操作数是与返回类型相同的纯右值。例如，`T f() { return T(); }`
+* 在对象初始化中，初始值是相同类型的纯右值。例如，`T x = T();`
+
+在下列情况下，编译器允许但不强制进行拷贝消除：
+* 在`return`语句中，操作数是与返回类型相同的变量的名字，但不能是函数参数。这一规则称为**命名返回值优化**(named return value optimization, NRVO)。例如，`T f() { T x; return x; }`
+* 在对象初始化中，源对象是一个相同类型的无名的临时对象。当这个临时对象来自`return`语句时，这一规则称为**返回值优化**(return value optimization, RVO)。例如，`T x = f();`
+
+注：上面仅列出了常见情况，完整规则详见[Copy elision - cppreference](https://en.cppreference.com/w/cpp/language/copy_elision)。
+
+当拷贝消除发生时，被省略的拷贝/移动构造函数的源对象（参数）和目标对象(`this`)将变成同一个对象，见3.5节示例。
 
 ### 3.5 示例
 拷贝构造函数、拷贝赋值、移动构造函数和移动赋值这四个特殊成员函数被调用的时机如下：
@@ -377,6 +455,8 @@ std::cout << a.size() << ' ' << b.size() << std::endl;  // prints "0 3"
 | 赋值 | 左值 | 拷贝赋值 | `a = b;` |
 | 初始化 | 右值 | 移动构造函数 | `T a = std::move(b);` |
 | 赋值 | 右值 | 移动赋值 | `a = std::move(b);` |
+
+如果没有定义移动构造函数和移动赋值，则移动操作会退化为拷贝操作。
 
 下面是一个测试示例：
 
@@ -459,18 +539,18 @@ copy assignment
 * `b = std::move(a);`调用移动赋值，因为`std::move(a)`是一个右值，且`C`有移动赋值
 * `b = std::move(c);`调用拷贝赋值，因为`c`是`const`
 
-注：
-* `C a = f();`涉及的两次移动构造函数调用可能会被编译器的拷贝消除特性优化掉，从而`c`和`a`的地址是一样的，整个语句只有一次默认构造函数调用。
-* 使用不同的C++标准版本和编译选项的情况下，`C a = f();`调用移动构造函数的次数如下表所示（使用的编译器是GCC 13）：
+注：`C a = f();`涉及的两次移动构造函数调用可能会被编译器的拷贝消除特性优化掉，从而`c`和`a`的地址是一样的，整个语句只有一次默认构造函数调用。使用不同的C++标准版本和编译选项的情况下，该语句调用移动构造函数的次数如下表所示（使用的编译器是GCC 13）：
 
 | C++标准版本 | 编译选项 | 移动构造函数调用次数 |
 | --- | --- | --- |
 | C++11 | `-fno-elide-constructors` | 2 (`c`→返回值临时对象→`a`) |
-| C++11 | 无 | 0 (`&c == &a`) |
 | C++17 | `-fno-elide-constructors` | 1 (`c`→`a`) |
+| C++11 | 无 | 0 (`&c == &a`) |
 | C++17 | 无 | 0 (`&c == &a`) |
 
-如果`C`没有移动构造函数和移动赋值，那么输出会变为
+其中，选项`-fno-elide-constructors`禁用拷贝消除。
+
+如果没有定义移动操作，则输出会变为：
 
 ```
 C a = f();
@@ -498,11 +578,9 @@ copy assignment
 | C++标准版本 | 编译选项 | 拷贝构造函数调用次数 |
 | --- | --- | --- |
 | C++11 | `-fno-elide-constructors` | 2 (`c`→返回值临时对象→`a`) |
-| C++11 | 无 | 0 (`&c == &a`) |
 | C++17 | `-fno-elide-constructors` | 1 (`c`→`a`) |
+| C++11 | 无 | 0 (`&c == &a`) |
 | C++17 | 无 | 0 (`&c == &a`) |
-
-（由此看来，有了拷贝消除，移动语义似乎变得可有可无了）
 
 ## 4.完美转发
 除了移动语义，右值引用还有一个重要的用途——实现**完美转发**(perfect forwarding)。下面首先介绍引用折叠和转发引用的概念，之后介绍`std::forward()`函数，并通过一个示例说明如何实现完美转发。
@@ -711,9 +789,13 @@ C++的值语义是万恶之源。
 * [Reference declaration - cppreference](https://en.cppreference.com/w/cpp/language/reference)
 * [Move constructor - cppreference](https://en.cppreference.com/w/cpp/language/move_constructor)
 * [Move assignment - cppreference](https://en.cppreference.com/w/cpp/language/move_assignment)
+* [A Brief Introduction to Rvalue References](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2027.html)
 * [【C++深陷】之“左值与右值”](https://blog.csdn.net/u014609638/article/details/106640142)
 * [【C++深陷】之“对象移动”](https://blog.csdn.net/u014609638/article/details/107138552)
 * [Understanding lvalues, rvalues and their references](https://www.fluentcpp.com/2018/02/06/understanding-lvalues-rvalues-and-their-references/)
 * [《C++程序设计原理与实践》笔记 第18章]({% post_url 2023-05-28-ppp-note-ch18-vectors-and-arrays %})
+* [Beware of using std::move on a const lvalue](https://www.nextptr.com/tutorial/ta1211389378/beware-of-using-stdmove-on-a-const-lvalue)
+* [Understanding when not to std::move in C++](https://developers.redhat.com/blog/2019/04/12/understanding-when-not-to-stdmove-in-c)
+* [On harmful overuse of std::move](https://devblogs.microsoft.com/oldnewthing/20231124-00/?p=109059)
 * [聊聊C++中的完美转发](https://zhuanlan.zhihu.com/p/161039484)
 * [谈谈完美转发(Perfect Forwarding)：完美转发 = 引用折叠 + 万能引用 + std::forward](https://zhuanlan.zhihu.com/p/369203981)
