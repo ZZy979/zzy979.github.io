@@ -18,7 +18,7 @@ tags: [python]
 * [第5章 条件、循环和其他语句]({%post_url 2023-12-27-python-note-ch05-conditionals-loops-and-some-other-statements %})
 * [第6章 抽象]({% post_url 2024-01-04-python-note-ch06-abstraction %})
 * [第7章 再谈抽象]({% post_url 2024-01-24-python-note-ch07-more-abstraction %})
-* 第8章 异常
+* [第8章 异常]({% post_url 2024-02-17-python-note-ch08-exceptions %})
 * 第9章 魔法方法、属性和迭代器
 * 第10章 自带电池
 * 第11章 文件
