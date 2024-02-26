@@ -646,9 +646,9 @@ Say.java
 package hello;
 
 public class Say {
-  public static void say(String msg) {
-    System.out.println(msg);
-  }
+    public static void say(String msg) {
+        System.out.println(msg);
+    }
 }
 ```
 
@@ -658,9 +658,9 @@ Hello.java
 package hello;
 
 public class Hello {
-  public static void hello(String to) {
-    Say.say("Hello, " + to);
-  }
+    public static void hello(String to) {
+        Say.say("Hello, " + to);
+    }
 }
 ```
 
@@ -670,9 +670,9 @@ HelloWorld.java
 package hello;
 
 public class HelloWorld {
-  public static void main(String[] args) {
-    Hello.hello("world");
-  }
+    public static void main(String[] args) {
+        Hello.hello("world");
+    }
 }
 ```
 
@@ -1132,7 +1132,7 @@ package(
 
 `package`规则在构建时默认不执行，除非`blade build`显式指定该目标，或指定了`--generate-package`选项。
 
-例如：在第4节Hello World项目的基础上增加一个配置文件conf/hello_world.conf和一个数据文件data.txt：
+例如：在第4节Hello World项目的基础上创建一个package_demo目录，在其中创建一个配置文件conf/hello_world.conf和一个数据文件data.txt：
 
 ```
 blade-demo/
@@ -1144,6 +1144,8 @@ blade-demo/
         hello.h
         hello.cc
         hello_world.cc
+    package_demo/
+        BUILD
         data.txt
         conf/
             hello_world.conf
@@ -1159,24 +1161,24 @@ package(
     srcs = [
         ('$(location //quick-start:hello_world)', 'bin/hello_world'),
         ('$(location //quick-start:hello)', 'lib/libhello.a'),
-        ('//quick-start/conf', 'conf'),
+        ('conf', 'conf'),
         ('data.txt', 'data/foo.txt'),
     ]
 )
 ```
 
-在quick-start目录下执行
+在package_demo目录下执行
 
 ```bash
 $ blade build :hello_world_package
 ```
 
-将在blade-demo/build64_release/quick-start目录下生成hello_world_package.tar：
+将在blade-demo/build64_release/package_demo目录下生成hello_world_package.tar：
 
 ```bash
-$ alt  # 等价于cd ../build64_release/quick-start
+$ alt  # 等价于cd ../build64_release/package_demo
 $ pwd
-.../blade-demo/build64_release/quick-start
+.../blade-demo/build64_release/package_demo
 $ tar -tf hello_world_package.tar
 conf/hello_world.conf
 data/foo.txt
@@ -1538,14 +1540,6 @@ Blade(info): [1/0/1] Test //test_demo:FactorialJavaTest finished : SUCCESS
 Scala测试使用`scala_test`目标来定义，底层使用[ScalaTest](https://www.scalatest.org/)框架。
 
 #### 8.3.1 配置ScalaTest
-手动下载ScalaTest jar文件：
-
-```bash
-mvn dependency:get -Dartifact=org.scalatest:scalatest-app_2.13:3.2.15
-```
-
-其中 "2.13" 是Scala版本，"3.2.15" 是ScalaTest版本。
-
 在thirdparty目录下声明ScalaTest及其依赖的scala-xml库：
 
 thirdparty/scalatest/BUILD
@@ -1557,6 +1551,8 @@ java_library(
     binary_jar = '/home/zzy/.m2/repository/org/scalatest/scalatest-app_2.13/3.2.15/scalatest-app_2.13-3.2.15.jar',
 )
 ```
+
+其中 "2.13" 是Scala版本，"3.2.15" 是ScalaTest版本。
 
 thirdparty/scala/BUILD
 
@@ -1646,7 +1642,6 @@ Blade(info): [1/0/1] Test //test_demo:FactorialScalaTest finished : SUCCESS
 
 注意：
 * 必须配置`java_config.java_home`和`scala_config.scala_home`，否则运行Scala测试会报错（Blade自动生成的测试命令中包含 "java" 和 "scala"，但如果没有配置`java_home`和`scala_home`，Blade会将项目根目录拼接到这两个命令前面，见[builtin_tools.py](https://github.com/chen3feng/blade-build/blob/master/src/blade/builtin_tools.py) `generate_scala_test()`）。
-* ScalaTest库不能通过`maven_jar`声明，因为其打包方式是bundle，Blade解析依赖时会报错 "Unknown packaging: bundle"（普通的Maven项目可以通过在pom.xml文件中添加maven-bundle-plugin插件来解决，但Blade不支持添加Maven插件）。
 
 ### 8.4 Python - unittest
 Python测试使用`py_test`目标来定义，底层使用标准库自带的[unittest](https://docs.python.org/3/library/unittest.html)模块。
