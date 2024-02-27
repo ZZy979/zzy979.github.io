@@ -215,7 +215,7 @@ Hello, world! I'm Anakin Skywalker.
 Hello, world! I'm Yoda.
 ```
 
-提示：如果`foo`是`Person`的实例，可以将`foo.greet()`视为`Person.greet(foo)`的简写，但后者的多态性更低。
+提示：如果`foo`是`Person`的实例，可以将`foo.greet()`视为`Person.greet(foo)`的简写，但后者的多态性更低。另见9.2.2节。
 
 ### 7.2.3 属性、函数和方法
 **属性**(attribute)是关联到对象的值，使用`object.attribute`的形式访问。
@@ -444,7 +444,7 @@ True
 <class 'type'>
 ```
 
-注意：在Python 3中，也可以使用内置函数`type()`获取对象的类型。
+注意：在Python 3中，也可以使用内置函数`type()`获取对象的类型。另见9.1节。
 
 ### 7.2.8 多个超类
 属性`__bases__`的复数形式暗示了一个类的超类可能有多个。为了说明，下面创建几个类。
