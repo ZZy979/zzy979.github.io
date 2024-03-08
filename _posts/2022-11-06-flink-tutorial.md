@@ -184,7 +184,7 @@ sink算子（`DataStream`及其子类的方法）
 
 ![算子和流类型](/assets/images/flink-tutorial/算子和流类型.png)
 
-完整列表参考：[DataStream API](https://nightlies.apache.org/flink/flink-docs-stable/docs/dev/datastream/overview/)
+完整列表参考：[DataStream API](https://nightlies.apache.org/flink/flink-docs-stable/docs/dev/datastream/overview/)、[Operators](https://nightlies.apache.org/flink/flink-docs-stable/docs/dev/datastream/operators/overview/)
 
 #### 3.2.5 练习
 <https://github.com/apache/flink-training/tree/master/ride-cleansing>
