@@ -20,7 +20,7 @@ tags: [python]
 * [第7章 再谈抽象]({% post_url 2024-01-24-python-note-ch07-more-abstraction %})
 * [第8章 异常]({% post_url 2024-02-17-python-note-ch08-exceptions %})
 * [第9章 魔法方法、特性和迭代器]({% post_url 2024-02-21-python-note-ch09-magic-methods-properties-and-iterators %})
-* 第10章 自带电池
+* [第10章 自带电池]({% post_url 2024-02-29-python-note-ch10-batteries-included %})
 * 第11章 文件
 * 第12章 图形用户界面
 * 第13章 数据库支持

@@ -2,7 +2,7 @@
 title: 《Python基础教程》笔记 第9章 魔法方法、特性和迭代器
 date: 2024-02-21 21:22:21 +0800
 categories: [Python, Beginning Python]
-tags: [python, metaclass, constructor, special method, property, iterator, generator]
+tags: [python, metaclass, constructor, special method, operator overloading, property, iterator, generator]
 ---
 在Python中，有些名称很特殊，开头和结尾都是两个下划线（如`__future__`）。这样的拼写表示名称有特殊意义，因此绝对不要在自己的程序中创建这样的名称。这样的名称大部分都是**魔法**（特殊）方法的名称。如果你的对象实现了这些方法，它们将在特定情况下被Python调用，而几乎不需要直接调用。
 
@@ -307,6 +307,11 @@ IndexError
 
 ## 9.4 更多魔法方法
 特殊（魔法）名称的用途很多，前面展示的只是冰山一角。大部分魔法方法是为非常高级的用途准备的，例如模拟数字、调用、比较等。详见官方文档[Special method names](https://docs.python.org/3/reference/datamodel.html#special-method-names)。
+
+注：其他常用的魔法方法
+* 转换为字符串：`__str__()`和`__repr__()`
+* 实现运算符：`__eq__()`、`__add__()`等
+* 函数调用：`__call__()`
 
 ## 9.5 特性
 第7章提到了**访问器方法**。访问器是用于获取或设置属性的简单方法。例如，考虑下面的`Rectangle`类：
