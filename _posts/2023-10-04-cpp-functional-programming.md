@@ -723,16 +723,29 @@ access_data(u): 7
 add_xy(u, 1, 2): 10
 ```
 
-其中，`print_num`大致等价于Lambda表达式`[](Foo& f, int i) { f.display_number(i); }`，调用`print_num(f, 42)`等价于`f.display_number(42)`，也可以写成`print_num(&f, 42)`。
+其中，`print_num`大致等价于Lambda表达式`[](Foo& f, int i) { f.display_number(i); }`，调用`print_num(f, 42)`等价于`f.display_number(42)`。
 
-注：对于成员函数来说，`std::function`和`std::mem_fn`的调用语法完全相同。区别在于前者是通用的，用于成员函数时需要写复杂的模板参数，而后者是专门给成员函数用的：
+注：
+* 对于成员函数来说，`std::function`和`std::mem_fn`的调用语法完全相同。区别在于前者是通用的，用于成员函数时需要写复杂的模板参数（无法自动推导），而后者是专门给成员函数用的：
 
 ```cpp
-std::function<void(const Foo&, int)> f1 = &Foo::print_add;
+std::function<void(Foo&, int)> f1 = &Foo::display_number;
 f1(foo, 1);
 
-auto f2 = std::mem_fn(&Foo::print_add);
+auto f2 = std::mem_fn(&Foo::display_number);
 f2(foo, 1);
+```
+
+* `std::mem_fn`将成员指针包装为函数对象，可以传递给STL算法。例如：
+
+```cpp
+struct A {
+    bool f() const;
+};
+
+std::vector<A> v = ...;
+auto p = std::find_if(v.begin(), v.end(), &A::f);  // error
+auto q = std::find_if(v.begin(), v.end(), std::mem_fn(&A::f));  // OK
 ```
 
 ### 6.4 std::bind
@@ -850,9 +863,10 @@ C++20引入的ranges库是对STL算法库的扩展，使得算法和迭代器可
 
 ```cpp
 int arr[] = {0, 1, 2, 3, 4, 5, 6};
-auto even = arr | std::views::filter([](int i) { return i % 2 == 0; })
-        | std::views::transform([](int i) { return i * i; });
-int result = std::accumulate(even.begin(), even.end(), 0);
+auto even = [](int i) { return i % 2 == 0; };
+auto square = [](int i) { return i * i; };
+auto r = arr | std::views::filter(even) | std::views::transform(square);
+int result = std::accumulate(r.begin(), r.end(), 0);
 ```
 
 ## 参考
