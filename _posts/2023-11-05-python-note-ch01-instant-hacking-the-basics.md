@@ -307,6 +307,8 @@ if time % 60 == 0: print('On the hour!')
 
 函数就像小型程序，可用来执行特定的操作。Python提供了很多像`pow()`这样的**内置函数**(built-in function)，你也可以自己编写函数（将在后面介绍）。
 
+注：内置函数的完整列表见[Built-in Functions](https://docs.python.org/3/library/functions.html)。
+
 `pow(2, 3)`叫做**调用**(call)函数：你向它提供**实参**(argument)（这里是`2`和`3`），它**返回**(return)一个值。函数调用也是一种表达式，可以和运算符结合：
 
 ```python
