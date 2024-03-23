@@ -23,7 +23,7 @@ tags: [python]
 * [第10章 自带电池]({% post_url 2024-02-29-python-note-ch10-batteries-included %})
 * [第11章 文件]({% post_url 2024-03-11-python-note-ch11-files-and-stuff %})
 * [第12章 图形用户界面]({% post_url 2024-03-22-python-note-ch12-graphical-user-interfaces %})
-* 第13章 数据库支持
+* [第13章 数据库支持]({% post_url 2024-03-23-python-note-ch13-database-support %})
 * 第14章 网络编程
 * 第15章 Python和Web
 * 第16章 测试基础
