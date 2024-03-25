@@ -316,7 +316,7 @@ template<class T>  // requires T to be addable
 T add(T a, T b) { return a + b; }
 ```
 
-其中，函数模板`add`要求模板参数`T`必须支持`+`运算，但只是通过注释以文字的方式说明。如果使用模板`add`时给定的模板参数不支持`+`运算，将导致编译错误：
+其中，函数模板`add()`要求模板参数`T`必须支持`+`运算，但只是通过注释以文字形式说明。如果使用模板`add()`时给定的模板参数不支持`+`运算，将导致编译错误：
 
 ```cpp
 int i = add(1, 2);          // OK, returns 3
@@ -337,19 +337,20 @@ template<class T>
 concept Addable = requires(T x) { x + x; };
 ```
 
-其中，`=`后面的部分叫做**requires表达式**，`{}`中的一个或多个语句用于断言这些表达式是合法的，即能够编译通过（并不真正执行）。如果模板参数满足所有的要求，则requires表达式结果为`true`。
+其中，`=`后面的部分叫做**requires表达式**，`{}`中的一个或多个语句用于断言这些表达式是合法的，即能够编译通过（并不真正求值）。如果模板参数满足所有的要求，则requires表达式结果为`true`。
 
-在定义模板时，可以像这样使用概念`Addable`：
+在定义模板时，可以像这样使用概念：
 
 ```cpp
-template<class T> requires Addable<T>
+template<class T>
+    requires Addable<T>
 T add(T a, T b) { return a + b; }
 
 template<Addable T>
 T add(T a, T b) { return a + b; }
 ```
 
-这两种方式是等价的，意味着“要求模板参数`T`必须满足概念`Addable`”。其中，第一种方式中的`requires Addable<T>`叫做**requires子句**。
+这两种形式是等价的，意味着“要求模板参数`T`必须满足概念`Addable`”。其中，第一种形式中的`requires Addable<T>`叫做**requires子句**。
 
 标准库头文件[\<concepts\>](https://en.cppreference.com/w/cpp/header/concepts)定义了一组常用的概念。
 
