@@ -292,6 +292,8 @@ D:\Python\Python311\Lib\copy.py
 | `platform` | 平台标识符，例如`win32`或`linux` |
 | `stdin`、`stdout`、`stderr` | 标准输入/输出/错误流，一个类似文件(file-like)的对象 |
 
+注：除了`sys.platform`，也可以通过`os.name`或`platform`模块访问操作系统平台信息。
+
 从命令行调用Python脚本时，可以指定一些参数——所谓的**命令行参数**(command-line argument)（例如`python prog.py arg1 arg2 ...`）。这些参数将放在列表`sys.argv`中，其中`sys.argv[0]`是Python脚本名。下面的程序按相反的顺序打印命令行参数。
 
 [代码清单10-5 反序打印命令行参数](https://github.com/ZZy979/Beginning-Python-code/blob/main/ch10/reverseargs.py)
