@@ -2,7 +2,7 @@
 title: 《Python基础教程》笔记 第14章 网络编程
 date: 2024-03-24 11:31:29 +0800
 categories: [Python, Beginning Python]
-tags: [python, computer network]
+tags: [python, computer network, socket, twisted]
 ---
 本章将通过示例展示如何使用Python来编写使用网络的程序。Python提供了强大的网络编程支持，有很多库实现了常见的网络协议以及基于这些协议的抽象层，让你能够专注于程序的逻辑，而无需关心通过线路来传输比特的问题。
 
@@ -18,7 +18,7 @@ tags: [python, computer network]
 
 套接字是`socket`模块中`socket`类的实例。创建普通套接字时，不用提供任何参数。
 
-服务器套接字先调用`bind()`方法，再调用`listen()`方法来监听给定的地址。然后，客户端套接字可以使用与`bind()`相同的地址调用`connect()`方法连接到服务器。这里的地址是一个格式为`(host, port)`的元组，其中`host`是主机名（例如www.example.com或IP地址），`port`是端口号（一个整数）。
+服务器套接字先调用`bind()`方法，再调用`listen()`方法来监听给定的地址。然后，客户端套接字可以使用与`bind()`相同的地址调用`connect()`方法连接到服务器（在服务器端，可以使用函数`socket.gethostname()`获取当前及其的主机名）。这里的地址是一个格式为`(host, port)`的元组，其中`host`是主机名（例如www.example.com或IP地址），`port`是端口号（一个整数）。
 
 服务器套接字开始监听后，就可以使用`accept()`方法接受客户端连接了。这个方法将阻塞（等待）直到有客户端连接，然后返回一个格式为`(client, address)`的元组，其中`client`是客户端套接字，`address`是客户端地址。服务器处理客户端连接，然后再次调用`accept()`等待新连接。这通常是在一个无限循环中完成的。
 
@@ -32,10 +32,13 @@ tags: [python, computer network]
 
 代码清单14-1和14-2展示了最简单的服务器和客户端示例。如果在同一台机器上运行它们（先运行服务器），服务器将打印一条收到连接请求的消息，然后客户端将打印它从服务器收到的消息。在服务器运行时，可以运行多个客户端。通过将客户端中的`gethostname()`调用替换为服务器所在机器的主机名，可以让这两个程序在不同的机器上通过网络连接起来。
 
-注意：在UNIX系统中，使用Ctrl+C停止服务器后，可能需要等待一段时间才能再次使用同一个端口号，否则会报错“地址已被占用”。为了避免这一问题，可以设置套接字标志`s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)`，或者将`socketserver`服务器的`allow_reuse_address`属性设置为`True`。
+注意：
+* 在UNIX系统中，使用Ctrl+C停止服务器后，可能需要等待一段时间才能再次使用同一个端口号，否则会报错“地址已被占用”(OSError: [Errno 98] Address already in use)。为了避免这一问题，可以设置套接字标志`s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)`，或者将`socketserver`服务器的`allow_reuse_address`属性设置为`True`。
+* 在macOS系统中，使用`socket.gethostname()`作为服务器绑定的主机名可能会报错 "socket.gaierror: [Errno 8] nodename nor servname provided, or not known" ，因为/etc/hosts文件中没有将主机名映射到IP地址127.0.0.1。应使用`''`、`'localhost'`或`'127.0.0.1'`。
 
-* [代码清单14-1 小型服务器](https://github.com/ZZy979/Beginning-Python-code/blob/main/ch14/minimal_server.py)
-* [代码清单14-2 小型客户端](https://github.com/ZZy979/Beginning-Python-code/blob/main/ch14/minimal_client.py)
+[代码清单14-1 小型服务器](https://github.com/ZZy979/Beginning-Python-code/blob/main/ch14/minimal_server.py)
+
+[代码清单14-2 小型客户端](https://github.com/ZZy979/Beginning-Python-code/blob/main/ch14/minimal_client.py)
 
 更详细的信息参考官方文档[socket模块](https://docs.python.org/3/library/socket.html)和[Socket Programming HOWTO](https://docs.python.org/dev/howto/sockets.html)。
 
