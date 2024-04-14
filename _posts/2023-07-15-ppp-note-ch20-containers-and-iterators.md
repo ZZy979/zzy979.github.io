@@ -352,10 +352,12 @@ for (auto begin = v.begin(), end = v.end(); begin != end; ++begin) {
 ```cpp
 template<class T>
 void user(vector<T>& v, list<T>& lst) {
-    for (vector<T>::iterator p = v.begin(); p != v.end(); ++p) cout << *p << '\n';
-    list<T>::iterator q = find(lst.begin(), lst.end(), T{42});
+    for (typename vector<T>::iterator p = v.begin(); p != v.end(); ++p) cout << *p << '\n';
+    typename list<T>::iterator q = find(lst.begin(), lst.end(), T{42});
 }
 ```
+
+注：由于`user()`是函数模板，因此在`iterator`类型前必须使用[待决名的typename消歧义符](https://en.cppreference.com/w/cpp/language/dependent_name#The_typename_disambiguator_for_dependent_names)。
 
 幸运的是，我们不必这样写：我们可以将变量类型声明为`auto`，表示其类型由初始值推导出来（类似于模板参数推导）。例如：
 

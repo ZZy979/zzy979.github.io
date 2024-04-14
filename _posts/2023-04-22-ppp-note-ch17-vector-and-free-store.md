@@ -2,7 +2,7 @@
 title: 《C++程序设计原理与实践》笔记 第17章 向量和自由存储
 date: 2023-04-22 21:58:03 +0800
 categories: [C/C++, PPP]
-tags: [cpp, vector, pointer, reference, dynamic memory allocation, memory error, memory leak, destructor, type conversion, linked list]
+tags: [cpp, vector, pointer, reference, dynamic memory allocation, memory error, memory leak, destructor, type conversion, linked list, this pointer]
 ---
 本章和后面四章介绍C++标准库的容器和算法部分（通常称为STL）。本章和后面两张的重点是最常用、最有用的STL容器——向量的设计和实现。
 
@@ -832,9 +832,29 @@ void destroy(Link* p) {
 
 在成员函数中，`this`是**指向当前对象（即调用成员函数的对象）的指针**。在访问当前对象的成员时，无需使用`this`。例如，在`Link::insert()`中，`this->prev`等价于`prev`。只有当需要引用整个对象时才需要显式使用`this`（例如`n->succ = this;`、`return *this;`等）。
 
-注：在`X`类的非`const`成员函数、构造函数和析构函数中，`this`的类型是`X*`；在`const`成员函数中，其类型是`const X*`。
-
 注意，`this`不能被赋值。
+
+注：
+* 在`X`类的非`const`成员函数、构造函数和析构函数中，`this`的类型是`X*`；在`const`成员函数中，其类型是`const X*`。
+* 在类模板中访问基类成员时，必须显式地使用`this->`（使其成为[待决表达式](https://en.cppreference.com/w/cpp/language/dependent_name)，因为基类模板特化可能没有该成员）。例如：
+
+```cpp
+template<class T>
+struct B {
+    int var;
+};
+
+template<>
+struct B<int> {};
+
+template<class T>
+struct D : B<T> {
+    D() {
+        // var = 1;    // error: 'var' was not declared in this scope
+        this->var = 1; // OK
+    }
+};
+```
 
 ### 17.10.1 链表的应用
 下面是链表的应用示例的新版本：
