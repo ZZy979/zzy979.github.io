@@ -26,7 +26,7 @@ tags: [python]
 * [第13章 数据库支持]({% post_url 2024-03-23-python-note-ch13-database-support %})
 * [第14章 网络编程]({% post_url 2024-03-24-python-note-ch14-network-programming %})
 * [第15章 Python和Web]({% post_url 2024-04-04-python-note-ch15-python-and-the-web %})
-* 第16章 测试基础
+* [第16章 测试]({% post_url 2024-04-15-python-note-ch16-testing-1-2-3 %})
 * 第17章 扩展Python
 * 第18章 程序打包
 * 第19章 好玩的编程
