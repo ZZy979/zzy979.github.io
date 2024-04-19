@@ -379,7 +379,7 @@ if (!fs) error("can't open ", name);
 fs.seekg(5);  // move reading position to 5 (the 6th character)
 char ch;
 fs >> ch;     // read and increment reading position
-cout << "character[5] is " << ch << ' (' << int(ch) << ")\n";
+cout << "character[5] is " << ch << " (" << int(ch) << ")\n";
 
 fs.seekp(1); // move writing position to 1
 fs << 'y';   // write and increment writing position

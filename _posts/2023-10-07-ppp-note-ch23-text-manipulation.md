@@ -2,7 +2,7 @@
 title: 《C++程序设计原理与实践》笔记 第23章 文本处理
 date: 2023-10-07 20:16:05 +0800
 categories: [C/C++, PPP]
-tags: [cpp, regular expression, raw string]
+tags: [cpp, string, regular expression, raw string]
 ---
 本章将介绍如何从文本中提取信息。在本章中，我们首先回顾标准库中最常用的文本处理功能：`string`、`iostream`和`map`。然后，我们将介绍正则表达式(`regex`)，用来表达文本中的模式。
 
@@ -51,6 +51,40 @@ int d = from_string<int>("Mary had a little lamb");  // oops!
 `!(interpreter >> std::ws).eof()`将读取剩余的空白符，并检查是否到达输入结尾。结尾允许有空白符，但之后不应该再有任何字符。因此，`to<int>("123")`和`to<int>("123 ")`会成功，而`to<int>("123.5")`会失败。
 
 注：`to()`是借助字符串完成“类型转换”的，并不是通常意义上的类型转换（像`static_cast`）。例如，`to<int>(123.5)`会出错而不是返回123；`to<char>(9)`会返回`'9'`而不是`'\t'`。
+
+注：`std::string`底层保存的是字节数组，因此不存在字符编码的问题。字符串在内存中的表示取决于源代码文件的编码（对于字符串字面值）或输入文件的编码（对于从文件读取的字符串）。例如：
+
+```cpp
+#include <iostream>
+#include <iomanip>
+#include <string>
+
+using namespace std;
+
+int main() {
+    string s = "你好";
+    cout << s.length() << '\n';
+    for (unsigned char c : s)
+        cout << hex << setw(2) << setfill('0') << static_cast<int>(c) << ' ';
+    return 0;
+}
+```
+
+如果源代码文件的编码为UTF-8，则输出如下：
+
+```
+6
+e4 bd a0 e5 a5 bd 
+```
+
+如果编码为GBK，则输出如下：
+
+```
+4
+c4 e3 ba c3 
+```
+
+除了基本字符类型`char`，C++还提供了表示宽字符的`wchar_t`以及表示UTF字符的`char16_t`、`char32_t`和`char8_t`，详见[Character types](https://en.cppreference.com/w/cpp/language/types#Character_types)。
 
 ## 23.3 I/O流
 I/O流建立了字符串和其他类型之间的联系。第10和11章已经介绍了iostream库。标准I/O流的类层次结构：
@@ -438,7 +472,7 @@ Subject FW: No subject!
 | `[:graph:]` | 任意图形字符 | `[!-~]` |
 | `[:lower:]` | 任意小写字母 | `[a-z]` |
 | `[:print:]` | 任意可打印字符 | `[ -~]` |
-| `[:punct:]` | 任意标点字符 | ``[!"#$%&'()*+,-./:;<=>?@\[\\\]^_`{|}~]`` |
+| `[:punct:]` | 任意标点字符 | ``[!"#$%&'()*+,\-./:;<=>?@\[\\\]^_`{|}~]`` |
 | `[:space:]` | 任意空白符 | `[ \t\n\r\f\v]`或`\s` |
 | `[:upper:]` | 任意大写字母 | `[A-Z]` |
 | `[:xdigit:]` | 任意十六进制数字 | `[0-9A-Fa-f]` |
