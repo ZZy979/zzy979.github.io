@@ -373,10 +373,13 @@ std::cout << a.size() << ' ' << b.size() << std::endl;  // prints "0 3"
 经验法则：**当需要将左值传递给右值引用类型的参数、通过转移资源所有权的方式避免拷贝时，应该使用`std::move()`**。
 
 不适合使用`std::move()`的情况：
-* 不要对未实现移动操作的类型使用，因为移动操作会退化为拷贝操作，这种类型只能通过传指针/引用来避免拷贝。STL容器和protobuf生成的类都实现了移动操作（见[Protocol Buffers入门教程]({% post_url 2022-04-26-protocol-buffers-tutorial %}) 3.1.5节）。
+* 不要对未实现移动操作的类型使用，因为移动操作会退化为拷贝操作，这种类型只能通过传指针/引用来避免拷贝。STL容器和protobuf生成的类都实现了移动操作（但protobuf消息类的移动操作并不一定比拷贝更高效，见[Protocol Buffers入门教程]({% post_url 2022-04-26-protocol-buffers-tutorial %}) 3.1.5节）。
 * 不要对右值或`const`对象使用，因为没有任何作用。
 * 不要对基本类型或POD类型使用，因为移动操作的性能与拷贝操作相同。
 * 不要在`return`语句中使用，因为会影响NRVO。见[Move-eligible expressions](https://en.cppreference.com/w/cpp/language/value_category#Move-eligible_expressions)和[Automatic move from local variables and parameters](https://en.cppreference.com/w/cpp/language/return#Automatic_move_from_local_variables_and_parameters)。
+* 如果不用来初始化或赋值给其他对象，使用`std::move()`没有任何意义（例如赋给右值引用变量）。
+
+总之，使用`std::move()`之前考虑三个问题：可移动吗？真的移动了吗？移动比拷贝效率高吗？
 
 适合使用`std::move()`的情况：
 
@@ -415,7 +418,10 @@ bool f(std::vector<A>& v) {
 }
 ```
 
-注：如果不需要额外的初始化操作，可用`v.push_back(A(x, y))`或`v.emplace_back(x, y)`来代替。前者也会调用移动构造函数（即使类`A`不可拷贝），而后者直接原地构造。
+注：
+* 这几乎是真实业务代码中唯一需要使用`std::move()`的情况。
+* 如果类`A`不可移动，可用智能指针`std::shared_ptr`或`std::unique_ptr`来包装。
+* 如果不需要额外的初始化操作，可用`v.push_back(A(x, y))`或`v.emplace_back(x, y)`来代替。前者也会调用移动构造函数（即使类`A`不可拷贝），而后者直接原地构造。
 
 （3）对于不再需要的对象，将其资源转移给另一个对象。例如：
 
@@ -430,6 +436,8 @@ void f() {
 ```
 
 调用`process()`函数时，将`foo_data`的资源转移给了形参`data`，因此在调用之后不能再使用`foo_data`。
+
+注：实际上很少会这样写，而是将`process()`的参数定义为`const Data&`。
 
 ### 3.4 拷贝消除
 C++标准支持**拷贝消除**(copy elision)，允许编译器在某些情况下省略拷贝构造函数和移动构造函数的调用，从而提高程序的性能。拷贝消除的规则也随着C++标准版本的更新而不断扩展。
