@@ -175,10 +175,6 @@ public:
 * 带`index`参数的`mutable_` getter：返回指定索引元素的指针
 * `add_`：添加一个元素并返回其指针
 
-注：
-* protobuf生成的消息类定义了默认构造函数、拷贝操作、移动操作和`Swap()`。拷贝操作等价于`CopyFrom()`，移动操作等价于`Swap()`。
-* 消息类的`Swap()`函数：对于基本类型字段，交换字段的值；对于`repeated`或`string`类型字段，交换底层指针；对于消息类型字段，递归调用子消息的`Swap()`函数。因此，对于仅包含基本类型字段的消息，移动操作的性能与拷贝操作基本相同。
-
 编译器为每种类型的字段生成的函数的详细信息见[C++ Generated Code Guide](https://protobuf.dev/reference/cpp/cpp-generated/)
 
 （1）枚举和嵌套类
@@ -214,6 +210,32 @@ public:
 完整的序列化和反序列化函数列表见[MessageLite类API文档](https://protobuf.dev/reference/cpp/api-docs/google.protobuf.message_lite/#MessageLite)。
 
 注意：**永远不要通过继承生成的消息类来添加行为！** 应该使用包装类，将消息类包装在另一个类中。
+
+注：
+* protobuf生成的消息类定义了默认构造函数、拷贝操作、移动操作和`Swap()`。拷贝操作等价于`CopyFrom()`，移动操作等价于`Swap()`。
+* `Swap()`函数的实现：对于基本类型字段，交换字段的值；对于`repeated`或`string`类型字段，交换底层指针；对于消息类型字段，递归调用子消息的`Swap()`函数。因此，对于仅包含基本类型字段的消息，移动操作的性能与拷贝操作基本相同。
+
+警告：消息类型字段的`mutable_` getter是有副作用的！例如，有两个消息`Foo`和`Bar`，消息`Bar`有字段`optional Foo foo = 1;`。则第一次调用`mutable_foo()`之前，`has_foo()`返回`false`，`foo()`返回空的`Foo`对象引用（可能是`Foo::default_instance()`）；而第一次调用`mutable_foo()`（即使只获取指针而不设置任何字段）将创建一个新的`Foo`对象，此后`has_foo()`将返回`true`，`foo()`将返回这个新对象的引用！可以用下面的程序来验证：
+
+[mutable_caution.cpp](https://github.com/ZZy979/protobuf-demo/blob/main/bar/mutable_caution.cpp)
+
+程序输出如下：
+
+```
+Before mutable_foo(): &foo = 0x528640, bar =
+y: 456
+
+After mutable_foo(): &foo = 0xfc30e0, bar =
+foo {
+}
+y: 456
+
+After set_x(): &foo = 0xfc30e0, bar =
+foo {
+  x: 123
+}
+y: 456
+```
 
 #### 3.1.6 写出消息
 下面来尝试使用消息类。希望地址簿应用能够做的第一件事是将个人详细信息写入文件。为此，需要创建并填充`AddressBook`消息类的实例，之后将其写入输出流。
@@ -952,31 +974,9 @@ protobuf-demo/
 
 foo.proto和bar.proto分别定义了消息`Foo`和`Bar`，并且bar.proto导入了foo.proto：
 
-foo.proto
+[foo.proto](https://github.com/ZZy979/protobuf-demo/blob/main/foo/foo.proto)
 
-```protobuf
-syntax = "proto2";
-
-package foo;
-
-message Foo {
-  optional int32 x = 1;
-}
-```
-
-bar.proto
-
-```protobuf
-syntax = "proto2";
-
-package foo;
-
-import "foo.proto";
-
-message Bar {
-  optional foo.Foo f = 1;
-}
-```
+[bar.proto](https://github.com/ZZy979/protobuf-demo/blob/main/bar/bar.proto)
 
 由于消息`Foo`和`Bar`定义在不同的包中，因此需要加上包名：`foo.Foo`，否则protoc编译器会报错`Foo`未定义，如果定义在同一个包中则不需要。
 
