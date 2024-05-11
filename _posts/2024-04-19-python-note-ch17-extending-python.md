@@ -27,7 +27,7 @@ Python可以实现任何东西。这门语言功能强大，但有时候速度�
 首先安装JDK 8。之后从Jython网站(<https://www.jython.org/download>)下载安装程序jython-installer-2.7.3.jar，双击执行JAR文件打开GUI安装界面，或者在命令行中执行以下命令将Jython安装到指定目录中：
 
 ```shell
-$ java -jar jython-installer-2.7.3.jar -d /path/to/jython
+$ java -jar jython-installer-2.7.3.jar -s -d /path/to/jython
 ```
 
 安装完成后，运行bin/jython（类似于Python解释器，但可以访问Java标准库和导入Java类）。
@@ -143,7 +143,7 @@ SWIG使用起来很简单。假设有一些C语言代码：
 
 作为比较，代码清单17-4展示了等价的纯Python函数。
 
-[代码清单17-4 检测回文的Python函数](https://github.com/ZZy979/Beginning-Python-code/blob/main/ch17/palindrome.py)
+[代码清单17-4 检测回文的Python函数](https://github.com/ZZy979/Beginning-Python-code/blob/main/ch17/palindrome_pure.py)
 
 下面介绍如何编译和使用这段C语言代码。
 
@@ -166,9 +166,7 @@ $ swig -python palindrome.i
 #### 编译、链接和使用
 编译可能是最棘手的部分（确实！）。要正确地编译，需要知道Python源代码（至少是头文件pyconfig.h和Python.h）的存储位置。还需要根据选择的C语言编译器，使用正确的选项将代码编译成共享库（动态链接库）。
 
-注：
-* 这里使用的C编译器是[GCC](https://gcc.gnu.org/)。Linux系统自带了`gcc`命令；Windows系统需要安装[MinGW](https://sourceforge.net/projects/mingw/)，使用安装目录下的bin\gcc.exe，另外也可以使用MSVC编译器（需要安装Visual Studio）。关于编译和链接的基本知识以及GCC编译器的基本用法见[GCC编译器的使用方法]({% post_url 2022-02-03-gcc-compiler-usage %})。
-* 扩展CPython需要用到其头文件（例如Python.h）和库文件（例如python3.dll或libpython3.so）。在Windows上，Python标准安装已经包含了这些文件，安装目录结构如下（Conda环境也一样）：
+注：扩展CPython需要用到其头文件（例如Python.h）和库文件（例如python3.dll或libpython3.so）。在Windows上，Python标准安装已经包含了这些文件，安装目录结构如下（Conda环境也一样）：
 
 ```
 D:\Python
@@ -185,10 +183,10 @@ D:\Python
         python311.dll
 ```
 
-在Linux上，如果使用系统自带的Python（例如/usr/bin/python3），则头文件应该在/usr/include/python3.6目录中，库文件应该在/usr/lib/python3.6目录中。如果没有，则需要安装Conda环境，目录结构如下：
+在Linux上，如果使用系统自带的Python（例如/usr/bin/python3），则头文件应该在/usr/include/python3.6目录中，库文件应该在/usr/lib目录中。如果没有，则需要安装Conda环境，目录结构如下：
 
 ```
-/path/to/conda/
+/path/to/conda/envs/myenv
     bin/
         python            # 交互式解释器
     include/
@@ -198,7 +196,10 @@ D:\Python
         python3.11/       # Python标准库
             fileinput.py
         libpython3.so     # 动态链接库
+        libpython3.11.so
 ```
+
+（1）Linux
 
 下面是在Linux中使用gcc编译器的示例（假设`$PYTHON_HOME`指向Python安装目录）：
 
@@ -207,6 +208,8 @@ gcc -fPIC -c palindrome.c
 gcc -fPIC -c -I$PYTHON_HOME/include/python3.11 palindrome_wrap.c
 gcc -shared palindrome.o palindrome_wrap.o -o _palindrome.so
 ```
+
+注：关于编译和链接的基本知识以及GCC编译器的基本用法见[GCC编译器的使用方法]({% post_url 2022-02-03-gcc-compiler-usage %})。
 
 念完这些“黑暗魔咒”后，将得到一个很有用的文件_palindrome.so。这就是**共享库**(shared library)，可以直接导入到Python中（前提是将其放到PYTHONPATH包含的目录中，例如当前目录）：
 
@@ -234,12 +237,39 @@ gcc -shared palindrome.o palindrome_wrap.o -o _palindrome.so
 Wow -- that never occurred to me ...
 ```
 
-TODO Windows
+（2）macOS
 
+在macOS中，`gcc`命令实际上是Clang编译器，编译选项有所不同：
 
+```shell
+gcc -dynamic -c palindrome.c
+gcc -dynamic -c -I$PYTHON_HOME/include/python3.11 palindrome_wrap.c
+gcc -dynamiclib palindrome.o palindrome_wrap.o -o _palindrome.so -Wl,-undefined,dynamic_lookup
+```
+
+（3）Windows
+
+在Windows中，CPython扩展库的后缀名是.pyd而不是.so，必须使用MSVC编译器构建。为此，需要安装[Visual Studio IDE](https://visualstudio.microsoft.com/downloads/)或[Visual Studio构建工具](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2022)，勾选“使用C++的桌面开发”、“MSVC”和“Windows SDK”，如下图所示。
+
+![安装Visual Studio生成工具](/assets/images/python-note-ch17-extending-python/安装Visual Studio生成工具.png)
+
+安装完成后，运行开始菜单中的 "x64 Native Tools Command Prompt for VS 2022"，执行以下编译命令（将环境变量`%PYTHON_HOME%`替换为Python安装目录）：
+
+```shell
+cl /c palindrome.c
+cl /c /I%PYTHON_HOME%\include palindrome_wrap.c
+cl /LD palindrome.obj palindrome_wrap.obj /link /LIBPATH:%PYTHON_HOME%\libs /OUT:_palindrome.pyd
+```
+
+之后将得到共享库_palindrome.pyd，使用方法与Linux相同。
+
+参考：
+* [How to Create a pyd File in Python](https://www.blog.pythonlibrary.org/2023/11/01/how-to-create-a-pyd-file-in-python/)
+* [Compiling C extension modules on Windows](https://github.com/cython/cython/wiki/CythonExtensionsOnWindows#less-useful-information)
+* [Use the Microsoft C++ toolset from the command line](https://learn.microsoft.com/en-us/cpp/build/building-on-the-command-line)
 
 #### 穿越编译器“魔法森林”的捷径
-如果你觉得编译过程晦涩难懂，这很正常，很多人都这样认为。如果自动化编译过程（例如使用Makefile），用户就需要进行配置：指定Python安装位置、使用的编译器和选项等。通过使用[setuptools](https://pypi.org/project/setuptools/)可以优雅地避免这一问题。实际上，它直接支持SWIG。你甚至不需要手动运行，只需编写代码和接口文件，再运行安装脚本。详见18.3节。
+如果你觉得编译过程晦涩难懂，这很正常，很多人都这样认为。如果自动化编译过程（例如使用Makefile），用户就需要进行配置：指定Python安装位置、使用的编译器和选项等。通过使用[setuptools](https://setuptools.pypa.io/en/latest/setuptools.html)可以优雅地避免这一问题。实际上，它直接支持SWIG。你甚至不需要手动运行，只需编写代码和接口文件，再运行安装脚本。详见18.3节。
 
 ### 17.3.2 自行改造
 SWIG在幕后做了很多工作，但并非都是绝对必要的。如果愿意，也可以自己编写包装代码，或者在C语言代码中直接使用Python C API。
@@ -317,7 +347,19 @@ if (!PyArg_ParseTuple(args, "")) {
 gcc -fPIC -shared -I$PYTHON_HOME/include/python3.11 palindrome2.c -o palindrome.so
 ```
 
-这将生成一个名为palindrome.so的文件。只要将它放在PYTHONPATH包含的目录（例如当前目录）中，就可以开始使用了：
+在macOS中：
+
+```shell
+gcc -dynamiclib -I$PYTHON_HOME/include/python3.11 palindrome2.c -o palindrome.so -Wl,-undefined,dynamic_lookup
+```
+
+在Windows中：
+
+```shell
+cl /LD /I%PYTHON_HOME%\include palindrome2.c /link /LIBPATH:%PYTHON_HOME%\libs /OUT:palindrome.pyd
+```
+
+这将生成一个名为palindrome.so（或.pyd）的文件。只要将它放在PYTHONPATH包含的目录（例如当前目录）中，就可以开始使用了：
 
 ```python
 >>> from palindrome import is_palindrome
