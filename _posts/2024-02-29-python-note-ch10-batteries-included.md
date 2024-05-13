@@ -2,7 +2,7 @@
 title: 《Python基础教程》笔记 第10章 自带电池
 date: 2024-02-29 22:00:08 +0800
 categories: [Python, Beginning Python]
-tags: [python, module, package, command-line argument, file access, set, date and time, random number, json, regular expression]
+tags: [python, module, package, pip, command-line argument, file access, set, date and time, random number, json, regular expression]
 math: true
 ---
 Python不仅核心语言非常强大，还提供了更多工具以供使用。标准安装包含一组称为**标准库**(standard library)的模块。本章简要介绍模块的工作原理，然后概述标准库，重点介绍几个很有用的模块。
