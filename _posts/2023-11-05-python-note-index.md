@@ -29,7 +29,7 @@ tags: [python]
 * [第16章 测试]({% post_url 2024-04-15-python-note-ch16-testing-1-2-3 %})
 * [第17章 扩展Python]({% post_url 2024-04-19-python-note-ch17-extending-python %})
 * [第18章 程序打包]({% post_url 2024-05-12-python-note-ch18-packaging-your-programs %})
-* 第19章 好玩的编程
+* [第19章 有趣的编程]({% post_url 2024-05-15-python-note-ch19-playful-programming %})
 * 第20章 项目1：即时标记
 * 第21章 项目2：画幅好画
 * 第22章 项目3：万能的XML
