@@ -2,7 +2,7 @@
 title: 《Python基础教程》笔记 第15章 Python和Web
 date: 2024-04-04 14:20:25 +0800
 categories: [Python, Beginning Python]
-tags: [python, web, crawler, html, cgi]
+tags: [python, web, crawler, html, cgi, http]
 ---
 本章讨论Python Web编程的一些方面。Web编程涉及的范围极广，这里挑选了两个重要的主题：屏幕抓取和CGI。
 

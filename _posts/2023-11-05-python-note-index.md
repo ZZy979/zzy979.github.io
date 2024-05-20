@@ -30,7 +30,7 @@ tags: [python]
 * [第17章 扩展Python]({% post_url 2024-04-19-python-note-ch17-extending-python %})
 * [第18章 程序打包]({% post_url 2024-05-12-python-note-ch18-packaging-your-programs %})
 * [第19章 有趣的编程]({% post_url 2024-05-15-python-note-ch19-playful-programming %})
-* 第20章 项目1：即时标记
+* [第20章 项目1：即时标记]({% post_url 2024-05-18-python-note-ch20-project-1-instant-markup %})
 * 第21章 项目2：画幅好画
 * 第22章 项目3：万能的XML
 * 第23章 项目4：新闻汇总

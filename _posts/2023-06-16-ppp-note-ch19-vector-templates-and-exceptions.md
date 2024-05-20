@@ -273,7 +273,13 @@ void vector<string>::push_back(const string& x) { /* ... */ }
 
 例如，`vector`的元素类型必须是可拷贝的（因为`push_back()`中的`elem[sz] = x;`是拷贝操作）。在第20和21章，我们将会看到要求参数支持算术运算的模板。
 
-注：如果类`C`不可拷贝，则仍然可以定义`vector<C> v`，但`v.push_back(c)`编译失败；如果类`C`没有默认构造函数，则可以定义`vector<C> v`，但`vector<C> v(5)`编译失败。这些编译错误发生在模板实例化时，而不是编译模板本身的代码时，因为模板并不知道用户会提供什么样的实际类型。
+注：
+* `std::vector`的`push_back(const T&)`要求元素类型`T`满足[CopyInsertable](https://en.cppreference.com/w/cpp/named_req/CopyInsertable)，`push_back(T&&)`要求`T`满足[MoveInsertable](https://en.cppreference.com/w/cpp/named_req/MoveInsertable)，`emplace_back(args...)`要求`T`满足MoveInsertable和[EmplaceConstructible](https://en.cppreference.com/w/cpp/named_req/EmplaceConstructible)，这是因为插入元素可能导致扩容，需要拷贝/移动已有元素。因此：
+  * 如果类`C`不可拷贝，则仍然可以定义`vector<C> v`，但`v.push_back(c)`编译失败。
+  * 如果类`C`没有默认构造函数，则可以定义`vector<C> v`，但`vector<C> v(5)`编译失败。
+  * 如果类`C`可默认构造，但不可拷贝、不可移动，则`v.emplace_back()`编译失败。
+* 这些编译错误发生在模板实例化时，而不是编译模板本身的代码时，因为模板并不知道用户会提供什么样的实际类型。
+* 在这些情况下，可以用智能指针包装元素，例如`vector<shared_ptr<C>>`。
 
 依赖于显式模板参数的这种泛型编程通常叫做**参数化多态**(parametric polymorphism)。相比之下，从类层次结构和虚函数中获得的多态叫做**专用多态**(ad hoc polymorphism)，而这种编程风格叫做面向对象编程。这两种编程风格都叫做“多态”的原因在于二者都依赖程序员通过一个单一的接口提供一个概念的多个版本。多态在希腊语中是“多种形状”(many shapes)的意思，是指你可以通过一个公共的接口操作很多不同的类型。在第16~19章`Shape`的例子中，我们可以通过`Shape`定义的接口访问多种形状（例如`Text`、`Circle`、`Polygon`等）。当我们使用`vector`时，我们通过`vector`模板定义的接口使用不同类型的`vector`（例如`vector<int>`、`vector<double>`和`vector<Shape*>`）。
 

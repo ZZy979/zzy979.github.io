@@ -2,8 +2,7 @@
 title: 《Python基础教程》笔记 第19章 有趣的编程
 date: 2024-05-15 00:32:37 +0800
 categories: [Python, Beginning Python]
-tags: [python, prototype, configuration, 
-symbolic constant, logging]
+tags: [python, prototype, configuration, symbolic constant, logging]
 ---
 在接下来的10章中，你将把新学到的技能付诸应用。每章都包含一个DIY项目，既介绍了实现解决方案所需的工具，同时又提供了很大的实验空间。
 
