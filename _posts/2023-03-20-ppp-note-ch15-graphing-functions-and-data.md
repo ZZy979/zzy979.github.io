@@ -2,7 +2,7 @@
 title: 《C++程序设计原理与实践》笔记 第15章 绘制函数图和数据图
 date: 2023-03-20 00:39:11 +0800
 categories: [C/C++, PPP]
-tags: [cpp, gui, fltk, default argument, lambda expression]
+tags: [cpp, gui, fltk, plot, default argument, lambda expression]
 math: true
 ---
 本章讨论绘制函数图和数据图的基本机制。关键例子是绘制一元函数图像，以及展示从文件中读取的值。
