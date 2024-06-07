@@ -27,7 +27,7 @@ tags: [python, markup, html]
 ## 20.3 准备工作
 开始编码前，还需要有评估进展的方法，因此需要一个测试套件。就这个项目而言，一个测试就足够了：一个测试文档。代码清单20-1是要标记的纯文本文件。
 
-[代码清单20-1 示例纯文本文档](https://github.com/ZZy979/Beginning-Python-code/blob/main/ch20/test_input.txt)
+[代码清单20-1 示例纯文本文档](https://github.com/ZZy979/Beginning-Python-code/blob/main/ch20/testdata/test_input.txt)
 
 要对实现进行测试，只需将这个文档作为输入，并在Web浏览器中查看结果（或直接检查添加的标签）即可。
 
