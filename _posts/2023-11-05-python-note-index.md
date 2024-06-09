@@ -33,7 +33,7 @@ tags: [python]
 * [第20章 项目1：即时标记]({% post_url 2024-05-18-python-note-ch20-project-1-instant-markup %})
 * [第21章 项目2：画幅好画]({% post_url 2024-05-27-python-note-ch21-project-2-painting-a-pretty-picture %})
 * [第22章 项目3：万能的XML]({% post_url 2024-06-03-python-note-ch22-project-3-xml-for-all-occasions %})
-* 第23章 项目4：新闻汇总
+* [第23章 项目4：新闻汇总]({% post_url 2024-06-08-python-note-ch23-project-4-in-the-news %})
 * 第24章 项目5：虚拟茶话会
 * 第25章 项目6：使用CGI进行远程编辑
 * 第26章 项目7：自建公告板
