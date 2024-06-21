@@ -18,7 +18,7 @@ tags: [python, computer network, socket, twisted]
 
 套接字是`socket`模块中`socket`类的实例。创建普通套接字时，不用提供任何参数。
 
-服务器套接字先调用`bind()`方法，再调用`listen()`方法来监听给定的地址。然后，客户端套接字可以使用与`bind()`相同的地址调用`connect()`方法连接到服务器（在服务器端，可以使用函数`socket.gethostname()`获取当前及其的主机名）。这里的地址是一个格式为`(host, port)`的元组，其中`host`是主机名（例如www.example.com或IP地址），`port`是端口号（一个整数）。
+服务器套接字先调用`bind()`方法，再调用`listen()`方法来监听给定的地址。然后，客户端套接字可以使用与`bind()`相同的地址调用`connect()`方法连接到服务器（在服务器端，可以使用函数`socket.gethostname()`获取当前及其的主机名）。这里的地址是一个格式为`(host, port)`的元组，其中`host`是主机名（例如www.example.com或IP地址），`port`是端口号（一个整数）。`listen()`方法接受一个可选参数——允许排队等待的最大连接数。
 
 服务器套接字开始监听后，就可以使用`accept()`方法接受客户端连接了。这个方法将阻塞（等待）直到有客户端连接，然后返回一个格式为`(client, address)`的元组，其中`client`是客户端套接字，`address`是客户端地址。服务器处理客户端连接，然后再次调用`accept()`等待新连接。这通常是在一个无限循环中完成的。
 
@@ -29,6 +29,8 @@ tags: [python, computer network, socket, twisted]
 注：客户端和服务器通过套接字通信的流程如下图所示。
 
 ![套接字流程图](/assets/images/python-note-ch14-network-programming/套接字流程图.png)
+
+注意：服务器套接字只用于监听和接受连接，服务器使用`accept()`返回的**新**套接字（而不是服务器套接字本身）与客户端进行通信。
 
 代码清单14-1和14-2展示了最简单的服务器和客户端示例。如果在同一台机器上运行它们（先运行服务器），服务器将打印一条收到连接请求的消息，然后客户端将打印它从服务器收到的消息。在服务器运行时，可以运行多个客户端。通过将客户端中的`gethostname()`调用替换为服务器所在机器的主机名，可以让这两个程序在不同的机器上通过网络连接起来。
 
@@ -60,6 +62,8 @@ tags: [python, computer network, socket, twisted]
 注：网页内容是HTML文本，可以使用Chrome浏览器访问 "view-source:https://www.python.org/" 查看。
 
 注意，可以使用以file:开头的URL访问本地文件，例如file:C:\text\somefile.txt。
+
+`urlopen()`返回的类似于文件的对象支持`close()`、`read()`、`readline()`和`readlines()`方法，也支持迭代（注意：返回`bytes`而不是字符串）。
 
 假设要提取刚才打开的Python网页中 "About" 链接的（相对）URL，可以使用正则表达式。
 
