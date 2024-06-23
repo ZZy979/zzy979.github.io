@@ -35,7 +35,7 @@ tags: [python]
 * [第22章 项目3：万能的XML]({% post_url 2024-06-03-python-note-ch22-project-3-xml-for-all-occasions %})
 * [第23章 项目4：新闻汇总]({% post_url 2024-06-08-python-note-ch23-project-4-in-the-news %})
 * [第24章 项目5：虚拟茶话会]({% post_url 2024-06-10-python-note-ch24-project-5-a-virtual-tea-party %})
-* 第25章 项目6：使用CGI进行远程编辑
+* [第25章 项目6：使用CGI进行远程编辑]({% post_url 2024-06-22-python-note-ch25-project-6-remote-editing-with-cgi %})
 * 第26章 项目7：自建公告板
 * 第27章 项目8：使用XML-RPC进行文件共享
 * 第28章 项目9：文件共享2——GUI版本
