@@ -435,7 +435,24 @@ C++为类成员访问提供了一个简单的模型。类成员可以是：
 * **受保护的**(protected)：如果一个成员是`protected`，则只能被类自身和派生类访问。
 * **私有的**(private)：如果一个成员是`private`，则只能被类自身访问。
 
-继承也分为公有继承、受护继承和私有继承：
+注意：受保护的成员在派生类中只能通过派生类对象访问。例如：
+
+```cpp
+struct Base {
+protected:
+    int i;
+};
+
+struct Derived : Base {
+    void f(Base& b, Derived& d) {
+        ++d.i;      // OK: the type of d is Derived
+        ++i;        // OK: the type of the implied '*this' is Derived
+        // ++b.i;   // error: can't access a protected member through Base
+    }
+};
+```
+
+继承也分为公有继承、受保护继承和私有继承：
 * **公有继承**(public inheritance)：基类的`public`成员对派生类是`public`，`protected`成员对派生类是`protected`，`private`成员对派生类不可见。
 * **受保护继承**(protected inheritance)：基类的`public`和`protected`成员对派生类是`protected`，`private`成员对派生类不可见。
 * **私有继承**(private inheritance)：基类的`public`和`protected`成员对派生类是`private`，`private`成员对派生类不可见。
