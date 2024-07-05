@@ -2,7 +2,7 @@
 title: 《Python基础教程》笔记 第12章 图形用户界面
 date: 2024-03-22 16:52:41 +0800
 categories: [Python, Beginning Python]
-tags: [python, gui]
+tags: [python, gui, tkinter]
 ---
 本章将介绍**图形用户界面**(graphical user interface, GUI)的基本知识——包含按钮、文本框等控件的窗口。Tkinter是事实上的Python标准GUI工具包，包含在Python标准安装中。
 
