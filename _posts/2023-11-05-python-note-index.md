@@ -39,7 +39,7 @@ tags: [python]
 * [第26章 项目7：自建公告板]({% post_url 2024-06-24-python-note-ch26-project-7-your-own-bulletin-board %})
 * [第27章 项目8：使用XML-RPC进行文件共享]({% post_url 2024-06-30-python-note-ch27-project-8-file-sharing-with-xml-rpc %})
 * [第28章 项目9：文件共享2——GUI版本]({% post_url 2024-07-05-python-note-ch28-project-9-file-sharing-ii-now-with-gui %})
-* 第29章 项目10：自制街机游戏
+* [第29章 项目10：自制街机游戏]({% post_url 2024-07-06-python-note-ch29-project-10-do-it-yourself-arcade-game %})
 
 ## 代码
 <https://github.com/ZZy979/Beginning-Python-code>
