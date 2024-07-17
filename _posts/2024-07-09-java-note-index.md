@@ -12,7 +12,7 @@ tags: [java]
 
 ## 目录
 ### 卷I
-* 第1章 Java概述
+* [第1章 Java概述]({% post_url 2024-07-13-java-note-v1ch01-an-introduction-to-java %})
 * 第2章 Java编程环境
 * 第3章 Java的基本程序结构
 * 第4章 对象和类
