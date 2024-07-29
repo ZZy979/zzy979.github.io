@@ -457,7 +457,7 @@ int main() {
     f1.s[0] = b1.s[0] = '\0';
     std::cout << "f2.s = " << f2.s << '\n'
             << "b2.s = " << b2.s << '\n';
-    delete b1.s;
+    delete[] b1.s;
     return 0;
 }
 ```
