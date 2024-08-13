@@ -906,10 +906,10 @@ binary_search(a, x) {
 
 ```cpp
 template<class ForwardIt, class T>
-ForwardIt binary_search(ForwardIt first, ForwardIt last, const T& value);
+bool binary_search(ForwardIt first, ForwardIt last, const T& value);
 
 template<class ForwardIt, class T, class Compare>
-ForwardIt binary_search(ForwardIt first, ForwardIt last, const T& value, Compare comp);
+bool binary_search(ForwardIt first, ForwardIt last, const T& value, Compare comp);
 ```
 
 注意：**二分搜索算法要求输入序列是有序的**，否则可能发生意想不到的事情（例如无限循环）。
