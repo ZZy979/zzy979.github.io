@@ -7,13 +7,13 @@ tags: [java, hello world, jshell]
 本章主要介绍如何安装Java开发工具包(JDK)以及如何编译和运行Java程序。
 
 ## 2.1 安装Java开发工具包
-过去，Oracle公司提供了最新、最完整的JDK版本。如今，很多不同的公司都为Linux、macOS和Windows提供了最新的OpenJDK构建版本，有些公司的许可证条件比Oracle更宽松。
+过去，Oracle公司提供了最新、最完整的JDK版本。如今，很多不同的公司都为Linux、macOS和Windows提供了最新的[OpenJDK](https://openjdk.org/)构建版本，有些公司的许可证条件比Oracle更宽松。
 
 | 发行版 | 官方网站 |
 | --- | --- |
 | Oracle JDK | [链接](https://www.oracle.com/java/technologies/downloads/) |
-| Oracle OpenJDK | [链接](https://openjdk.org/) |
-| Eclipse Temurin | [链接](https://adoptium.net/) |
+| Oracle OpenJDK | [链接](https://jdk.java.net/) |
+| Adoptium OpenJDK (Eclipse Temurin) | [链接](https://adoptium.net/) |
 | Azul Zulu OpenJDK | [链接](https://www.azul.com/downloads/?package=jdk) |
 | Liberica JDK | [链接](https://bell-sw.com/libericajdk/) |
 | Microsoft Build of OpenJDK | [链接](https://www.microsoft.com/openjdk) |
@@ -21,8 +21,10 @@ tags: [java, hello world, jshell]
 | IBM Semeru Runtimes | [链接](https://developer.ibm.com/languages/java/semeru-runtimes/downloads/) |
 | Alibaba Dragonwell JDK | [链接](https://dragonwell-jdk.io/) |
 | Tencent Kona | [链接](https://cloud.tencent.com/product/tkjdk) |
+| SapMachine | [链接](https://sap.github.io/SapMachine/) |
+| Red Hat OpenJDK | [链接](https://developers.redhat.com/products/openjdk/overview) |
 
-注：另见 <https://whichjdk.com/> 。
+注：如何选择JDK可参考[Which Version of JDK Should I Use?](https://whichjdk.com/)。
 
 ### 2.1.1 下载JDK
 可以从Oracle网站 <https://www.oracle.com/java/technologies/downloads/> 下载Java开发工具包，也可以选择其他提供商。应该使用Java SE 17 (LTS) JDK。下表总结了在下载网站上可能遇到的术语和缩略语。
@@ -85,6 +87,9 @@ javac 17.0.12
 * Java SE文档：<https://docs.oracle.com/en/java/javase/>
   * Java SE 17文档：<https://docs.oracle.com/en/java/javase/17/index.html>
   * JDK 17 API文档：<https://docs.oracle.com/en/java/javase/17/docs/api/index.html>
+* JDK命令行工具文档：<https://docs.oracle.com/en/java/javase/17/docs/specs/man/index.html>
+  * javac命令文档：<https://docs.oracle.com/en/java/javase/17/docs/specs/man/javac.html>
+  * java命令文档：<https://docs.oracle.com/en/java/javase/17/docs/specs/man/java.html>
 * Java语言和虚拟机规范：<https://docs.oracle.com/javase/specs/index.html>
 
 还需要本书的程序示例，可以从 <https://horstmann.com/corejava/> 下载。这些程序打包在一个压缩文件corejava.zip中，将其解压缩，得到corejava目录。
