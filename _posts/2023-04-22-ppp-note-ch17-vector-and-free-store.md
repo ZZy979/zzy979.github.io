@@ -2,7 +2,7 @@
 title: 《C++程序设计原理与实践》笔记 第17章 向量和自由存储
 date: 2023-04-22 21:58:03 +0800
 categories: [C/C++, PPP]
-tags: [cpp, vector, pointer, reference, dynamic memory allocation, memory error, memory leak, destructor, type conversion, linked list, this pointer]
+tags: [cpp, vector, pointer, reference, dynamic memory allocation, "null", memory error, memory leak, destructor, type conversion, linked list, this pointer]
 ---
 本章和后面四章介绍C++标准库的容器和算法部分（通常称为STL）。本章和后面两张的重点是最常用、最有用的STL容器——向量的设计和实现。
 
@@ -287,6 +287,32 @@ double* p = nullptr;  // the null pointer
 注：
 * 空指针可用于函数返回值表示异常情况，例如“未找到”或“发生了错误”。
 * `nullptr`是C++11引入的关键字，可以隐式转换为任意类型的指针。旧的代码使用`0`或`NULL`表示空指针。
+* **通过空指针或已经被删除的指针访问对象成员属于非法内存访问**，会导致程序崩溃(coredump)。然而，可以通过空指针调用成员函数，只要不访问数据成员（不解引用）就没有问题。例如：
+
+```cpp
+#include <iostream>
+#include <map>
+#include <string>
+
+struct A {
+    std::string s;
+
+    int f() { return 42; }
+    const std::string& g() { return s; }
+};
+
+int main() {
+    A* a = nullptr;
+    std::cout << a->f() << '\n';  // OK, prints "42"
+
+    std::cout << &a->g() << '\n';  // OK, prints "0x0"
+    // std::cout << a->g() << '\n';  // error: segmentation fault
+
+    std::map<std::string, int> m;
+    auto it = m.find(a->g());  // OK, no dereference because m is empty
+    return 0;
+}
+```
 
 ### 17.4.6 自由存储释放
 由于一台计算机的内存是有限的，因此**在使用结束后应当将内存释放回自由存储**，从而自由存储可以将这些内存重新用于新的分配。对于大型程序和长时间运行的程序（例如操作系统、嵌入式系统）来说，这种释放内存并重新使用是很重要的。
@@ -526,10 +552,6 @@ double d = p->get(3);
 `p->m`等价于`(*p).m`。
 
 `.`和`->`通常称为**成员访问运算符**(member access operators)。
-
-注：
-* **通过空指针或已经被删除的指针访问对象成员属于非法内存访问**，会导致程序崩溃(coredump)。
-* 可以通过空指针调用不访问数据成员的成员函数。
 
 ## 17.8 类型混用：void*和类型转换
 偶尔，我们不得不放弃类型系统的保护（例如，与不知道C++类型的其他语言交互，与没有按照静态类型安全设计的旧代码交互）。在这种情况下，我们需要两样东西：

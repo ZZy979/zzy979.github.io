@@ -2,7 +2,7 @@
 title: 《C程序设计语言》笔记 第5章 指针与数组
 date: 2022-04-26 22:09:13 +0800
 categories: [C/C++, TCPL]
-tags: [c, pointer, array, sort, two-dimensional array, command-line argument, pointer to function]
+tags: [c, pointer, "null", array, sort, two-dimensional array, command-line argument, pointer to function]
 ---
 **指针**(pointer)是一种保存变量地址的变量。在C语言中，指针的使用非常广泛。一个原因是，指针有时是表达某个计算的唯一途径；另一个原因是，同其他方法比起来，使用指针可以生成更紧凑、更高效的代码。指针与数组之间的关系十分密切，本章将讨论它们之间的关系，并探讨如何利用这种关系。
 
