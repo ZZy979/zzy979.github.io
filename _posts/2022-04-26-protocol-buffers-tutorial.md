@@ -250,7 +250,7 @@ y: 456
 [list_people.cc](https://github.com/ZZy979/protobuf-demo/blob/main/addressbook/list_people.cc)
 
 #### 编译和运行
-官方文档中并没有介绍如何编译并运行该示例。这里介绍命令行编译-动态链接、命令行编译-静态链接和Blade构建工具三种方式。
+官方文档中并没有介绍如何编译并运行该示例。这里介绍命令行编译-动态链接、命令行编译-静态链接、CMake构建工具和Blade构建工具四种方式。
 
 （1）命令行编译-动态链接
 
@@ -309,7 +309,129 @@ g++ -o add_person add_person.cc addressbook.pb.cc -static -lprotobuf -pthread
 
 静态链接直接将库文件包含进生成的可执行文件，因此可以直接运行，但生成的可执行文件比动态链接更大（动态链接120 KB、静态链接18 MB）。
 
-（3）Blade构建工具
+（3）CMake构建工具
+
+CMake的安装及使用参考[CMake构建工具使用教程]({% post_url 2023-02-21-cmake-tutorial %})。
+
+首先在addressbook目录外层创建一个根目录protobuf-demo，之后在其中创建一个CMakeLists.txt文件，内容如下：
+
+```cmake
+cmake_minimum_required(VERSION 3.18)
+project(protobuf-demo)
+
+set(CMAKE_CXX_STANDARD 17)
+
+include(FetchContent)
+include(protobuf.cmake)
+
+include_directories(${CMAKE_SOURCE_DIR})
+include_directories(${CMAKE_BINARY_DIR})
+
+add_subdirectory(addressbook)
+```
+
+再在根目录中创建一个protobuf.cmake文件，在其中声明对protobuf库的依赖。如果按照第2节的方式全局安装了protobuf，可以使用`find_package()`命令：
+
+```cmake
+find_package(Protobuf REQUIRED)
+```
+
+也可以使用`FetchContent`模块自动下载并编译protobuf：
+
+```cmake
+FetchContent_Declare(
+  protobuf
+  GIT_REPOSITORY https://github.com/protocolbuffers/protobuf.git
+  GIT_TAG v3.20.3
+  SOURCE_SUBDIR cmake
+)
+set(protobuf_BUILD_TESTS OFF)
+set(protobuf_BUILD_EXAMPLES OFF)
+set(protobuf_WITH_ZLIB OFF)
+FetchContent_MakeAvailable(protobuf)
+
+include(FindProtobuf)
+```
+
+protobuf库定义了以下目标：
+* `protobuf::libprotobuf`：protobuf库
+* `protobuf::libprotobuf-lite`：protobuf lite库
+* `protobuf::libprotoc`：protoc库
+* `protobuf::protoc`：protoc编译器
+
+为了便于定义C++ proto库，在protobuf.cmake结尾添加以下函数定义：
+
+```cmake
+# 添加C++ proto库，用法：add_proto_library(<name> <source>)
+function(add_proto_library name source)
+  add_library(${name})
+  protobuf_generate(
+    TARGET ${name}
+    LANGUAGE cpp
+    PROTOC_OUT_DIR ${CMAKE_CURRENT_BINARY_DIR}
+    PROTOS ${source}
+  )
+  target_link_libraries(${name} PUBLIC protobuf::libprotobuf)
+  target_include_directories(${name} PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
+endfunction()
+```
+
+这个函数调用protoc编译器将.proto文件编译为.pb.h和.pb.cc，然后将其编译为C++库。其中`protobuf_generate()`函数定义在[FindProtobuf](https://cmake.org/cmake/help/latest/module/FindProtobuf.html)模块，用于调用protoc编译器，大致等价于：
+
+```cmake
+get_filename_component(basename ${source} NAME_WLE)
+set(proto_srcs ${CMAKE_CURRENT_BINARY_DIR}/${basename}.pb.cc)
+add_custom_command(
+  OUTPUT ${proto_srcs}
+  COMMAND protobuf::protoc
+    -I${CMAKE_CURRENT_SOURCE_DIR}
+    --cpp_out=${CMAKE_CURRENT_BINARY_DIR}
+    ${source})
+add_library(${name} ${proto_srcs})
+```
+
+最后，在addressbook目录下创建一个CMakeLists.txt文件，内容如下：
+
+```cmake
+add_proto_library(addressbook_proto addressbook.proto)
+
+add_executable(add_person add_person.cc)
+target_link_libraries(add_person addressbook_proto)
+
+add_executable(list_people list_people.cc)
+target_link_libraries(list_people addressbook_proto)
+```
+
+最终的目录结构如下：
+
+```
+protobuf-demo/
+    CMakeLists.txt
+    addressbook/
+        CMakeLists.txt
+        addressbook.proto
+        add_person.cc
+        list_people.cc
+    cmake-build/    # CMake自动创建
+        addressbook/
+            addressbook.pb.h
+            addressbook.pb.cc
+            libaddressbook_proto.a
+            add_person
+            list_people
+            ...
+```
+
+在根目录下执行以下命令：
+
+```shell
+cmake -S . -B cmake-build
+cmake --build cmake-build
+```
+
+即可在cmake-build/addressbook目录中得到add_person和list_people两个可执行文件。
+
+（4）Blade构建工具
 
 Blade构建工具的安装及使用参考[Blade构建工具]({% post_url 2022-01-20-blade-build-tool %})。
 
@@ -363,6 +485,7 @@ protobuf-demo/
         addressbook/
             addressbook.pb.h
             addressbook.pb.cc
+            libaddressbook_proto.a
             add_person
             list_people
             ...
