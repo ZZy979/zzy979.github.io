@@ -59,6 +59,20 @@ SUMMARY: AddressSanitizer: heap-use-after-free test.cc:4 in main
 g++ -std=c++17 -fsanitize=address -g -o test test.cc -static-libasan
 ```
 
+或者设置环境变量LD_PRELOAD指定ASan库文件位置：
+
+```shell
+LD_PRELOAD=/path/to/libasan.so ./test
+```
+
+或者设置选项verify_asan_link_order禁止检测链接顺序：
+
+```shell
+ASAN_OPTIONS=verify_asan_link_order=0 ./test
+```
+
+参考：<https://github.com/google/sanitizers/issues/796>
+
 * 如果使用CMake、Blade等构建工具，则需要通过特定的变量或配置来添加编译选项。例如CMake的[`CMAKE_CXX_FLAGS`](https://cmake.org/cmake/help/latest/variable/CMAKE_LANG_FLAGS.html)变量或[`target_compile_options`](https://cmake.org/cmake/help/latest/command/target_compile_options.html)命令、Blade的[`extra_cppflags`](https://github.com/chen3feng/blade-build/blob/master/doc/en/build_rules/cc.md)属性。
 
 ## 3.错误类型
