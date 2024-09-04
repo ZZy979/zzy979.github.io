@@ -2,7 +2,7 @@
 title: 《C程序设计语言》笔记 第1章 导言
 date: 2022-02-03 00:47:51 +0800
 categories: [C/C++, TCPL]
-tags: [c, hello world, variable, comment, for statement, symbolic constant, io, array, function]
+tags: [c, hello world, variable, comment, for statement, symbolic constant, io, array, function, global variable]
 ---
 本章将重点介绍一些基本概念，比如常量与变量、算术运算、控制流、函数、基本输入/输出等。本章是后续各章详细讲解的内容的框架。
 

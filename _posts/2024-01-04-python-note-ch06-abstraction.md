@@ -2,7 +2,7 @@
 title: 《Python基础教程》笔记 第6章 抽象
 date: 2024-01-04 21:31:19 +0800
 categories: [Python, Beginning Python]
-tags: [python, function, definition, keyword argument, default argument, scope, recursion, binary search, functional programming, lambda expression]
+tags: [python, function, definition, keyword argument, default argument, scope, global variable, recursion, binary search, functional programming, lambda expression]
 math: true
 ---
 本章将介绍如何将语句组合成函数，详细介绍参数和作用域，还将讨论递归是什么及其在程序中的用途。

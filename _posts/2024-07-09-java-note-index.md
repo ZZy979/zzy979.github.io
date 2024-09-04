@@ -15,7 +15,7 @@ tags: [java]
 * [第1章 Java概述]({% post_url 2024-07-13-java-note-v1ch01-an-introduction-to-java %})
 * [第2章 Java编程环境]({% post_url 2024-07-17-java-note-v1ch02-the-java-programming-environment %})
 * [第3章 Java的基本编程结构]({% post_url 2024-08-03-java-note-v1ch03-fundamental-programming-structures-in-java %})
-* 第4章 对象和类
+* [第4章 对象和类]({% post_url 2024-08-24-java-note-v1ch04-objects-and-classes %})
 * 第5章 继承
 * 第6章 接口、Lambda表达式和内部类
 * 第7章 异常、断言和日志

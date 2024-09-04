@@ -2,7 +2,7 @@
 title: 《Python基础教程》笔记 第2章 列表和元组
 date: 2023-11-27 21:38:21 +0800
 categories: [Python, Beginning Python]
-tags: [python, sequence, slice, list, tuple, method, sort]
+tags: [python, sequence, slice, "null", list, tuple, method, sort]
 ---
 本章将介绍一个新概念：**数据结构**(data structure)。数据结构是以某种方式组织起来的数据元素的集合。在Python中，最基本的数据结构是**序列**(sequence)。
 
@@ -681,7 +681,7 @@ ValueError: list.remove(x): x not in list
 ['add', 'acme', 'aerate', 'abalone', 'aardvark']
 ```
 
-另一个参数`reverse()`是一个布尔值，指出是否按逆序排序。
+另一个参数`reverse`是一个布尔值，指出是否按逆序排序。
 
 ```python
 >>> x = [4, 6, 2, 1, 7, 9]
