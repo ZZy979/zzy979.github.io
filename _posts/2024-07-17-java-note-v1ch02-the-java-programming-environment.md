@@ -91,6 +91,7 @@ javac 17.0.12
   * javac命令文档：<https://docs.oracle.com/en/java/javase/17/docs/specs/man/javac.html>
   * java命令文档：<https://docs.oracle.com/en/java/javase/17/docs/specs/man/java.html>
 * Java语言和虚拟机规范：<https://docs.oracle.com/javase/specs/index.html>
+* Java教程：<https://docs.oracle.com/javase/tutorial/>
 
 还需要本书的程序示例，可以从 <https://horstmann.com/corejava/> 下载。这些程序打包在一个压缩文件corejava.zip中，将其解压缩，得到corejava目录。
 

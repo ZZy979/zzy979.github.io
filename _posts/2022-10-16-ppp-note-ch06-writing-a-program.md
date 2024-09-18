@@ -93,7 +93,7 @@ write_result
 * T为**终结符**(terminal symbol)集合
 * P为**产生式规则**(production rule)集合，每个产生式具有以下形式：$A \to \alpha$ ，其中 $A \in V, \alpha \in (V \cup T)^*$
     * 同一个非终结符的多个产生式 $A \to \alpha_1, A \to \alpha_2, ..., A \to \alpha_n$ 可简写为 $A \to \alpha_1 \vert \alpha_2 \vert ... \vert \alpha_n$
-* $S \in N$ 为**开始符号**(start symbol)
+* $S \in V$ 为**开始符号**(start symbol)
 
 对于文法G = (V, T, P, S)，设 $\alpha, \beta, \gamma \in (V \cup T)^*, A \in V$ ，如果 $A \to \gamma$ 是G的产生式，则称 $\alpha A \beta$ 可**派生**或**推导**出 $\alpha \gamma \beta$，记作 $\alpha A \beta \Rightarrow \alpha \gamma \beta$.
 

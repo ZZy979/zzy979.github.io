@@ -329,7 +329,7 @@ a = new int[] {5, 6, 7}; // error: cannot assign to final variable 'a'
 针对这种情况，可以自定义**枚举类型**(enumerated type)。枚举类型具有有限个命名的值。例如，
 
 ```java
-enum Size { SMALL, MEDIUM, LARGE, EXTRA_LARGE };
+enum Size { SMALL, MEDIUM, LARGE, EXTRA_LARGE }
 ```
 
 现在，可以声明这种类型的变量：

@@ -340,9 +340,9 @@ void B::f() {
 * 由于以上原因，`Shape`类的`add()`和`set_color()`函数不是虚函数。如果派生类需要自定义这两个函数只能使用隐藏。
 
 关于基类和派生类的构造函数：
-* 派生类可以在构造函数的成员初始化列表中调用基类的构造函数（例如[Graph.h](https://github.com/ZZy979/PPP-code/blob/main/GUI/Graph.h) `Open_polyline`）。
+* 派生类可以在构造函数的成员初始化列表中调用基类的构造函数：`Derived(args) :Base(args) {...}`。例如[Graph.h](https://github.com/ZZy979/PPP-code/blob/main/GUI/Graph.h) `Open_polyline`。
 * 如果派生类构造函数没有显式调用基类构造函数，则调用基类的默认构造函数。如果基类没有默认构造函数，则编译器将报错。
-* 派生类可以使用`using`声明继承构造函数（例如`using Base::Base;`），继承的构造函数与基类构造函数有相同的可见性（例如[Graph.h](https://github.com/ZZy979/PPP-code/blob/main/GUI/Graph.h) `Closed_polyline`）。
+* 派生类可以使用`using`声明继承构造函数：`using Base::Base;`。继承的构造函数与基类构造函数有相同的可见性。例如[Graph.h](https://github.com/ZZy979/PPP-code/blob/main/GUI/Graph.h) `Closed_polyline`。
 
 ### 14.3.3 覆盖
 覆盖虚函数时，必须使用与基类中完全相同的名字和类型（参数表、是否`const`）。例如：
