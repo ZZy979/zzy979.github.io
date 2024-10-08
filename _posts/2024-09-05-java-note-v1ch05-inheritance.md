@@ -93,6 +93,8 @@ public double getSalary() {
 
 子类可以增加字段、增加方法或覆盖超类的方法。然而，继承绝对不会删除任何字段或方法。
 
+警告：覆盖方法时，子类方法的可见性**不能低于**超类方法。具体地，如果超类方法是`public`，子类方法也必须声明为`public`。
+
 ### 5.1.3 子类构造器
 最后，提供一个构造器：
 
@@ -229,8 +231,6 @@ Manager:
 * 在第2次和第3次循环中，`e`引用`staff[1]`和`staff[2]`，实际类型为`Employee`，因此调用`Employee.getSalary()`。
 
 动态绑定有一个非常重要的特性：无需修改现有的代码就可以对程序进行**扩展**。假设新增一个子类`Executive`，不需要对包含调用`e.getSalary()`的代码重新编译，如果`e`引用一个`Executive`类的对象，就会自动地调用`Executive.getSalary()`方法。
-
-警告：覆盖方法时，子类方法的可见性**不能低于**超类方法。具体地，如果超类方法是`public`，子类方法也必须声明为`public`。
 
 ### 5.1.7 阻止继承：final类和方法
 有时，可能希望阻止其他人继承某个类。在类定义中使用`final`修饰符表示这个类不能被扩展。例如：
@@ -1351,7 +1351,9 @@ ResourceTest.jar/
 ### 5.9.4 使用反射分析类的能力
 下面简要介绍反射机制最重要的内容——检查类的结构。
 
-`java.lang.reflect`包中有三个类`Field`、`Method`和`Constructor`，分别用于描述类的字段、方法和构造器（注：`Field`类似于C++的数据成员指针，`Method`类似于C++的函数指针）。这三个类都有返回名字的`getName()`方法。`Field`类的`getType()`方法返回字段类型。`Method`和`Constructor`类有报告参数类型的方法，`Method`类还有报告返回类型的方法。这三个类都有一个`getModifiers()`方法，返回一个整数，用位开关描述所使用的修饰符。可以使用`Modifier`类的静态方法分析这个整数。还可以使用`Modifier.toString()`方法打印修饰符。
+`java.lang.reflect`包中有三个类`Field`、`Method`和`Constructor`，分别用于描述类的字段、方法和构造器。这三个类都有返回名字的`getName()`方法。`Field`类的`getType()`方法返回字段类型。`Method`和`Constructor`类有报告参数类型的方法，`Method`类还有报告返回类型的方法。这三个类都有一个`getModifiers()`方法，返回一个整数，用位开关描述所使用的修饰符。可以使用`Modifier`类的静态方法分析这个整数。还可以使用`Modifier.toString()`方法打印修饰符。
+
+注：`Field`类似于C++的数据成员指针，`Method`类似于C++的成员函数指针，但C++的成员指针并不是真正的反射，因为无法通过字符串名字获得对应的成员。C++目前并不支持反射，但有一个[实验性的反射扩展](https://en.cppreference.com/w/cpp/experimental/reflect)。
 
 `Class`类的`getFields()`、`getMethods()`和`getConstructors()`方法分别返回这个类的**公有**字段、方法和构造器的数组，其中包括超类的公有成员。`Class`类的`getDeclaredFields()`、`getDeclaredMethods()`和`getDeclaredConstructors()`方法分别返回这个类中声明的全部字段、方法和构造器的数组，其中包括私有、受保护和包访问成员，但不包括超类的成员。
 

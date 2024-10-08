@@ -66,6 +66,12 @@ Scala的`import`语句与Java类似，但更加强大。可以从同一个包中
 
 值得注意的是，可以直接在Scala中继承Java类和实现Java接口。
 
+注意：Scala 2.12支持将函数传递给Java函数式接口（如下所示），但是在2.12之前的版本中会报错。详见[Lambda syntax for SAM types](https://www.scala-lang.org/news/2.12.0/#lambda-syntax-for-sam-types)。
+
+```scala
+val r: Runnable = () => println("Run!")
+```
+
 ## 一切皆对象
 Scala是一种纯面向对象的语言，因为**一切**都是对象，包括数字或函数。在这方面与Java不同，因为Java区分原始类型（例如`boolean`和`int`）和引用类型。
 

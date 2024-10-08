@@ -87,6 +87,7 @@ javac 17.0.12
 * Java SE文档：<https://docs.oracle.com/en/java/javase/>
   * Java SE 17文档：<https://docs.oracle.com/en/java/javase/17/index.html>
   * JDK 17 API文档：<https://docs.oracle.com/en/java/javase/17/docs/api/index.html>
+  * Java语言新特性：<https://docs.oracle.com/en/java/javase/17/language/java-language-changes.html>
 * JDK命令行工具文档：<https://docs.oracle.com/en/java/javase/17/docs/specs/man/index.html>
   * javac命令文档：<https://docs.oracle.com/en/java/javase/17/docs/specs/man/javac.html>
   * java命令文档：<https://docs.oracle.com/en/java/javase/17/docs/specs/man/java.html>

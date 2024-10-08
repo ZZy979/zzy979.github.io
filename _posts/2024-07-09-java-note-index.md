@@ -17,7 +17,7 @@ tags: [java]
 * [第3章 Java的基本编程结构]({% post_url 2024-08-03-java-note-v1ch03-fundamental-programming-structures-in-java %})
 * [第4章 对象和类]({% post_url 2024-08-24-java-note-v1ch04-objects-and-classes %})
 * [第5章 继承]({% post_url 2024-09-05-java-note-v1ch05-inheritance %})
-* 第6章 接口、Lambda表达式和内部类
+* [第6章 接口、Lambda表达式和内部类]({% post_url 2024-09-19-java-note-v1ch06-interfaces-lambda-expressions-and-inner-classes %})
 * 第7章 异常、断言和日志
 * 第8章 泛型编程
 * 第9章 集合

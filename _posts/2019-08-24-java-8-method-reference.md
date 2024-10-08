@@ -2,7 +2,7 @@
 title: Java 8的方法引用
 date: 2019-08-24 20:53:47 +0800
 categories: [Java]
-tags: [java, functional programming]
+tags: [java, method reference, lambda expression, functional programming]
 ---
 Java 8的方法引用是调用已有方法的Lambda表达式的简写形式，与Lambda表达式一样可作为函数式接口参数。
 
