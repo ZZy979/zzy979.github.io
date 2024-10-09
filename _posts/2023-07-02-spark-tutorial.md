@@ -224,14 +224,14 @@ distFile: org.apache.spark.rdd.RDD[(org.apache.hadoop.io.LongWritable, org.apach
 
 #### 4.2.3 RDD操作
 RDD支持两种类型的操作：
-* **转换**(transformation)：从现有数据集创建新数据集。例如`map`、`flatMap`、`filter`、`union`、`groupByKey`、`reduceByKey`等。
+* **转换**(transformation)：从现有数据集创建新数据集。例如`map`、`filter`、`flatMap`、`mapPartitions`、`union`、`groupByKey`、`reduceByKey`、`join`等。
 * **动作**(action)：在对数据集进行计算后返回一个值。例如`reduce`、`collect`、`count`、`first`、`take`、`saveAsTextFile`、`foreach`等。
 
 在Spark中所有的transformation操作都是**懒惰执行**的，即不会立即计算结果，而是只记住转换操作，只有当action操作需要返回结果时才计算。
 
 默认情况下，每次对RDD执行action操作都会重新计算。可以使用`persist()`或`cache()`方法将其放在内存中，从而加快查询。
 
-##### 4.2.3.1 基本操作
+##### 基本操作
 下面的代码展示了RDD的基本操作（文本文件来自[To be, or not to be](https://poets.org/poem/hamlet-act-iii-scene-i-be-or-not-be)）：
 
 ```scala
@@ -253,10 +253,10 @@ totalLength: Int = 1453
 
 完整列表参考[RDD API文档](https://spark.apache.org/docs/latest/api/scala/org/apache/spark/rdd/RDD.html)。
 
-##### 4.2.3.2 将函数传递给Spark
-Spark的API严重依赖于在驱动程序中将函数传递到集群上运行。有两种推荐的方法：
+##### 将函数传递给Spark
+Spark的API很大程度上依赖于在驱动程序中将函数传递到集群上运行。有两种推荐的方法：
 * [匿名函数语法](http://docs.scala-lang.org/tour/basics.html#functions)。例如`map(line => line.length())`、`reduce(_ + _)`。
-* `object`方法。例如：
+* 单例`object`中的静态方法。例如：
 
 ```scala
 object MyFunctions {
@@ -266,7 +266,67 @@ object MyFunctions {
 myRdd.map(MyFunctions.func1)
 ```
 
-##### 4.2.3.3 使用键值对
+注意，虽然也可以传递实例方法的引用，但这需要包含该方法的对象一起发送到集群上。例如：
+
+```scala
+class MyClass {
+  def func1(s: String): String = { ... }
+  def doStuff(rdd: RDD[String]): RDD[String] = { rdd.map(func1) }
+}
+```
+
+这等价于`rdd.map(x => this.func1(x))`。如果创建一个`MyClass`实例并对其调用`doStuff()`，其中的`map()`会引用该`MyClass`实例的`func1()`方法，因此需要将整个对象发送到集群。
+
+注：这要求`MyClass`必须是可序列化的，否则将报错 "SparkException: Task not serializable" 。
+
+类似地，访问外部对象的字段也会引用整个对象：
+
+```scala
+class MyClass {
+  val field = "Hello"
+  def doStuff(rdd: RDD[String]): RDD[String] = { rdd.map(x => field + x) }
+}
+```
+
+这等价于`rdd.map(x => this.field + x)`。为了避免这一问题，最简单的方法是将`field`拷贝到局部变量中：
+
+```scala
+def doStuff(rdd: RDD[String]): RDD[String] = {
+  val field_ = this.field
+  rdd.map(x => field_ + x)
+}
+```
+
+##### 理解闭包
+Spark的难点之一是在集群上执行代码时理解变量的作用域和生命周期。修改作用域之外的变量的RDD操作经常会造成混淆。
+
+例如，考虑下面的RDD元素求和。在本地模式下(`--master local[n]`)与部署到集群上（例如通过spark-submit提交到YARN）运行，其行为可能会有所不同。
+
+```scala
+var counter = 0
+var rdd = sc.parallelize(data)
+
+// Wrong: Don't do this!!
+rdd.foreach(x => counter += x)
+
+println("Counter value: " + counter)
+```
+
+本地vs集群模式
+
+上述代码的行为是未定义的，可能无法按预期工作。为了执行作业，Spark会将RDD操作分解为任务(task)，每个任务由一个执行器(executor)执行。在执行之前，Spark会计算任务的**闭包**(closure)。闭包是执行器在RDD上执行计算（在本例中是`foreach()`）时需要的变量和方法。这个闭包被序列化并发送给每个执行器。
+
+发送给每个执行器的闭包内的变量是**副本**。因此，当`counter`在`foreach()`函数中被引用时，它不再是驱动节点内存中的`counter`！执行器只能看到闭包中的副本。因此，驱动节点上`counter`的最终值仍然为0。
+
+而在本地模式下，`foreach()`函数可能会在与驱动相同的JVM中执行，因此会引用原始的`counter`并更新它。
+
+为了确保在这些场景中有明确定义的行为，应该使用累加器（详见4.3.2节）。
+
+打印RDD的元素
+
+另一个常见的习惯用法是尝试使用`rdd.foreach(println)`打印RDD的元素。在单台机器上，这将生成预期的输出。然而，在集群模式下，输出将被写入执行器的stdout，因此驱动节点的stdout不会显示输出！要在驱动节点上打印所有元素，可以使用`collect()`方法先将RDD元素传回驱动节点再打印：`rdd.collect().foreach(println)`。如果只需要打印几个元素，可以使用`take()`：`rdd.take(100).foreach(println)`。
+
+##### 使用键值对
 在Scala中，使用`RDD[Tuple2]`即可实现键值对操作。例如，下面的代码使用`reduceByKey`操作统计单词出现次数：
 
 ```scala
@@ -274,6 +334,51 @@ val lines = sc.textFile("to-be-or-not-to-be.txt")
 val words = lines.flatMap(_.split(" "))
 val wordCount = words.map(w => (w, 1)).reduceByKey(_ + _)
 wordCount.sortBy(_._2, false).take(10)
+```
+
+### 4.3 共享变量
+通常，当传递给Spark操作（例如`map()`或`reduce()`）的函数在远程集群节点上执行时，函数中使用的变量会被拷贝到每台机器，并且远程机器对变量的更新不会传回驱动节点。Spark提供了两种类型的共享变量：广播变量和累加器。
+
+#### 4.3.1 广播变量
+广播变量允许在每台机器上缓存一个只读变量，而不是随任务一起发送副本。例如，它们可以以高效的方式为每个节点提供一份大型输入数据集的副本。
+
+广播变量通过调用`SparkContext.broadcast(v)`创建，它是`v`的包装器，可以通过调用`value()`方法访问其值。例如：
+
+```scala
+scala> val broadcastVar = sc.broadcast(Array(1, 2, 3))
+broadcastVar: org.apache.spark.broadcast.Broadcast[Array[Int]] = Broadcast(0)
+
+scala> broadcastVar.value
+res0: Array[Int] = Array(1, 2, 3)
+```
+
+创建广播变量后，集群上运行的函数应该使用它而不是`v`。此外，`v`在广播后不应该被修改，以确保所有节点都获得相同的广播变量值。
+
+#### 4.3.2 累加器
+累加器是只能（通过可结合、可交换运算）“加”的变量，可以高效地并行操作。可用于实现计数器或求和。Spark提供了数值类型的累加器，也可以添加对新类型的支持。
+
+可以通过调用`SparkContext.longAccumulator()`或`SparkContext.doubleAccumulator()`来创建数值累加器。之后，集群上运行的任务可以使用`add()`方法添加值，但不能读取它的值。只有驱动程序可以使用`value()`方法读取累加器的值。
+
+下面的代码使用累加器将数组元素相加：
+
+```scala
+scala> val accum = sc.longAccumulator("My Accumulator")
+accum: org.apache.spark.util.LongAccumulator = LongAccumulator(id: 0, name: Some(My Accumulator), value: 0)
+
+scala> sc.parallelize(Array(1, 2, 3, 4)).foreach(x => accum.add(x))
+
+scala> accum.value
+res1: Long = 10
+```
+
+可以通过继承`AccumulatorV2`支持自己的类型。
+
+累加器不会改变Spark的惰性求值。如果在RDD操作中更新累加器，只有action操作才会更新，转换操作不会更新。例如：
+
+```scala
+val accum = sc.longAccumulator
+data.map { x => accum.add(x); x }
+// Here, accum is still 0 because no actions have caused the map operation to be computed.
 ```
 
 ## 5.Spark SQL
