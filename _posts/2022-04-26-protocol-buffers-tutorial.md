@@ -196,6 +196,8 @@ public:
 
 以上函数和下一节描述的I/O函数来自基类`google::protobuf::Message`，详见[Message类API文档](https://protobuf.dev/reference/cpp/api-docs/google.protobuf.message/#Message)。
 
+注：消息类不能直接使用`==`比较相等，应该使用protobuf提供的`MessageDifferencer`类，详见文档[message_differencer.h](https://protobuf.dev/reference/cpp/api-docs/google.protobuf.util.message_differencer/)。
+
 （3）序列化和解析
 
 每个消息类都有使用[二进制格式](https://protobuf.dev/programming-guides/encoding/)读写消息的函数，包括：
@@ -766,6 +768,7 @@ Person john = Person.newBuilder()
 每个消息和builder类还包含许多其他方法，可以检查或操作整个消息，包括：
 * `boolean isInitialized()`：检查是否已设置所有`required`字段
 * `String toString()`：返回消息的人类可读的表示，对于调试特别有用
+* `boolean equals(Object other)`：比较两个消息是否相等
 * `Builder mergeFrom(Message other)`：将给定消息与该消息合并
 * `Builder clear()`：将所有字段重置为空状态
 
@@ -1039,6 +1042,7 @@ person.id = "1234"        # raises TypeError
 每个消息类还包含许多其他方法，可以检查或操作整个消息，包括：
 * `IsInitialized()`：检查是否已设置所有`required`字段
 * `__str__()`：返回消息的人类可读的表示，对于调试特别有用
+* `__eq__()`：比较两个消息是否相等
 * `CopyFrom(other_msg)`：用给定消息覆盖该消息
 * `MergeFrom(other_msg)`：将给定消息与该消息合并
 * `Clear()`：将所有字段重置为空状态
