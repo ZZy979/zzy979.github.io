@@ -902,7 +902,7 @@ for (int i = n; i > 0; i--) {
 ### 7.3 局限性
 虽然gMock的功能很强大，但其本身在使用上就存在局限性：
 * 编写mock类要求接口类中**被mock的函数必须是虚函数**。尽管gMock也支持mock非虚函数（见[Mocking Non-virtual Methods](https://google.github.io/googletest/gmock_cook_book.html#MockingNonVirtualMethods)），但需要对被测代码做较大的改动（改为模板）。
-* **无法mock普通函数**，除非使用类对其封装。
+* **无法mock普通函数**，除非使用类对其封装。（注：使用[CppFreeMock](https://github.com/gzc9047/CppFreeMock)可以mock普通函数和非虚成员函数）
 * 为了能够在被测函数中使用mock对象，**必须通过接口类指针或引用参数将mock对象传递给被测函数**（这就是[依赖注入](https://en.wikipedia.org/wiki/Dependency_injection)的基本思想）。例如，为了能够在`Painter`中使用`MockTurtle`，成员`turtle_`的类型必须是`Turtle*`（或`Turtle&`），并通过构造函数参数传递进来，而不能直接声明一个`Turtle`类型的成员。
 * 在真实代码中，需要mock的类可能并不是继承自一个像`Turtle`这样的抽象接口类，其成员函数也不是虚函数。这种情况下无论将其改为虚函数还是mock非虚函数，都需要对代码做较大的改动，因此这样的代码难以编写mock类。文档[Alternative to Mocking Concrete Classes](https://google.github.io/googletest/gmock_cook_book.html#alternative-to-mocking-concrete-classes)一节有对这一问题的讨论，给出的建议是**面向接口编程**，根据具体问题权衡利弊。
 * 总之，要使得代码易于测试，必须**在设计时就考虑如何测试**。通过使用抽象接口类、拆分成多个小的函数等方式，编写测试和维护代码都会更加容易。

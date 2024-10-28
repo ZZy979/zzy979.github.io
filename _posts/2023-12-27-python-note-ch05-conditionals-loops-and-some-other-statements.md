@@ -2,7 +2,7 @@
 title: 《Python基础教程》笔记 第5章 条件、循环和其他语句
 date: 2023-12-27 21:01:10 +0800
 categories: [Python, Beginning Python]
-tags: [python, import statement, assignment, block, if statement, operator, while statement, for statement, break statement, continue statement, list comprehension, dictionary comprehension, pass statement, del statement]
+tags: [python, import statement, assignment, block, if statement, operator, assertion, while statement, for statement, break statement, continue statement, list comprehension, dictionary comprehension, pass statement, del statement]
 math: true
 ---
 你已经见过几种语句（`print`语句、`import`语句和赋值），先来看看这些语句的一些其他用法，再深入探讨**条件语句**和**循环语句**。然后将介绍**列表推导式**，它虽然是表达式，但工作原理几乎与条件语句和循环语句相同。最后将介绍`pass`、`del`和`exec`。
