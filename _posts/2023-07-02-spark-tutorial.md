@@ -224,8 +224,8 @@ distFile: org.apache.spark.rdd.RDD[(org.apache.hadoop.io.LongWritable, org.apach
 
 #### 4.2.3 RDD操作
 RDD支持两种类型的操作：
-* **转换**(transformation)：从现有数据集创建新数据集。例如`map`、`filter`、`flatMap`、`mapPartitions`、`union`、`groupByKey`、`reduceByKey`、`join`等。
-* **动作**(action)：在对数据集进行计算后返回一个值。例如`reduce`、`collect`、`count`、`first`、`take`、`saveAsTextFile`、`foreach`等。
+* **转换**(transformation)：从现有数据集创建新数据集。例如`map`、`filter`、`flatMap`、`mapPartitions`、`sample`、`union`等。
+* **动作**(action)：在对数据集进行计算后返回一个值。例如`reduce`、`collect`、`count`、`first`、`take`、`foreach`、`saveAsTextFile`等。
 
 在Spark中所有的transformation操作都是**懒惰执行**的，即不会立即计算结果，而是只记住转换操作，只有当action操作需要返回结果时才计算。
 
@@ -335,6 +335,8 @@ val words = lines.flatMap(_.split(" "))
 val wordCount = words.map(w => (w, 1)).reduceByKey(_ + _)
 wordCount.sortBy(_._2, false).take(10)
 ```
+
+键值对RDD独有的操作定义在[PairRDDFunctions](https://spark.apache.org/docs/latest/api/scala/org/apache/spark/rdd/PairRDDFunctions.html)，例如`groupByKey`、`reduceByKey`、`join`、`saveAsNewAPIHadoopFile`等。
 
 ### 4.3 共享变量
 通常，当传递给Spark操作（例如`map()`或`reduce()`）的函数在远程集群节点上执行时，函数中使用的变量会被拷贝到每台机器，并且远程机器对变量的更新不会传回驱动节点。Spark提供了两种类型的共享变量：广播变量和累加器。
