@@ -2,7 +2,7 @@
 title: 《Java核心技术》笔记 第5章 继承
 date: 2024-09-05 22:00:23 +0800
 categories: [Java, Core Java]
-tags: [java, class, inheritance, polymorphism, type conversion, array list, enumeration, sealed class, reflection, exception]
+tags: [java, class, inheritance, polymorphism, type conversion, array list, variadic argument, enumeration, sealed class, reflection, exception]
 ---
 本章将学习面向对象程序设计的另一个基本概念：**继承**(inheritance)。继承的基本思想是可以基于已有的类创建新的类。继承已有的类就是复用（继承）这些类的方法和字段，而且可以添加新的方法和字段，以满足新的需求。这是Java编程中的一项核心技术。
 
@@ -826,6 +826,9 @@ for (int i = 0; i < staff.size(); i++) {
 
 [程序清单5-7 arrayList/ArrayListTest.java](https://github.com/ZZy979/Core-Java-code/blob/main/v1ch05/arrayList/ArrayListTest.java)
 
+### 5.3.3 类型化与原始数组列表的兼容性
+见8.5.4节。
+
 ## 5.4 对象包装器与自动装箱
 有时，需要将`int`这样的基本类型转换为对象。所有的基本类型都有一个与之对应的类。例如，`Integer`类对应基本类型`int`。这些类通常称为**包装器**(wrapper)，其名字显而易见：`Integer`、`Long`、`Float`、`Double`、`Short`、`Byte`、`Character`和`Boolean`（前6个继承自公共超类`Number`）。包装器类是**不可变的**。同时，包装器类还是`final`。
 
@@ -1433,9 +1436,9 @@ public static Object[] badCopyOf(Object[] a, int newLength) { // not useful
 }
 ```
 
-然而，在使用得到的数组时会遇到一个问题：这段代码返回的数组类型是`Object[]`，不能强制转换成`Employee[]`。关键是，Java数组会记住元素的类型（即`new`表达式中使用的类型）。将一个`Employee[]`临时转换成`Object[]`然后再转换回来是合法的，但一开始就是`Object[]`的数组永远不能转换成`Employee[]`。
+然而，在使用得到的数组时会遇到一个问题：这段代码返回的数组类型是`Object[]`，不能强制转换成`Employee[]`。关键是，Java数组会记住元素的类型（即`new`表达式中使用的类型）。将一个`Employee[]`临时转换成`Object[]`然后再转换回来是合法的，但一开始就是`Object[]`的数组永远不能转换成`Employee[]`（否则会引发`ClassCastException`）。
 
-为了编写这类泛型数组代码，需要能够创建与原数组类型**相同**的新数组。为此，需要使用`Array.newInstance()`方法，提供元素类型和数组长度。
+为了编写这类泛型数组代码，需要能够创建与原数组**类型相同**的新数组。为此，需要使用`Array.newInstance()`方法，提供元素类型和数组长度。
 
 可以通过调用`Array.getLength(a)`获得数组的长度。要获得数组`a`的元素类型：
 1. 获得`a`的类对象。
@@ -1456,6 +1459,8 @@ public static Object goodCopyOf(Object a, int newLength) {
     return newArray;
 }
 ```
+
+注：关于泛型数组的问题另见8.6.6节。
 
 注意，这个方法可以用来扩展任意类型的数组，而不仅是对象数组。
 

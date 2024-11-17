@@ -134,6 +134,21 @@ Welcome程序非常简单，它只是向终端输出了一条消息，如代码�
 
 注释：如果只有一个源文件，可以跳过`javac`命令（即可以直接执行`java Welcome.java`）。这个Java 11新特性是为了用于Shell脚本（以 "shebang" 行`#!/path/to/java`开头）或简单的学生程序。
 
+注：`javac`和`java`命令的输出默认使用系统本地语言。要改为英文，需要将系统属性`user.language`设置为`en`：
+
+```shell
+javac -J-Duser.language=en Welcome.java
+java -Duser.language=en Welcome
+```
+
+另外也可以设置环境变量JAVA_TOOL_OPTIONS：
+
+```shell
+export JAVA_TOOL_OPTIONS=-Duser.language=en
+javac Welcome.java
+java Welcome
+```
+
 这个Welcome程序没有太大意思。接下来再尝试一个图形化应用。这个程序是一个简单的图像文件查看器，可以加载并显示图像。与之前一样，从命令行编译和运行这个程序。
 1. 打开一个终端窗口。
 2. 切换到目录corejava/v1ch02/ImageViewer。
