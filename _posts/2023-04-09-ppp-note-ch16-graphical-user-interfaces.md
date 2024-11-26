@@ -2,7 +2,7 @@
 title: 《C++程序设计原理与实践》笔记 第16章 图形用户界面
 date: 2023-04-09 15:53:48 +0800
 categories: [C/C++, PPP]
-tags: [cpp, gui, fltk]
+tags: [cpp, gui, fltk, static member]
 ---
 **图形用户界面**(graphical user interface, GUI)允许用户通过点击按钮、选择菜单、以不同的方式输入数据以及在屏幕上显示文本和图形等方式与程序进行交互。在本章中，我们将介绍编写代码来定义和控制GUI应用的基本方法。
 
@@ -102,6 +102,21 @@ static void cb_next(Address, Address);
 ```
 
 其中，关键字`static`表示这是一个**静态成员函数**。类的静态成员是指不绑定到任何对象、可以直接通过类名访问的成员。
+
+注：也可以定义**静态数据成员**，但必须在类外初始化（少数情况下可以在类内初始化，见[Static data members](https://en.cppreference.com/w/cpp/language/static#Static_data_members)）。例如：
+
+```cpp
+struct C {
+    // static int k = 42; // error
+    // static std::string s(5, 'x'); // error
+
+    static int k;
+    static std::string s;
+};
+
+int C::k = 42;
+std::string C::s(5, 'x');
+```
 
 类型`Address`实际上是`void*`的别名，这是一个**指针**类型（类似于引用），表示某个对象在内存中的地址：
 

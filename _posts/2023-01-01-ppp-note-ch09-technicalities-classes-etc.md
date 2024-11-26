@@ -209,6 +209,8 @@ C++提供了专门的、方便的语法来进行这种初始化：
 ```cpp
 T object(arg1, arg2, ...);  // (1)
 T(arg1, arg2, ...)          // (2)
+new T(arg1, arg2, ...)
+C::C() :m(arg1, arg2, ...) {...}
 ```
 
 其中，形式(1)通过调用构造函数`T::T(arg1, arg2, ...)`初始化`object`，形式(2)调用同样的构造函数初始化一个未命名的临时对象。
@@ -220,7 +222,7 @@ T(arg1, arg2, ...)          // (2)
 T object{arg1, arg2, ...};
 T{arg1, arg2, ...}
 new T{arg1, arg2, ...}
-C::C :m{arg1, arg2, ...} {...}
+C::C() :m{arg1, arg2, ...} {...}
 
 // 拷贝列表初始化
 T object = {arg1, arg2, ...};
