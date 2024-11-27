@@ -687,6 +687,16 @@ class vector {
 
 ![拷贝赋值](/assets/images/ppp-note-ch19-vector-templates-and-exceptions/拷贝赋值.png)
 
+### 小结
+
+| 操作 | 错误实现 | 正确实现 | 原因 |
+| --- | --- | --- | --- |
+| 构造函数 | `elem = new T[n]` | `elem = malloc(n * sizeof(T))` | `new[]`会强制对所有元素进行初始化，对于不可默认构造的类型无法使用 |
+| `push_back(v)` | `elem[sz++] = v` | `new(&elem[sz++]) T(v)` (placement new) | 赋值操作假设目标对象是已初始化的，而`elem[sz]`是未初始化的 |
+| 拷贝构造函数 | `new[]` + `std::copy()` | `malloc()` + `std::uninitialized_copy()` | 同上 |
+| `pop_back()` | `--sz` | `elem[--sz].~T()` | 删除元素时必须销毁对象 |
+| 析构函数 | `delete[] elem` | 逐元素`~T()` + `free(elem)` | 同上 |
+
 ## 19.4 范围检查和异常
 目前的`vector`没有对元素访问做范围检查。例如：
 
