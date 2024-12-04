@@ -409,7 +409,22 @@ void g(int n) {
 
 可以看到，编译器对于这个Lambda表达式生成的闭包类型定义与第2节中的`Larger_than`完全相同：具有数据成员`n`（对应捕获变量）和`operator()`，而并没有函数指针类型转换运算符，Lambda表达式被替换为`__lambda_7_9{n}`。
 
-由此可见，Lambda表达式是否带捕获的区别仅仅是对应的闭包类型是否有数据成员、是否可转换为函数指针。
+带捕获的Lambda表达式不能转换为函数指针的原因是：函数体中访问了外部变量，而函数指针不能携带这种“上下文”信息。假设允许这种转换，就可以从函数中返回捕获了局部变量的Lambda表达式。而函数退出后局部变量就消失了，Lambda表达式就无法访问捕获的变量。例如：
+
+```cpp
+using PF = int(*)(int);
+
+PF f(int n) {
+    return [n](int x) { return x + n; };  // suppose it was valid
+}
+
+void g() {
+    auto p = f(42);
+    int y = p(8);  // n is no longer accessible here
+}
+```
+
+在这个示例中，当函数`f()`返回后，调用`p`时无法访问捕获变量`n`，因此不允许这种转换。然而，将`f()`的返回类型改为`std::function<int(int)>`就是合法的（关于`std::function`详见6.2节）。
 
 回到前面的问题，由于`find_if()`的第三个参数的类型是模板参数，将Lambda表达式传递给`find_if()`时，模板参数将被自动推导为对应的闭包类型，因此Lambda表达式是否带捕获对STL算法没有影响。
 
