@@ -4,7 +4,7 @@ date: 2024-10-29 21:58:25 +0800
 categories: [Java, Core Java]
 tags: [java, generic programming, type erasure, bridge method, wildcard type, reflection]
 ---
-泛型类和泛型方法有类型参数，这使得它们可以准确地描述用特定类型实例化时会发生什么。在有泛型类之前，程序员必须使用`Object`编写适用于多种类型的代码，这既烦琐又不安全。
+泛型类和泛型方法有类型参数，这使得它们可以准确地描述用特定类型实例化时会发生什么。在有泛型类之前，程序员必须使用`Object`编写适用于多种类型的代码，这既繁琐又不安全。
 
 在本章中，你将了解泛型编程的优势及挑战。
 
@@ -420,7 +420,7 @@ ArrayList<Employee> staff = ...;
 employeeDB.update(staff);
 ```
 
-警告：尽管编译器没有给出错误或警告，但是这样调用并不安全。`update()`方法可能会在数组列表中添加不是`Employee`类型的元素，访问这些元素时就会出现异常。实际上，这种行为与Java中引入泛型之前是一样的。
+警告：尽管编译器没有给出错误或警告，但是这样调用并不安全。`update()`方法可能会在数组列表中添加不是`Employee`类型的元素，访问这些元素时就会出现`ClassCastException`异常。实际上，这种行为与Java中引入泛型之前是一样的。
 
 相反，将一个原始数组列表赋给类型化的数组列表时，会得到一个警告：
 
@@ -500,7 +500,7 @@ objarray[0] = "Hello"; // ERROR--component type is Pair
 objarray[0] = new Pair<Employee>();
 ```
 
-尽管能够通过数组存储的检查（因为`Pair<Employee>`确实属于原始类型`Pair`），但仍然会导致类型错误。出于这个原因，不允许创建类型化参数的数组。
+尽管能够通过数组存储的检查（因为`Pair<Employee>`确实是`Pair`的子类），但仍然会导致类型错误。出于这个原因，不允许创建类型化参数的数组。
 
 注意，只是不允许创建这些数组。仍然可以声明`Pair<String>[]`类型的变量，但是不能用`new Pair<String>[10]`或`{}`初始化（注：可以使用`new Pair[10]`初始化）。
 
@@ -717,6 +717,19 @@ T[] toArray(T[] a)
 ```
 
 第二个变体接收一个数组参数。如果数组`a`足够大，就使用这个数组；否则，用`a`的元素类型创建一个足够大的新数组。
+
+注：Java 11增加了该方法的第三种形式：
+
+```java
+T[] toArray(IntFunction<T[]> generator)
+```
+
+这样就可以使用数组构造器引用：
+
+```java
+ArrayList<String> x = ...;
+String[] y = x.toArray(String[]::new);
+```
 
 ### 8.6.7 泛型类的静态上下文中类型变量无效
 不能在静态字段或方法中引用类型变量。例如，下面这个实现单例模式的聪明主意行不通：

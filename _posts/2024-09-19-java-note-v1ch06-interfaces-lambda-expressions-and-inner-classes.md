@@ -851,8 +851,6 @@ Arrays.sort(people, Comparator.comparing(Person::getName));
 
 与手动实现一个`Comparator`相比，这当然要容易得多，代码也更为清晰。
 
-注：`comparing(f)`大致等价于`(x, y) -> f.apply(x).compareTo(f.apply(y))`。`f`的返回类型必须实现`Comparable`接口。
-
 可以用`thenComparing()`方法把比较器串起来，用于打破平局（如果第一个比较器判断两个对象相等，则使用第二个比较器）。例如：
 
 ```java
@@ -862,16 +860,12 @@ Arrays.sort(people, Comparator.comparing(Person::getLastName)
 
 首先比较姓，如果两个人的姓相同，则比较名。
 
-注：`comp1.thenComparing(comp2)`大致等价于`(x, y) -> { int res = comp1.compare(x, y); return res != 0 ? res : comp2.compare(x, y); }`
-
 这些方法有几个变体形式。可以为`comparing()`和`thenComparing()`方法提取的键指定一个比较器。例如，可以如下按姓名长度排序：
 
 ```java
 Arrays.sort(people, Comparator.comparing(Person::getName,
     (s, t) -> Integer.compare(s.length(), t.length())));
 ```
-
-注：`comparing(f, comp)`大致等价于`(x, y) -> comp.compare(f.apply(x), f.apply(y))`
 
 另外，`comparing()`和`thenComparing()`方法都有基本类型的变体，可以避免装箱。例如，上面的排序还有一种更容易的做法：
 
@@ -887,7 +881,7 @@ Arrays.sort(people, Comparator.comparing(Person::getName, Comparator.comparingIn
 
 如果键函数可能返回`null`，可以使用`nullsFirst()`和`nullsLast()`适配器。这些静态方法会修改现有的比较器，从而在遇到`null`值时不会抛出异常，而是认为其小于或大于正常值。例如，假设一个人没有中名时`getMiddleName()`返回`null`，就可以使用`comparing(Person::getMiddleName, nullsFirst(...))`。
 
-`naturalOrder()`方法可以为任何实现了`Comparable`的类创建一个比较器（直接利用其`compareTo()`方法进行比较，即等价于`(x, y) -> x.compareTo(y)`）。下面是按可能为`null`的中名排序的完整调用。这里使用了`import static java.util.Comparator.*;`使这个表达式更清晰。
+`naturalOrder()`方法可以为任何实现了`Comparable`的类创建一个比较器（直接利用其`compareTo()`方法进行比较）。下面是按可能为`null`的中名排序的完整调用。这里使用了`import static java.util.Comparator.*;`使这个表达式更清晰。
 
 ```java
 Arrays.sort(people, comparing(Person::getMiddleName, nullsFirst(naturalOrder())));
@@ -896,6 +890,17 @@ Arrays.sort(people, comparing(Person::getMiddleName, nullsFirst(naturalOrder()))
 使用`reversed()`实例方法得到逆序比较器。静态方法`reverseOrder()`提供自然顺序的逆序，等同于`naturalOrder().reversed()`。
 
 [comparator/ComparatorTest.java](https://github.com/ZZy979/Core-Java-code/blob/main/v1ch06/comparator/ComparatorTest.java)
+
+小结：
+
+| 比较器 | 等价形式 | 说明 |
+| --- | --- | --- |
+| `comparing(f)` | `(x, y) -> f(x).compareTo(f(y))` | `f`的返回类型必须实现`Comparable`接口 |
+| `comparing(f, comp)` | `(x, y) -> comp.compare(f(x), f(y))` | |
+| `comp1.thenComparing(comp2)` | `(x, y) -> comp1.compare(x, y) != 0 ? comp1.compare(x, y) : comp2.compare(x, y)` | |
+| `naturalOrder()` | `(x, y) -> x.compareTo(y)` | 比较的类型必须实现`Comparable`接口 |
+| `reverseOrder()` | `(x, y) -> y.compareTo(x)` | 比较的类型必须实现`Comparable`接口 |
+| `comp.reversed()` | `(x, y) -> comp.compare(y, x)` | |
 
 ## 6.3 内部类
 **内部类**(inner class)是定义在另一个类中的类。使用内部类有两个原因：

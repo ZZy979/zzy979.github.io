@@ -2,7 +2,7 @@
 title: 《Python基础教程》笔记 第4章 字典：当索引行不通时
 date: 2023-12-20 20:58:19 +0800
 categories: [Python, Beginning Python]
-tags: [python, map, dictionary]
+tags: [python, map]
 ---
 当需要通过编号来访问值时，列表很有用。本章将介绍一种可以通过名称来访问值的数据结构，称为**映射**(mapping)。Python中唯一的内置映射类型是**字典**。
 

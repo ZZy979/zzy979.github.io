@@ -2,7 +2,7 @@
 title: 《C++程序设计原理与实践》笔记 第21章 算法和映射
 date: 2023-08-20 14:24:44 +0800
 categories: [C/C++, PPP]
-tags: [cpp, stl, algorithm, function object, associative container, map, set, binary search tree, hash table, sort, binary search]
+tags: [cpp, stl, algorithm, function object, map, set, binary search tree, hash table, sort, binary search]
 math: true
 ---
 本章将完成我们对STL基本思想及其所提供的功能的介绍。本章重点关注算法。

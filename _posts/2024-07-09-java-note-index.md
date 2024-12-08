@@ -20,7 +20,7 @@ tags: [java]
 * [第6章 接口、Lambda表达式和内部类]({% post_url 2024-09-19-java-note-v1ch06-interfaces-lambda-expressions-and-inner-classes %})
 * [第7章 异常、断言和日志]({% post_url 2024-10-09-java-note-v1ch07-exceptions-assertions-and-logging %})
 * [第8章 泛型编程]({% post_url 2024-10-29-java-note-v1ch08-generic-programming %})
-* 第9章 集合
+* [第9章 集合]({% post_url 2024-11-18-java-note-v1ch09-collections %})
 * 第10章 图形用户界面
 * 第11章 Swing用户界面组件
 * 第12章 并发
