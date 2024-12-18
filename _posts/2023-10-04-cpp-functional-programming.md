@@ -2,7 +2,7 @@
 title: C++函数式编程
 date: 2023-10-04 00:55 +0800
 categories: [C/C++]
-tags: [cpp, functional programming, function object, pointer to function, lambda expression]
+tags: [cpp, functional programming, function object, pointer to function, lambda expression, ranges library]
 math: true
 ---
 ## 1.引言
@@ -871,10 +871,10 @@ In function: 1 11 12
 After function: 10 12 12
 ```
 
-## 7.Ranges库
-C++20引入的ranges库是对STL算法库的扩展，使得算法和迭代器可以通过组合变得更加强大。Ranges库的核心概念是**视图**(view)，是间接表示可迭代序列（**范围**(range)）的轻量级对象。头文件[\<ranges\>](https://en.cppreference.com/w/cpp/header/ranges)提供了创建和操作视图的功能。
+## 7.范围库
+C++20引入的范围库是对STL算法库的扩展，使得算法和迭代器可以通过组合变得更加强大。Ranges库的核心概念是**视图**(view)，是间接表示可迭代序列（**范围**(range)）的轻量级对象。头文件[\<ranges\>](https://en.cppreference.com/w/cpp/header/ranges)提供了创建和操作视图的功能。
 
-在C++20之前无法用Scala的方式实现第1节中计算偶数平方和的例子，而利用ranges库可以做到：
+在C++20之前无法用Scala的方式实现第1节中计算偶数平方和的例子，而利用范围库可以做到：
 
 ```cpp
 int arr[] = {0, 1, 2, 3, 4, 5, 6};
@@ -883,6 +883,8 @@ auto square = [](int i) { return i * i; };
 auto r = arr | std::views::filter(even) | std::views::transform(square);
 int result = std::accumulate(r.begin(), r.end(), 0);
 ```
+
+详见[《C++20范围库》]({% post_url 2024-12-15-cpp20-ranges-library %})。
 
 ## 参考
 * [Functional programming - Wikipedia](https://en.wikipedia.org/wiki/Functional_programming)
