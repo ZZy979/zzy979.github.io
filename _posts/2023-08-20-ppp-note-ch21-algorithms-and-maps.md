@@ -135,7 +135,7 @@ void f(int a[], int n, int x) {
 
 ```cpp
 template<class InputIt, class Pred>
-InputIt find(InputIt first, InputIt last, Pred p) {
+InputIt find_if(InputIt first, InputIt last, Pred p) {
     for (; first != last; ++first)
         if (p(*first))
             return first;

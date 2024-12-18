@@ -2,7 +2,7 @@
 title: C++函数式编程
 date: 2023-10-04 00:55 +0800
 categories: [C/C++]
-tags: [cpp, functional programming, function object, pointer to function, lambda expression]
+tags: [cpp, functional programming, function object, pointer to function, lambda expression, ranges library]
 math: true
 ---
 ## 1.引言
@@ -883,6 +883,8 @@ auto square = [](int i) { return i * i; };
 auto r = arr | std::views::filter(even) | std::views::transform(square);
 int result = std::accumulate(r.begin(), r.end(), 0);
 ```
+
+详见[《C++20 Ranges库》]({% post_url 2024-12-15-cpp20-ranges-library %})。
 
 ## 参考
 * [Functional programming - Wikipedia](https://en.wikipedia.org/wiki/Functional_programming)
