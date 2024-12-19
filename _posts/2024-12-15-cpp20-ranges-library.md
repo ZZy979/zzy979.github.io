@@ -39,7 +39,7 @@ int main() {
 
 本文将介绍范围、视图等基本概念，以及范围算法相比于传统STL算法的优势。
 
-注：GCC编译器支持范围库的最低版本是10，编译时需要添加选项`-std=c++20`。参见[C++ compiler support](https://en.cppreference.com/w/cpp/compiler_support)。
+注：支持范围库的编译器最低版本是GCC 10和Clang 13，编译时需要添加选项`-std=c++20`。参见[C++ compiler support](https://en.cppreference.com/w/cpp/compiler_support)。
 
 ## 2.范围
 **范围**(range)是对**可迭代序列**的抽象，即提供了`begin()`和`end()`迭代器、允许对其元素进行迭代的类型。内置数组和所有STL容器都是范围。
@@ -76,6 +76,7 @@ concept range = requires(T& t) {
 注：
 * 范围的`end()`代器（也叫做**哨兵**(sentinel)）类型不必和`begin()`相同。例如，可以用`'\0'`结束一个C风格字符串，空字符串结束一个单词列表，空指针结束一个链表，或者-1结束一个非负数列表。
 * 在C++20之前，标准库还有一对类似的函数`std::begin()`和`std::end()`，定义在各容器对应的头文件中。二者的区别详见[What is the difference between std::ranges::begin and std::begin?](https://stackoverflow.com/questions/62183286/what-is-the-difference-between-stdrangesbegin-and-stdbegin)
+* 头文件\<ranges\>中还定义了其他的范围函数，如`ranges::size()`、`ranges::empty()`等，这些函数都适用于任何类型的范围。
 * 概念`concept`也是C++20的新特性，详见[《C++20之概念》]({% post_url 2024-03-24-cpp20-concept %})。
 
 可以使用概念`ranges::range`检查一个类型是否是范围。例如：
@@ -425,18 +426,10 @@ project the pair::first: 1 2 3
 project the pair::second: one two three 
 ```
 
-### 2.3 容器操作
-C++23为STL容器增加了基于范围的构造和插入操作，可以将范围作为单一参数传递。
-
-ranges::to
-构造函数参数：from_range
-
-例如，对于向量`v`：
-* `v.insert_range(p, r)`将范围`r`中的元素插入`p`之前，等价于`v.insert(p, r.begin(), r.end())`
-* `v.append_range(r)`将范围`r`中的元素添加到向量末尾，等价于`v.insert(v.end(), r.begin(), r.end())`
-
 ## 3.视图
-**视图**(view)是间接表示范围的轻量级对象。标准库提供的视图定义在头文件\<ranges\>中，主要包括两大类：
+**视图**(view)是间接表示范围的轻量级对象。视图不拥有数据，而是在迭代时惰性计算或生成元素，其拷贝、移动和赋值等操作具有常数时间复杂度。
+
+标准库提供的视图定义在头文件\<ranges\>中，主要包括两大类：
 * 范围工厂：在迭代时生成元素，如`ranges::iota_view`。
 * 范围适配器：对底层范围的包装器，在迭代时进行惰性计算，如`ranges::filter_view`。
 
@@ -494,7 +487,9 @@ int main() {
 标准库为命名空间`std::ranges::views`提供了一个别名`std::views`。下面将其简称为`views`。
 
 ### 3.2 范围适配器
-**范围适配器**(range adaptor)是对底层范围的包装器，在迭代时进行惰性计算（如过滤、映射等），并且支持通过管道运算符(`|`)将多个操作串联起来。
+**范围适配器**(range adaptor)是对底层范围的包装器，在迭代时进行惰性计算（如过滤、映射等），并且支持通过管道运算符(`|`)将多个操作串联起来（就像UNIX Shell中的管道）。
+
+范围算法是立即执行的，可能会修改范围中的元素；范围适配器是惰性计算的，会返回一个新视图，不会修改原始数据。
 
 例如，回看本文开头打印偶数平方的例子，表达式
 
@@ -510,12 +505,7 @@ views::transform(views::filter(arr, even), square)
 
 这种表达式的返回类型是某种视图，具体类型并不重要，只需知道可以直接对其迭代、传递给另一个视图或者传递给范围算法。如果需要将中间结果保存到变量中，可以使用`auto`声明。
 
-范围算法是立即执行的，可能会修改范围中的元素；范围适配器是惰性计算的，会返回一个新视图，不会修改原始数据。
-
-#### 范围适配器对象和范围适配器闭包对象
-对比上述两种形式会发现，范围适配器有两种调用方式：接受一个范围参数和额外参数（如`views::filter(arr, even)`），或者只有额外参数（如`views::filter(even)`）。
-
-要弄清底层实现原理，需要了解两个基本概念：范围适配器对象和范围适配器闭包对象。
+对比上述两种形式会发现，范围适配器有两种调用方式：接受一个范围参数和额外参数（如`views::filter(arr, even)`），或者只有额外参数（如`views::filter(even)`）。要弄清底层实现原理，需要了解两个基本概念：范围适配器对象和范围适配器闭包对象。
 
 **范围适配器闭包对象**(range adaptor closure object)是接受一个范围参数、返回一个视图的函数对象（详见具名要求[RangeAdaptorClosureObject](https://en.cppreference.com/w/cpp/named_req/RangeAdaptorClosureObject)和概念[ranges::range_adaptor_closure](https://en.cppreference.com/w/cpp/ranges/range_adaptor_closure)）。范围参数可以通过管道语法(`|`)或函数调用语法(`()`)传递。假设`c`是一个范围适配器闭包对象，`r`是一个范围，则以下两个表达式等价：
 
@@ -551,7 +541,7 @@ views::filter(even)(arr)
 arr | views::filter(even)
 ```
 
-组合视图时甚至可以混合使用不同的形式：
+组合视图时甚至可以混合使用不同的形式，例如：
 
 ```cpp
 views::transform(views::filter(arr, even), square)
@@ -561,12 +551,16 @@ views::transform(arr | views::filter(even), square)
 ...
 ```
 
-常用的视图及其等价的Python函数如下表所示。范围适配器的完整列表参见[Range adaptors](https://en.cppreference.com/w/cpp/ranges#Range_adaptors)。
+范围适配器的完整列表参见[Range adaptors](https://en.cppreference.com/w/cpp/ranges#Range_adaptors)。
+
+常用的视图及其等价的Python函数如下表所示。
 
 | 视图 | 等价的Python函数 |
 | --- | --- |
 | `views::iota(m, n)` | `range(m, n)` |
 | `views::iota(n)` | `itertools.count(n)` |
+| `views::empty<T>` | |
+| `views::single(e)` | |
 | `views::repeat(e, n)` | `itertools.repeat(e, n)` |
 | `views::repeat(e)` | `itertools.repeat(e)` |
 | `views::filter(r, p)` | `filter(p, r)` |
@@ -578,39 +572,140 @@ views::transform(arr | views::filter(even), square)
 | `views::concat(rs...)` | `itertools.chain(rs...)` |
 | `views::join(r)` | `itertools.chain.from_iterable(r)` |
 | `views::reverse(r)` | `reversed(r)` |
-| `views::elements<N>(r)` | `map(operator.itemgetter(N), r)` |
 | `views::keys` | `map(operator.itemgetter(0), r)` |
 | `views::values` | `map(operator.itemgetter(1), r)` |
+| `views::elements<N>(r)` | `map(operator.itemgetter(N), r)` |
 | `views::enumerate(r)` | `enumerate(r)` |
 | `views::zip(rs...)` | `zip(rs...)` |
 | `views::chunk(r, n)` | `itertools.batched(r, n)` |
 | `views::stride(r, n)` | `itertools.islice(r, None, None, n)` |
 
-### 3.3 示例
+另外，还有两个表示子范围的视图：
+* `ranges::subrange(first, last)` 生成表示范围`[first, last)`的视图
+* `views::counted(it, n)` 生成表示范围`[it, it + n)`的视图
 
-不能用于临时对象
-auto firstThree = {1, 2, 3, 4, 5} | std::views::drop(3); 错
+### 3.3 基于范围的容器操作
+C++23为STL容器增加了基于范围的操作（需要GCC 14+或Clang 17+）。
 
-打印map的keys和values
-
-示例：拼接向量
+可以使用`ranges::to<C>`将范围转换为容器`C`。例如：
 
 ```cpp
-long long maxSpending(vector<vector<int>>& values) {
-    auto vec = values | views::join | ranges::to<vector>();
-    ranges::sort(vec);
-    return *ranges::fold_left_first(vec, [i = 2zu](auto a, int b)mutable { return a + b * i++; });
-}
+auto vec = std::views::iota(1, 5)
+        | std::views::transform([](int i) { return i * 2; })
+        | std::ranges::to<std::vector>();
+std::println("{}", vec);  // prints "[2, 4, 6, 8]"
+
+auto list = vec | std::views::take(3) | std::ranges::to<std::list<double>>();
+std::println("{}", list);  // prints "[2, 4, 6]"
 ```
 
-Python的iterable，range、map等内置函数、itertools模块
+容器还增加了基于范围的插入操作。例如，对于向量`v`：
+* `v.insert_range(p, r)`将范围`r`中的元素插入`p`之前，等价于`v.insert(p, r.begin(), r.end())`
+* `v.append_range(r)`将范围`r`中的元素添加到向量末尾，等价于`v.insert(v.end(), r.begin(), r.end())`
 
-### string_view和span
-### 自定义视图
+### 3.4 示例
+本节给出一些视图的使用示例。
+
+视图的元素类型取决于底层范围和执行的动作。如果直接对数组或容器使用`views::filter`，得到的视图的元素是底层范围元素的引用，因此可以通过视图修改原始数据。例如：
+
+```cpp
+int input[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+auto even = [](int i) { return i % 2 == 0; };
+auto even_nums = input | std::views::filter(even);
+std::ranges::fill(even_nums, 42);
+for (int i : input)
+    std::cout << i << ' ';
+// prints "42 1 42 3 42 5 42 7 42 9 42"
+```
+
+`views::keys`和`views::values`分别生成由元组式值的第一个和第二个元素构成的视图。元组式(tuple-like)值包括`std::pair`、`std::tuple`、`std::array`等。这两个视图可用于映射或`std::pair`向量等。例如，可以如下从映射中提取键和值：
+
+```cpp
+std::map<char, int> m = {{'A', 1}, {'B', 2}, {'C', 3}, {'D', 4}, {'E', 5}};
+for (char k : m | std::views::keys | std::views::transform(tolower))
+    std::cout << k << ' ';
+// prints "a b c d e"
+std::cout << '\n';
+
+auto odd = [](int i) { return i % 2 == 1; };
+for (int v : m | std::views::values | std::views::filter(odd))
+    std::cout << v << ' ';
+// prints "1 3 5"
+std::cout << '\n';
+```
+
+`views::split`生成使用给定的分隔符将范围分割成的子范围构成的视图。例如，可以如下使用`std::string_view`分割字符串：
+
+```cpp
+using std::operator""sv;
+auto words = "Hello^_^C++^_^20^_^!"sv;
+auto delim = "^_^"sv;
+for (const auto word : std::views::split(words, delim))
+    // with string_view's C++23 range constructor:
+    std::cout << std::quoted(std::string_view(word)) << ' ';
+// prints: "Hello" "C++" "20" "!" 
+std::cout << '\n';
+```
+
+`views::join`生成由打平嵌套范围构成的视图。例如，可以如下拼接字符串和向量：
+
+```cpp
+using namespace std::literals;
+
+const auto bits = {"https:"sv, "//"sv, "cppreference"sv, "."sv, "com"sv};
+for (char c : bits | std::views::join)
+    std::cout << c;
+// prints "https://cppreference.com"
+std::cout << '\n';
+
+std::vector<std::vector<int>> v = {{1, 2}, {3, 4, 5}, {6}, {7, 8, 9}};
+auto jv = v | std::views::join | std::ranges::to<std::vector>();
+for (int e : jv)
+    std::cout << e << ' ';
+// prints "1 2 3 4 5 6 7 8 9"
+std::cout << '\n';
+```
+
+`views::enumerate`（C++23引入）生成由每个元素的索引和值构成的视图（类似于Python的`enumerate()`函数）。例如：
+
+```cpp
+std::string s = "ABCD";
+for (auto [i, c] : std::views::enumerate(s))
+    std::cout << '(' << i << ':' << c << ") ";
+// prints "(0:A) (1:B) (2:C) (3:D)"
+std::cout << '\n';
+
+auto m = s | std::views::enumerate | std::ranges::to<std::map>();
+for (auto [k, v] : m)
+    std::cout << '[' << k << "]:" << v << ' ';
+// prints "[0]:A [1]:B [2]:C [3]:D"
+std::cout << '\n';
+```
+
+`views::zip`（C++23引入）生成由每个范围对应位置元组的元组构成的视图，到最短的范围结束为止（类似于Python的`zip()`函数）。例如：
+
+```cpp
+std::vector a = {1, 2, 3, 4};
+std::array b = {'A', 'B', 'C', 'D', 'E', 'F'};
+std::list<std::string> c = {"α", "β", "γ", "δ", "ε"};
+for (const auto& [x, y, z] : std::views::zip(a, b, c))
+    std::cout << x << ' ' << y << ' ' << z << '\n';
+```
+
+输出如下：
+
+```
+1 A α
+2 B β
+3 C γ
+4 D δ
+```
+
+### 3.5 自定义视图
 视图概念
+std::string_view和std::span
 模拟range
 模拟itertools.accumulate
-
 
 ## 参考
 * [Ranges library - cppreference](https://en.cppreference.com/w/cpp/ranges)
