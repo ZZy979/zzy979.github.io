@@ -38,7 +38,7 @@ int main() {
 0 4 16 
 ```
 
-本文将介绍范围、视图等基本概念，以及范围算法相比于传统STL算法的优势。
+本文将介绍范围、视图等基本概念，以及范围算法相比于传统STL算法的优势，最后将介绍如何自定义视图。
 
 注：支持范围库的编译器最低版本是GCC 10和Clang 13，编译时需要添加选项`-std=c++20`。参见[C++ compiler support](https://en.cppreference.com/w/cpp/compiler_support)。
 
@@ -164,7 +164,7 @@ template<ranges::random_access_range R,
 sort(R&& r, Comp comp = {}, Proj proj = {});
 ```
 
-第一种形式等价于`std::sort(first, last, comp)`，但额外提供了`proj`参数，用于对元素进行映射操作（即对映射后的结果而不是元素本身进行排序，相当于Python中`sort()`函数的`key`参数），默认为恒等映射`std::identity`。第二种形式等价于`ranges::sort(ranges::begin(r), ranges::end(r), comp, proj)`。
+第一种形式等价于`std::sort(first, last, comp)`，但额外提供了`proj`参数，用于对元素进行映射操作，即对映射后的结果而不是元素本身进行排序（相当于Python中`sort()`函数的`key`参数），默认为恒等映射`std::identity`。第二种形式等价于`ranges::sort(ranges::begin(r), ranges::end(r), comp, proj)`。
 
 下面的程序展示了`sort`算法的用法。
 
@@ -270,7 +270,7 @@ ranges::borrowed_iterator_t<R> find_if(R&& r, Pred pred, Proj proj = {}) {
 }
 ```
 
-传统STL算法的谓词参数可以是普通函数、Lambda表达式或函数对象，但不能是成员指针（除非使用`std::mem_fn`包装）。这是由于成员指针的调用语法与其他函数对象不同（必须使用`.*`或`->*`而不是`()`调用）。而范围算法都支持。
+传统STL算法的谓词参数可以是普通函数、Lambda表达式或函数对象，但不能是成员指针（除非使用`std::mem_fn`包装）。这是由于成员指针的调用语法与其他函数对象不同（使用`.*`或`->*`而不是`()`）。而范围算法都支持。
 
 从上面的实现中可以看出，`std::find_if()`直接使用`()`运算符来调用谓词，这不适用于成员指针；而`ranges::find_if()`使用了`std::invoke()`，该函数为成员指针和其他函数对象提供了统一的调用语法。参见[《C++函数式编程》]({% post_url 2023-10-04-cpp-functional-programming %}) 6.2.2节和6.3节“注”。
 
@@ -347,6 +347,13 @@ First even element in v: 4
 No element larger than 42 in v
 First adult in users: (Bob,25)
 Not found Frank in users
+```
+
+其中，查找成年用户的例子使用了成员函数指针`&User::is_adult`作为谓词，而`std::find_if()`只能使用lambda表达式或`std::mem_fn`：
+
+```cpp
+auto p = std::find_if(users.begin(), users.end(), [](const User& u) { return u.is_adult(); });
+auto q = std::find_if(users.begin(), users.end(), std::mem_fn(&User::is_adult));
 ```
 
 #### 2.2.3 for_each
@@ -632,7 +639,7 @@ for (int i : input)
 // prints "42 1 42 3 42 5 42 7 42 9 42"
 ```
 
-`views::keys`和`views::values`分别生成由元组式值的第一个和第二个元素构成的视图。元组式(tuple-like)值包括`std::pair`、`std::tuple`、`std::array`等。这两个视图可用于映射或`std::pair`向量等。例如，可以如下从映射中提取键和值：
+`views::keys`和`views::values`分别提取元组式值的第一个和第二个元素。元组式(tuple-like)值包括`std::pair`、`std::tuple`、`std::array`等。这两个视图可用于映射或`std::pair`向量等。例如，可以如下从映射中提取键和值：
 
 ```cpp
 std::map<char, int> m = { {'A', 1}, {'B', 2}, {'C', 3}, {'D', 4}, {'E', 5} };
@@ -648,7 +655,7 @@ for (int v : m | std::views::values | std::views::filter(odd))
 std::cout << '\n';
 ```
 
-`views::split`生成使用给定的分隔符将范围分割成的子范围构成的视图。例如，可以如下使用`std::string_view`分割字符串：
+`views::split`使用给定的分隔符将范围分割成子范围。例如，可以如下使用`std::string_view`分割字符串：
 
 ```cpp
 using std::operator""sv;
@@ -661,7 +668,7 @@ for (const auto word : std::views::split(words, delim))
 std::cout << '\n';
 ```
 
-`views::join`生成由打平嵌套范围构成的视图。例如，可以如下拼接字符串和向量：
+`views::join`打平(flatten)嵌套范围。例如，可以如下拼接字符串和向量：
 
 ```cpp
 using namespace std::literals;
@@ -680,7 +687,7 @@ for (int e : jv)
 std::cout << '\n';
 ```
 
-`views::enumerate`（C++23引入）生成由每个元素的索引和值构成的视图（类似于Python的`enumerate()`函数）。例如：
+`views::enumerate`（C++23引入）将每个元素映射为(索引,值)对（类似于Python的`enumerate()`函数）。例如：
 
 ```cpp
 std::string s = "ABCD";
@@ -696,7 +703,7 @@ for (auto [k, v] : m)
 std::cout << '\n';
 ```
 
-`views::zip`（C++23引入）生成由每个范围对应位置元组的元组构成的视图，到最短的范围结束为止（类似于Python的`zip()`函数）。例如：
+`views::zip`（C++23引入）生成由每个范围对应位置元素的元组构成的视图，到最短的范围结束为止（类似于Python的`zip()`函数）。例如：
 
 ```cpp
 std::vector a = {1, 2, 3, 4};
@@ -716,10 +723,10 @@ for (const auto& [x, y, z] : std::views::zip(a, b, c))
 ```
 
 ### 3.5 自定义视图
-本节将使用C++范围库实现几个常用的Python函数。
+本节通过使用C++范围库实现几个常用的Python函数来介绍如何自定义视图。
 
 #### 3.5.1 实现range
-函数`range(start, stop, step)`生成从`start`到`stop`（不包含）、步长为`step`的整数序列。例如：
+在Python中，函数`range(start, stop, step)`生成从`start`到`stop`（不包含）、步长为`step`的整数序列。例如：
 
 ```python
 >>> list(range(0, 10))
@@ -786,7 +793,7 @@ int main() {
 [ ]
 ```
 
-现在已经实现了正数步长。为了支持负数步长，首先尝试使用`if`语句增加一个分支：
+现在已经实现了正数步长。为了实现负数步长，首先尝试使用`if`语句增加一个分支：
 
 ```cpp
 auto range(int start, int stop, int step = 1) {
@@ -806,7 +813,7 @@ auto range(int start, int stop, int step = 1) {
 }
 ```
 
-然而，这会导致编译失败，得到一堆晦涩难懂的错误消息：
+然而，这会导致编译失败，得到一堆晦涩难懂的错误消息（详见<https://godbolt.org/z/s3h5qW9PG>）：
 
 ```
 error: inconsistent deduction for auto return type: 'std::ranges::stride_view<std::ranges::take_while_view<std::ranges::iota_view<int, std::unreachable_sentinel_t>, range(int, int, int)::<lambda(int)> > >' and then 'std::ranges::stride_view<std::ranges::reverse_view<std::ranges::take_while_view<std::ranges::iota_view<int, std::unreachable_sentinel_t>, range(int, int, int)::<lambda(int)> > > >'
@@ -816,9 +823,9 @@ error: inconsistent deduction for auto return type: 'std::ranges::stride_view<st
 
 为了解决这一困难，考虑换一种思路——使用等差数列通项公式：
 
-$$ length = \left \lfloor \frac{\vert stop - start \vert - 1}{\vert step \vert} \right \rfloor + 1 $$
-
 $$ r_i = start + i * step \ (0 \le i < length) $$
+
+$$ length = \left \lfloor \frac{\vert stop - start \vert - 1}{\vert step \vert} \right \rfloor + 1 $$
 
 这样可以将步长为正数和负数的两种情况统一起来：
 
@@ -865,7 +872,7 @@ print(range(12, 2, -3));
 注：这里的实现参考了CPython的[rangeobject.c](https://github.com/python/cpython/blob/main/Objects/rangeobject.c)。
 
 #### 3.5.2 视图概念
-自定义视图可能比较复杂，难以通过组合标准库视图得到。在这种情况下，就需要实现一个视图类。
+自定义视图可能比较复杂，难以通过组合标准视图得到。在这种情况下，就需要实现一个视图类。
 
 要使一个类被认为是视图，必须满足概念[ranges::view](https://en.cppreference.com/w/cpp/ranges/view)，其定义如下：
 
@@ -1041,7 +1048,6 @@ public:
         std::ranges::iterator_t<Range> current_;
         accumulate* parent_;
         T accumulated_;
-        bool first_ = true;
     };
 
     explicit accumulate(Range base, BinaryOperation op = {}, T init = {})
@@ -1088,17 +1094,10 @@ int main() {
 可以看出，用C++实现自定义视图类时，不得不编写大量的样板代码（如迭代器的5个成员类型、后缀`++`、`==`和`!=`等）。作为对比，下面是用Python实现的`accumulate()`。利用`yield`语句，代码要简短得多。
 
 ```python
-def accumulate(iterable, function=operator.add, *, initial=None):
-    iterator = iter(iterable)
+def accumulate(iterable, function, initial):
     total = initial
-    if initial is None:
-        try:
-            total = next(iterator)
-        except StopIteration:
-            return
-
     yield total
-    for element in iterator:
+    for element in iterable:
         total = function(total, element)
         yield total
 ```
