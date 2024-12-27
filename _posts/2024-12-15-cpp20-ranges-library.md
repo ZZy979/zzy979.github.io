@@ -213,7 +213,7 @@ int main() {
 }
 ```
 
-程序输出如下：
+程序输出如下(<https://godbolt.org/z/Er4sadWzq>)：
 
 ```
 Sort using operator<
@@ -338,7 +338,7 @@ int main() {
 }
 ```
 
-程序输出如下：
+程序输出如下(<https://godbolt.org/z/61sre5c61>)：
 
 ```
 v contains 3
@@ -437,7 +437,7 @@ int main() {
 }
 ```
 
-程序输出如下：
+程序输出如下(<https://godbolt.org/z/TedWvjYYh>)：
 
 ```
 before: 3 4 2 8 15 267 
@@ -494,7 +494,7 @@ int main() {
 }
 ```
 
-输出如下：
+输出如下(<https://godbolt.org/z/x1Gjzscre>)：
 
 ```
 1 2 3 4 5 6 7 8 9 
@@ -782,7 +782,7 @@ int main() {
 }
 ```
 
-输出如下：
+输出如下(<https://godbolt.org/z/YEvnqToab>)：
 
 ```
 [ 0 1 2 3 4 5 6 7 8 9 ]
@@ -813,7 +813,7 @@ auto range(int start, int stop, int step = 1) {
 }
 ```
 
-然而，这会导致编译失败，得到一堆晦涩难懂的错误消息（详见<https://godbolt.org/z/s3h5qW9PG>）：
+然而，这会导致编译失败，得到一堆晦涩难懂的错误消息(<https://godbolt.org/z/TPcME3bGf>)：
 
 ```
 error: inconsistent deduction for auto return type: 'std::ranges::stride_view<std::ranges::take_while_view<std::ranges::iota_view<int, std::unreachable_sentinel_t>, range(int, int, int)::<lambda(int)> > >' and then 'std::ranges::stride_view<std::ranges::reverse_view<std::ranges::take_while_view<std::ranges::iota_view<int, std::unreachable_sentinel_t>, range(int, int, int)::<lambda(int)> > > >'
@@ -857,7 +857,7 @@ auto range(int start, int stop, int step = 1) {
 }
 ```
 
-现在可以使用负数步长了：
+现在可以使用负数步长了(<https://godbolt.org/z/P1cbE8vdq>)：
 
 ```cpp
 print(range(10, -1, -1));
@@ -963,7 +963,7 @@ int main() {
 }
 ```
 
-程序输出如下：
+程序输出如下(<https://godbolt.org/z/z3o3njerM>)：
 
 ```
 [ 0 1 2 3 4 5 6 7 8 9 ]
@@ -1083,7 +1083,7 @@ int main() {
 }
 ```
 
-程序输出如下：
+程序输出如下(<https://godbolt.org/z/znjc5Kr6r>)：
 
 ```
 [ 3 7 13 15 16 25 25 32 37 45 ]
