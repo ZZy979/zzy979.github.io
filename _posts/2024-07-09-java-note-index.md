@@ -21,7 +21,7 @@ tags: [java]
 * [第7章 异常、断言和日志]({% post_url 2024-10-09-java-note-v1ch07-exceptions-assertions-and-logging %})
 * [第8章 泛型编程]({% post_url 2024-10-29-java-note-v1ch08-generic-programming %})
 * [第9章 集合]({% post_url 2024-11-18-java-note-v1ch09-collections %})
-* 第10章 图形用户界面
+* [第10章 图形用户界面]({% post_url 2024-12-09-java-note-v1ch10-graphical-user-interface-programming %})
 * 第11章 Swing用户界面组件
 * 第12章 并发
 

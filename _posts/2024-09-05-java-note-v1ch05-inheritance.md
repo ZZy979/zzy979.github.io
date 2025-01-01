@@ -2,7 +2,7 @@
 title: 《Java核心技术》笔记 第5章 继承
 date: 2024-09-05 22:00:23 +0800
 categories: [Java, Core Java]
-tags: [java, class, inheritance, polymorphism, type conversion, array list, variadic argument, enumeration, sealed class, reflection, exception]
+tags: [java, class, inheritance, polymorphism, type conversion, array list, variadic argument, enumeration, sealed class, reflection, exception, jar file]
 ---
 本章将学习面向对象程序设计的另一个基本概念：**继承**(inheritance)。继承的基本思想是可以基于已有的类创建新的类。继承已有的类就是复用（继承）这些类的方法和字段，而且可以添加新的方法和字段，以满足新的需求。这是Java编程中的一项核心技术。
 
@@ -1299,12 +1299,10 @@ public static void doSomethingWithClass(String name)
 
 `Class`类提供了一个很有用的服务可以查找资源文件。下面是必要的步骤：
 1. 获得拥有资源的类的`Class`对象，例如`ResourceTest.class`。
-2. 有些方法（如`ImageIcon`类的`getImage()`方法）接受描述资源位置的URL，那么可以调用`getResource()`。
+2. 有些方法（如`ImageIcon`类的构造器）接受描述资源位置的URL，那么可以调用`getResource()`。
 3. 否则，使用`getResourceAsStream()`方法获得一个输入流来读取文件中的数据。
 
 重点在于Java虚拟机知道如何查找一个类，所以能搜索**相同位置**上的关联资源。例如，假设`ResourceTest`类在`resources`包中，则ResourceTest.class文件就位于resources目录中，可以把图标文件放在同一个目录下。另外，还可以提供相对或绝对路径，例如data/about.txt或/corejava/title.txt。
-
-注：相对路径是相对于类文件，绝对路径是从JAR文件根目录开始。
 
 另一个经常使用资源的地方是程序的国际化。与语言相关的字符串（如消息和用户界面标签）存放在资源文件中，每种语言对应一个文件。国际化API支持一种标准方法来组织和访问这些本地化文件，将在卷II第7章介绍。
 
@@ -1320,7 +1318,10 @@ jar cvfe ResourceTest.jar resources.ResourceTest resources/*.class resources/*.g
 java -jar ResourceTest.jar
 ```
 
-源代码、类文件和资源文件的目录结构如下：
+将JAR文件移动到一个不同的目录再次运行，以确认程序是从JAR文件而不是当前目录读取资源。
+
+注：
+* 在这个示例中，源代码、类文件和资源文件的目录结构如下：
 
 ```
 project/
@@ -1349,7 +1350,19 @@ ResourceTest.jar/
         title.txt
 ```
 
-将JAR文件移动到一个不同的目录再次运行，以确认程序是从JAR文件而不是当前目录读取资源。
+* `Class`类会在**类路径**中查找资源文件（就像查找类文件一样）：
+  * 如果文件名以 "/" 开头，则在类路径下查找。
+  * 否则，在当前类文件所在目录（即 "类路径/包路径" ）下查找。
+
+在JAR文件中，类路径为JAR文件根目录。
+
+在上面的示例中，假设将项目根目录/path/to/project或JAR文件根目录/path/to/ResourceTest.jar添加到类路径，则`ResourceTest`类加载各个资源文件使用的文件名和最终定位的URL如下：
+
+| 文件名 | 文件系统URL | JAR文件内URL |
+| --- | --- | --- |
+| `"about.gif"` | file:/path/to/project/resources/about.gif | jar:file:/path/to/ResourceTest.jar!/resources/about.gif |
+| `"data/about.txt"` | file:/path/to/project/resources/data/about.txt | jar:file:/path/to/ResourceTest.jar!/resources/data/about.txt |
+| `"/corejava/title.txt"` | file:/path/to/project/corejava/title.txt | jar:file:/path/to/ResourceTest.jar!/corejava/title.txt |
 
 ### 5.9.4 使用反射分析类的能力
 下面简要介绍反射机制最重要的内容——检查类的结构。

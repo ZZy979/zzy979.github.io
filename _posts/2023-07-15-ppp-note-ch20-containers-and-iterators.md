@@ -753,6 +753,7 @@ STL提供了很多容器：
 | `set` | `TreeSet` | - |
 | `unordered_set` | `HashSet` | `set` |
 
+* Python标准库并没有提供有序集合（如`TreeMap`和`TreeSet`）。如果需要，可以使用[Sorted Containers](https://grantjenks.com/docs/sortedcontainers/)库。
 * 除了容器，STL还提供了一些**容器适配器**(container adaptor)，通过对已有容器进行封装来实现特定的数据结构，可以通过模板参数指定要使用的底层容器：
 
 | 容器适配器 | 描述 | 默认底层容器 |

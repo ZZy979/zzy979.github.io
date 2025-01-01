@@ -2,7 +2,7 @@
 title: 《Python基础教程》笔记 第9章 魔法方法、特性和迭代器
 date: 2024-02-21 21:22:21 +0800
 categories: [Python, Beginning Python]
-tags: [python, metaclass, constructor, special method, operator overloading, property, static method, class method, iterator, generator]
+tags: [python, metaclass, constructor, magic method, operator overloading, property, static method, class method, iterator, generator]
 ---
 在Python中，有些名称很特殊，开头和结尾都是两个下划线（如`__future__`）。这样的拼写表示名称有特殊意义，因此绝对不要在自己的程序中创建这样的名称。这样的名称大部分都是**魔法**（特殊）方法的名称。如果你的对象实现了这些方法，它们将在特定情况下被Python调用，而几乎不需要直接调用。
 

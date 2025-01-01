@@ -1472,6 +1472,8 @@ jar ufm MyArchive.jar manifest-additions.mf
 
 注释：有关JAR和清单文件格式的更多信息参见 <https://docs.oracle.com/en/java/javase/17/docs/specs/jar/jar.html> 。
 
+注：关于在JAR文件中加载资源文件，详见5.9.3节。
+
 ### 4.9.3 可执行JAR文件
 可以使用`jar`命令的`e`选项指定程序的入口点，即通常调用`java`执行程序时指定的主类：
 
@@ -1493,7 +1495,9 @@ Main-Class: com.mycompany.mypkg.MainAppClass
 java -jar MyProgram.jar
 ```
 
-注：如果清单文件没有指定主类，就不能使用`-jar`选项执行JAR文件。这种情况下，可以将JAR文件添加到类路径，并在`java`命令中指定主类：
+注：
+* `java -jar`命令会自动将JAR文件添加到类路径。
+* 如果清单文件没有指定主类，就不能使用`-jar`选项执行JAR文件。这种情况下，可以将JAR文件添加到类路径，并在`java`命令中指定主类：
 
 ```shell
 java -cp MyProgram.jar com.mycompany.mypkg.MainAppClass
