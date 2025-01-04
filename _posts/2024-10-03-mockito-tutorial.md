@@ -378,13 +378,35 @@ assertEquals("John", argument.getValue().getName());
 推荐将`ArgumentCaptor`用于验证而不是打桩，因为会降低测试的可读性。通过`ArgumentMatcher`自定义参数匹配器通常更适合于打桩（见3.3节）。
 
 ## 4.MVC示例
-在真实项目的测试中使用Mockito通常包括以下步骤。假设类`A`依赖类`B`，要对类`A`进行测试：
-1. 创建类`B`的mock对象。
-2. （可选）打桩mock对象的方法。
-3. 将mock对象传递给类`A`。
-4. 调用被测方法。
-5. 验证被测方法的结果。
-6. 验证mock对象的调用。
+本节通过示例说明如何在真实项目的测试中使用Mockito。假设类`A`的方法`f()`依赖类`B`，要对`A.f()`进行测试，通常包括以下步骤：
+1. 创建类`B`的mock对象`m`。
+2. （可选）打桩`m`的方法。
+3. 将`m`通过构造器或setter方法传递给类`A`的对象`a`。
+4. 调用被测方法`a.f()`。
+5. 验证`a.f()`的结果。
+6. 验证`m`的调用。
+
+典型代码结构如下：
+
+```java
+// (1) create mock
+B m = mock(B.class);
+
+// (2) stubbing
+when(m.g(xx)).thenReturn(yy);
+
+// (3) pass mock
+A a = new A(m);  // or a.setB(m);
+
+// (4) use mock
+T y = a.f(x);
+
+// (5) assert result
+assertEquals(e, y);
+
+// (6) verify invocation
+verify(m).g(xx);
+```
 
 注意：第3步要求被测类通过构造器参数或者setter方法传递依赖对象，而不是直接在方法中创建。这就是依赖注入的基本思想。
 
