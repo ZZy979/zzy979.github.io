@@ -2,7 +2,7 @@
 title: 在PyCharm中调试Scrapy爬虫
 date: 2020-03-15 11:46:24 +0800
 categories: [Scrapy]
-tags: [pycharm, scrapy, crawler]
+tags: [ide, scrapy, crawler]
 ---
 通常运行Scrapy爬虫的方法是在工程目录下执行`scrapy crawl <spider>`命令，而不是直接运行Python脚本，因此无法直接命中断点。执行scrapy命令时实际上是执行了scrapy.cmdline模块，因此在PyCharm中添加一个运行该模块的配置即可。
 

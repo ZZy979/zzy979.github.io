@@ -2,7 +2,7 @@
 title: Blade项目的IDE支持
 date: 2023-04-25 10:20:43 +0800
 categories: [Build Tools]
-tags: [build tools, blade]
+tags: [cpp, build tools, blade, ide]
 ---
 [Blade](https://github.com/chen3feng/blade-build)是一个C/C++构建工具，详细介绍见[Blade构建工具]({% post_url 2022-01-20-blade-build-tool %})。虽然功能强大，但是缺少IDE支持。本文介绍如何在Blade项目中使用IDE的智能提示、自动补全、自动跳转等特性。
 
@@ -21,10 +21,12 @@ VSCode的C/C++插件(ms-vscode.cpptools)提供了C/C++代码的智能提示、�
 
 缺点：
 * VSCode的自动跳转功能实际上是基于关键词匹配，并不是真正分析了C++代码。如果不同文件中有同名的函数则需要手动选择。
-* 对于大型项目，检索过程将会非常慢，导致自动补全功能经常失效，并且内存占用也非常高。
+* 对于大型项目，检索过程将会非常慢，导致自动补全功能经常失效，并且内存占用也非常高（参见 <https://github.com/microsoft/vscode-cpptools/issues/5227> 、 <https://github.com/search?q=repo%3Amicrosoft%2Fvscode-cpptools+memory&type=issues>）。
+
+另一种方法是使用clangd。[clangd](https://clangd.llvm.org/)是一个C++[语言服务器](https://microsoft.github.io/language-server-protocol/)，可以为代码编辑器提供代码补全、自动跳转等功能。在VSCode中可以安装clangd插件(llvm-vs-code-extensions.vscode-clangd)，配合编译数据库使用。clangd的安装和配置参见官方文档 <https://clangd.llvm.org/installation> 。
 
 ## 2.CLion
-CLion本身只支持Make和CMake两种构建工具。但是，对于不是基于Make或CMake的项目，还可以使用**编译数据库**(compilation database)来加载，从而能够使用CLion提供的IDE特性，详见文档[Compilation database](https://www.jetbrains.com/help/clion/2023.1/compilation-database.html)。
+CLion本身只支持Make和CMake两种构建工具。但是，对于不是基于Make或CMake的项目，还可以使用**编译数据库**(compilation database)来加载，从而能够使用CLion提供的IDE特性，详见文档[Compilation database](https://www.jetbrains.com/help/clion/compilation-database.html)。
 
 [编译数据库](https://clang.llvm.org/docs/JSONCompilationDatabase.html)是一个描述编译命令的JSON文件，名为compile_commands.json（可以将其添加到.gitignore，从而避免提交到git）。CLion可以从中提取必要的编译器信息，例如包含路径、编译选项等。幸运的是，Blade使用的底层构建工具Ninja提供了一个工具[compdb](https://ninja-build.org/manual.html#_extra_tools)能够根据BUILD文件生成编译数据库。
 
@@ -38,25 +40,19 @@ CLion本身只支持Make和CMake两种构建工具。但是，对于不是基于
 
 首先安装CLion。如果代码位于远程开发机上，则参考文档[Remote Development](https://www.jetbrains.com/help/idea/2023.1/remote.html)连接到远程开发机。
 
-之后按照以下步骤来生成编译数据库，从而启用CLion的IDE功能：
+在项目根目录下使用`blade dump --compdb`命令生成编译数据库：
 
-第1步：在命令行中使用blade命令构建需要的目标，目的是生成包含该目标及其所有下游依赖的Ninja构建文件build.ninja，可以使用`-n`选项避免真正执行编译命令：
-
-```bash
-blade build -n //quick-start:hello_world
+```shell
+blade dump --compdb --to-file compile_commands.json //quick-start:hello_world
 ```
 
-构建完成后将在blade-bin目录下生成build.ninja文件。
+这将在项目根目录下生成compile_commands.json文件。这个命令底层调用了Ninja的compdb工具：
 
-第2步：使用Ninja的compdb工具生成编译数据库，在项目根目录下执行以下命令：
-
-```bash
+```shell
 ninja -f blade-bin/build.ninja -t compdb cc cxx cxxhdrs > compile_commands.json
 ```
 
-这将在项目根目录下生成compile_commands.json文件。
-
-第3步：使用CLion打开项目，CLion会自动加载compile_commands.json，加载完成后可以在Build窗口中看到成功信息（忽略其中的红字）：
+CLion会自动加载compile_commands.json，加载完成后可以在Build窗口中看到成功信息（忽略其中的红字）：
 
 ![导入成功](/assets/images/blade-project-ide-support/导入成功.png)
 
@@ -67,3 +63,5 @@ ninja -f blade-bin/build.ninja -t compdb cc cxx cxxhdrs > compile_commands.json
 ![CLion智能提示](/assets/images/blade-project-ide-support/CLion智能提示.png)
 
 跳转到符号和头文件功能也都能正常使用。
+
+注：对于CMake项目，可以通过设置变量[CMAKE_EXPORT_COMPILE_COMMANDS](https://cmake.org/cmake/help/latest/variable/CMAKE_EXPORT_COMPILE_COMMANDS.html)来生成编译数据库。

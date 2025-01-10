@@ -2,7 +2,7 @@
 title: PyCharm conda环境下Python Console报错
 date: 2020-07-01 15:00:39 +0800
 categories: [Python]
-tags: [python, pycharm, conda]
+tags: [python, ide, conda]
 ---
 错误信息：
 
