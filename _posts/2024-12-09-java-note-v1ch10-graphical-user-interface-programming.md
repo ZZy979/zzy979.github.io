@@ -744,10 +744,10 @@ AWT将事件分为**底层**(low-level)事件和**语义**(semantic)事件。语
 
 | 监听器接口 | 事件 | 事件源 |
 | --- | --- | --- |
-| `ActionListener` | `ActionEvent` | `JButton` <br> `JMenuItem` <br> `JComboBox` <br> `JTextField` <br> `Timer` |
+| `ActionListener` | `ActionEvent` | `AbstractButton` <br> `JMenuItem` <br> `JComboBox` <br> `JTextField` <br> `Timer` |
 | `AdjustmentListener` | `AdjustmentEvent` | `JScrollBar` |
 | `ChangeListener` | `ChangeEvent` | `JSlider` |
-| `ItemListener` | `ItemEvent` | `JButton` <br> `JComboBox` |
+| `ItemListener` | `ItemEvent` | `AbstractButton` <br> `JComboBox` |
 | `FocusListener` | `FocusEvent` | `Component` |
 | `KeyListener` | `KeyEvent` | `Component` |
 | `MouseListener` | `MouseEvent` | `Component` |
