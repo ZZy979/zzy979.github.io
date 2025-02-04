@@ -16,7 +16,7 @@ tags: [cpp, string, regular expression, raw string]
 
 注：`string`的赋值（`=`）、拼接（`+`、`+=`）和比较（`==`、`<`等）操作均支持`string`和C风格字符串两种版本。
 
-实际上，标准库字符串是一个模板`basic_string`，支持不同的字符类型（例如`char`、`wchar_t`、`char16_t`、`char32_t`等）。而我们一直使用的`string`实际上就是`basic_string<char>`：
+实际上，标准库字符串是一个模板`basic_string`，支持不同的字符类型（例如`char`、`wchar_t`、`char8_t`、`char16_t`、`char32_t`等）。而我们一直使用的`string`实际上就是`basic_string<char>`：
 
 ```cpp
 using string = basic_string<char>;
@@ -52,39 +52,7 @@ int d = from_string<int>("Mary had a little lamb");  // oops!
 
 注：`to()`是借助字符串完成“类型转换”的，并不是通常意义上的类型转换（像`static_cast`）。例如，`to<int>(123.5)`会出错而不是返回123；`to<char>(9)`会返回`'9'`而不是`'\t'`。
 
-注：`std::string`底层保存的是字节数组，因此不存在字符编码的问题。字符串在内存中的表示取决于源代码文件的编码（对于字符串字面值）或输入文件的编码（对于从文件读取的字符串）。例如：
-
-```cpp
-#include <iostream>
-#include <iomanip>
-#include <string>
-
-using namespace std;
-
-int main() {
-    string s = "你好";
-    cout << s.length() << '\n';
-    for (unsigned char c : s)
-        cout << hex << setw(2) << setfill('0') << static_cast<int>(c) << ' ';
-    return 0;
-}
-```
-
-如果源代码文件的编码为UTF-8，则输出如下：
-
-```
-6
-e4 bd a0 e5 a5 bd 
-```
-
-如果编码为GBK，则输出如下：
-
-```
-4
-c4 e3 ba c3 
-```
-
-除了基本字符类型`char`，C++还提供了表示宽字符的`wchar_t`以及表示UTF字符的`char16_t`、`char32_t`和`char8_t`，详见[Character types](https://en.cppreference.com/w/cpp/language/types#Character_types)。
+注：另见[【C++】字符串编码问题]({% post_url 2025-02-04-cpp-string-encoding %})。
 
 ## 23.3 I/O流
 I/O流建立了字符串和其他类型之间的联系。第10和11章已经介绍了iostream库。标准I/O流的类层次结构：

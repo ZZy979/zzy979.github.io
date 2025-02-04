@@ -2,7 +2,7 @@
 title: 解决Windows下Vim中文乱码
 date: 2019-11-24 15:53:52 +0800
 categories: [Vim]
-tags: [vim]
+tags: [vim, encoding]
 ---
 在Windows下使用Vim打开文件时中文字符会显示为乱码
 

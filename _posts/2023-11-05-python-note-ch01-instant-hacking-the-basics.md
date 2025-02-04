@@ -2,7 +2,7 @@
 title: 《Python基础教程》笔记 第1章 基础知识
 date: 2023-11-05 16:47:23 +0800
 categories: [Python, Beginning Python]
-tags: [python, hello world, expression, integer division, variable, assignment, io, if statement, function, module, import statement, mathematical function, complex number, turtle graphics, comment, string, raw string, unicode]
+tags: [python, hello world, expression, integer division, variable, assignment, io, if statement, function, module, import statement, mathematical function, complex number, turtle graphics, comment, string, raw string, encoding, unicode]
 ---
 在本章中，你将学习如何借助计算机能够听懂的语言——Python来控制计算机。Python的官方网站是 <https://www.python.org/>，官方文档：<https://docs.python.org/3/>。
 
