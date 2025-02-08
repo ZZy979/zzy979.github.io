@@ -5,7 +5,7 @@ categories: [Django]
 tags: [django]
 render_with_liquid: false
 ---
-Django默认提供了一个[用户认证系统](https://docs.djangoproject.com/en/3.0/topics/auth/default/)，但主要面向admin应用中用户对各种实体类的增删改查权限，比较复杂，本项目实现一个较简单的用户登录功能。
+Django默认提供了一个[用户认证系统](https://docs.djangoproject.com/en/stable/topics/auth/default/)，但主要面向admin应用中用户对各种实体类的增删改查权限，比较复杂，本项目实现一个较简单的用户登录功能。
 
 ## 第1步：创建项目及应用
 
@@ -85,7 +85,7 @@ python manage.py migrate
 * login/：如果是GET方法则表示用户点击了“登录”链接，直接返回login.html；如果是POST方法则表示用户提交了登录表单，如果登录成功则通过Django提供的session机制将用户名保存在session中，并重定向到首页，否则返回登录页面并显示错误信息
 * logout/：用户注销，从session中删除用户名，并重定向到首页
 
-注：以上的URL模式省略了应用名前缀"login/"
+注：以上的URL模式省略了应用名前缀 "login/"
 
 ①login/views.py内容如下：
 

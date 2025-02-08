@@ -68,7 +68,7 @@ mysite/
 * manage.py：Django命令行工具，详见[django-admin and manage.py](https://docs.djangoproject.com/en/stable/ref/django-admin/)。
 * 内层mysite目录：项目的Python包，用于导入模块（例如`mysite.urls`）。
 * mysite/\_\_init\_\_.py：空文件，告诉Python该目录是一个Python包。
-* mysite/settings.py：设置/配置，详见[Django settings](https://docs.djangoproject.com/en/stable/topics/settings/)。
+* mysite/settings.py：设置/配置，详见[Django settings](https://docs.djangoproject.com/en/stable/topics/settings/)和[The Settings Reference](https://docs.djangoproject.com/en/stable/ref/settings/)。
 * mysite/urls.py：URL声明，相当于网站的“目录”，详见[URL dispatcher](https://docs.djangoproject.com/en/stable/topics/http/urls/)。
 * mysite/asgi.py：ASGI web服务器的入口，详见[How to deploy with ASGI](https://docs.djangoproject.com/en/stable/howto/deployment/asgi/)。
 * mysite/wsgi.py：WSGI web服务器的入口，详见[How to deploy with WSGI](https://docs.djangoproject.com/en/stable/howto/deployment/wsgi/)。
@@ -119,8 +119,29 @@ polls/
         __init__.py
     models.py
     tests.py
+    urls.py             # 手动创建
     views.py
+    templates/          # 手动创建
+        polls/
+            index.html
+    static/             # 手动创建
+        polls/
+            images/
+                background.png
+            style.css
 ```
+
+<!-- 由于添加了render_with_liquid: false，这里不能使用post_url标签，只能使用文章的绝对链接 -->
+
+* admin.py：注册模型
+* apps.py：包含应用配置类
+* migrations：存放数据库变更记录（见[模型](/posts/django-models/) 1.2节）
+* models.py：定义[模型](/posts/django-models/)
+* tests.py：编写[测试](/posts/django-testing/)
+* urls.py：定义URL映射(URLconf)
+* views.py：定义[视图](/posts/django-views/)
+* templates：存放[模板](/posts/django-templates/)
+* static：存放[静态文件](/posts/django-static-files/)，包括图片、CSS和JavaScript
 
 #### 3.1.3 编写第一个视图
 打开文件polls/views.py，编写以下代码：
@@ -134,6 +155,8 @@ def index(request):
 ```
 
 这里创建了一个名为`index`的**视图**(view)。为了调用该视图，需要一个映射到它的URL，即**URL配置**(URLconf)。
+
+注：URL配置相当于Java Web中的Servlet mapping或Spring MVC中的Controller，用于将URL模式映射到视图。
 
 为了创建URLconf，在polls目录下创建一个文件urls.py，内容如下：
 
@@ -250,7 +273,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'polls.apps.PollsConfig',
+    'polls',
 ]
 ```
 
@@ -1302,7 +1325,7 @@ class QuestionAdmin(admin.ModelAdmin):
 
 ![自定义问题列表](/assets/images/django-tutorial/自定义问题列表.png)
 
-点击标题或日期列即可按该字段排序，第3列是`was_published_recently ()`方法的返回值，不支持排序。可以在`was_published_recently()`方法上使用`display()`装饰器来改进这一点：
+点击标题或日期列即可按该字段排序，第3列是`was_published_recently()`方法的返回值，不支持排序。可以在`was_published_recently()`方法上使用`display()`装饰器来改进这一点：
 
 ```python
 class Question(models.Model):

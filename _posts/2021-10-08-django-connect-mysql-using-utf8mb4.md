@@ -2,7 +2,7 @@
 title: 【Django】连接MySQL使用utf8mb4字符集
 date: 2021-10-08 22:29:55 +0800
 categories: [Django]
-tags: [django, mysql, encoding]
+tags: [django, database, mysql, encoding]
 ---
 Django向MySQL中插入的字符串包含特殊Unicode字符时报错：
 ```
@@ -56,5 +56,5 @@ def get_connection_params(self):
 ```
 
 参考文档：
-* <https://docs.djangoproject.com/en/latest/ref/databases/#connecting-to-the-database>
+* <https://docs.djangoproject.com/en/stable/ref/databases/#connecting-to-the-database>
 * <https://mysqlclient.readthedocs.io/user_guide.html#functions-and-attributes>
