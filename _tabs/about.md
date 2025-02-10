@@ -5,10 +5,9 @@ order: 4
 ---
 # Zhengyang Zhao 赵正阳
 ## Basic Information
-* Email: zzy979@buaa.edu.cn, zzy979@foxmail.com
+* Email: zzy979@foxmail.com
 * GitHub: <https://github.com/ZZy979>
 * Personal Blog: <https://zzy979.github.io/>
-* CSDN Blog: <https://blog.csdn.net/zzy979481894>
 
 ## Education
 **Beihang University** 2019.9-2022.1
