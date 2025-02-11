@@ -78,7 +78,7 @@ render_with_liquid: false
 详见官方文档[str.format()](https://docs.python.org/3/library/stdtypes.html#str.format)和[f-strings](https://docs.python.org/3/reference/lexical_analysis.html#f-strings)。
 
 ## 3.3 字符串格式化：完整版
-字符串格式化涉及的内容非常广泛，因此即使是“完整版”也无法探索所有的细节，而只是介绍主要组成部分。基本思想是对字符串调用`format()`方法，并提供要格式化的值。该字符串包含使用一种[“微型语言”](https://docs.python.org/3/library/string.html#format-specification-mini-language)指定的格式化信息。每个值都被插入到字符串的一个**替换字段**(replacement field)中，每个替换字段都用花括号括起来。要包含花括号本身，可以使用两个花括号（来转义），即`{{`和`}}`。
+字符串格式化涉及的内容非常广泛，因此即使是“完整版”也无法探索所有的细节，而只是介绍主要组成部分。基本思想是对字符串调用`format()`方法，并提供要格式化的值。该字符串包含使用一种“微型语言”指定的格式化信息。每个值都被插入到字符串的一个**替换字段**(replacement field)中，每个替换字段都用花括号括起来。要包含花括号本身，可以使用两个花括号（来转义），即`{{`和`}}`。
 
 ```python
 >>> "{{ceci n'est pas une replacement field}}".format()
@@ -90,7 +90,32 @@ render_with_liquid: false
 * **转换标志**(conversion flag)：一个感叹号，后面跟着单个字符。如果指定了转换标志，将不使用对象本身的格式化机制，而是使用指定的函数将对象转换为字符串，再做进一步的格式化。
 * **格式说明符**(format specifier)：一个冒号，后面跟着一个（格式说明微型语言的）表达式。指定最终格式化的细节。
 
-注：格式说明符的一般形式为`[[填充]对齐][符号][z][#][0][宽度][分组][.精度][类型]`，详见官方文档[Format String Syntax](https://docs.python.org/3/library/string.html#format-string-syntax)。
+注：
+* 格式字符串语法详见官方文档[Format String Syntax](https://docs.python.org/3/library/string.html#format-string-syntax)。
+* 大多数内置类型都支持**标准格式说明符**，一般形式为`[[fill]align][sign][z][#][0][width][grouping][.precision][type]`，详见官方文档[Format Specification Mini-Language](https://docs.python.org/3/library/string.html#format-specification-mini-language)。
+* 类型也可以通过实现`__format__()`方法自定义格式说明符。例如，`datetime`支持类似于`%Y-%m-%d`的格式说明符，详见[Format Codes](https://docs.python.org/3/library/datetime.html#format-codes)。
+* 格式说明符也可以直接传递给内置函数`format()`。`format(value, format_spec)`等价于`type(value).__format__(value, format_spec)`。例如：
+
+```python
+>>> '{:.2f}'.format(math.pi)
+'3.14'
+>>> format(math.pi, '.2f')
+'3.14'
+>>> float.__format__(math.pi, '.2f')
+'3.14'
+>>> math.pi.__format__('.2f')
+'3.14'
+>>> from datetime import datetime
+>>> d = datetime(2023, 12, 11, 21, 51, 8)
+>>> '{:%Y-%m-%d %H:%M:%S}'.format(d)
+'2023-12-11 21:51:08'
+>>> format(d, '%Y-%m-%d %H:%M:%S')
+'2023-12-11 21:51:08'
+>>> d.__format__('%Y-%m-%d %H:%M:%S')
+'2023-12-11 21:51:08'
+```
+
+* 可以使用`string.Formatter`类自定义字符串格式化语法。
 
 下面详细介绍其中的一些要素。
 
@@ -188,7 +213,7 @@ ValueError: cannot switch from automatic field numbering to manual field specifi
 * 如果省略类型说明符，则根据参数类型选择对应的默认值。
 
 ### 3.3.3 宽度、精度和千分位分隔符
-格式说明符可以指定宽度和精度：`[宽度][.精度][类型]`。
+格式说明符可以指定宽度和精度：`[width][.precision][type]`。
 
 **宽度**(width)是一个整数，指定格式化后字段的最小宽度。如果大于实际宽度，则用空格（或指定的字符）填充；如果未指定，则由内容决定。
 
@@ -250,7 +275,7 @@ ValueError: Precision not allowed in integer format specifier
 ```
 
 ### 3.3.4 符号、对齐和用0填充
-在宽度和精度之前，可以指定符号、对齐方式和填充字符：`[[填充]对齐][符号][#][0][宽度][.精度][类型]`。
+在宽度和精度之前，可以指定符号、对齐方式和填充字符：`[[fill]align][sign][#][0]`。
 
 “符号”可以是`+`、`-`或空格：
 * `+`表示正数和负数都显示符号。
