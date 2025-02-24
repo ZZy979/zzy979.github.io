@@ -285,16 +285,14 @@ C++标准支持**拷贝消除**(copy elision)，允许编译器在某些情况�
 当拷贝消除发生时，被省略的拷贝/移动构造函数的源对象（参数）和目标对象(`this`)将变成同一个对象，见3.5节示例。
 
 ### 3.5 示例
-拷贝构造函数、拷贝赋值、移动构造函数和移动赋值这四个特殊成员函数被调用的时机如下：
+小结：拷贝构造函数、拷贝赋值、移动构造函数和移动赋值这四个特殊成员函数被调用的时机如下。
 
 | 上下文 | 源表达式 | 调用 | 示例 |
 | --- | --- | --- | --- |
-| 初始化 | 左值 | 拷贝构造函数 | `T a = b;` |
+| 初始化 | 左值 | 拷贝构造函数 | `T a = b;`，其中`b`是`T`类型<br>`f(a);`，其中`a`和函数参数都是`T`类型<br>`return a;`，其中函数返回值是`T`类型，且`T`没有移动构造函数 |
 | 赋值 | 左值 | 拷贝赋值 | `a = b;` |
-| 初始化 | 右值 | 移动构造函数 | `T a = std::move(b);` |
+| 初始化 | 右值 | 移动构造函数 | `T a = std::move(b);`，其中`b`是`T`类型<br>`f(std::move(a));`，其中`a`和函数参数都是`T`类型<br>`return a;`，其中函数返回值是`T`类型，且`T`有移动构造函数 |
 | 赋值 | 右值 | 移动赋值 | `a = std::move(b);` |
-
-如果没有定义移动构造函数和移动赋值，则移动操作会退化为拷贝操作。
 
 下面是一个测试示例：
 
@@ -315,12 +313,14 @@ C f() {
     return c;
 }
 
+void g(C c) {}
+
 int main() {
     std::cout << "C a = f();\n";
     C a = f();
 
-    std::cout << "\nC b = a;\n";
-    C b = a;
+    std::cout << "\nC b = std::move(a);\n";
+    C b = std::move(a);
 
     std::cout << "\na = C();\n";
     a = C();
@@ -338,6 +338,15 @@ int main() {
     const C c;
     std::cout << "\nb = std::move(c);\n";
     b = std::move(c);
+
+    std::cout << "\ng(a);\n";
+    g(a);
+
+    std::cout << "\ng(C());\n";
+    g(C());
+
+    std::cout << "\ng(std::move(a));\n";
+    g(std::move(a));
     return 0;
 }
 ```
@@ -349,8 +358,8 @@ C a = f();
 move constructor
 move constructor
 
-C b = a;
-copy constructor
+C b = std::move(a);
+move constructor
 
 a = C();
 move assignment
@@ -366,16 +375,28 @@ move assignment
 
 b = std::move(c);
 copy assignment
+
+g(a);
+copy constructor
+
+g(C());
+move constructor
+
+g(std::move(a));
+move constructor
 ```
 
 * `return c;`调用移动构造函数（将局部变量`c`移动到返回值临时对象），因为函数`f()`的返回类型`C`不是引用类型，且`C`有移动构造函数
 * `C a = f();`调用移动构造函数（将返回值临时对象移动到`a`），因为`f()`是一个右值
-* `C b = a;`调用拷贝构造函数，因为`a`是一个左值
+* `C b = std::move(a);`调用移动构造函数，因为`std::move(a)`是一个右值
 * `a = C();`调用移动赋值，因为`C()`是一个右值，且`C`有移动赋值
 * `b = a;`调用拷贝赋值，因为`a`是一个左值
 * `a = r;`调用拷贝赋值，因为`r`是一个左值（之前的`std::move(b)`对`b`没有任何影响）
 * `b = std::move(a);`调用移动赋值，因为`std::move(a)`是一个右值，且`C`有移动赋值
 * `b = std::move(c);`调用拷贝赋值，因为`c`是`const`
+* `g(a);`调用拷贝构造，因为`a`是一个左值
+* `g(C());`调用移动构造，因为`C()`是一个右值，函数`g()`的参数类型是`C`，且`C`有移动构造函数
+* `g(std::move(a));`调用移动构造，原因同上
 
 注：`C a = f();`涉及的两次移动构造函数调用可能会被编译器的拷贝消除特性优化掉，从而`c`和`a`的地址是一样的，整个语句只有一次默认构造函数调用。使用不同的C++标准版本和编译选项的情况下，该语句调用移动构造函数的次数如下表所示（使用的编译器是GCC 13）：
 
@@ -388,39 +409,7 @@ copy assignment
 
 其中，选项`-fno-elide-constructors`禁用拷贝消除。
 
-如果类`C`没有定义移动操作，则输出会变为：
-
-```
-C a = f();
-copy constructor
-copy constructor
-
-C b = a;
-copy constructor
-
-a = C();
-copy assignment
-
-b = a;
-copy assignment
-
-b = std::move(a);
-copy assignment
-
-b = std::move(c);
-copy assignment
-```
-
-注意：在这种情况下，编译器会自动生成移动构造函数，因此类`C`仍然是可移动构造的（可用`std::is_move_constructible`验证）。
-
-类似地，`C a = f();`涉及的两次拷贝构造函数调用可能会被编译器的拷贝消除特性优化掉：
-
-| C++标准版本 | 编译选项 | 拷贝构造次数 |
-| --- | --- | --- |
-| C++11 | `-fno-elide-constructors` | 2 (`c`→返回值临时对象→`a`) |
-| C++17 | `-fno-elide-constructors` | 1 (`c`→`a`) |
-| C++11 | 无 | 0 (`&c == &a`) |
-| C++17 | 无 | 0 (`&c == &a`) |
+如果类`C`没有定义移动操作，则所有移动操作会退化为拷贝操作。然而，在这种情况下，编译器会自动生成移动构造函数，因此类`C`仍然是可移动构造的（可用`std::is_move_constructible`验证）。使用[C++ Insights](https://cppinsights.io/)工具可以看到，编译器会将`C b = std::move(a);`解释为`C b = C(static_cast<const C &&>(std::move(a)));`，因此调用的是拷贝构造函数而不是移动构造函数。
 
 如果类`C`是不可移动构造的，即移动构造函数被（显式或隐式）定义为已删除，则函数`f()`会编译失败。
 * 显式删除：`C(C&&) = delete;`
