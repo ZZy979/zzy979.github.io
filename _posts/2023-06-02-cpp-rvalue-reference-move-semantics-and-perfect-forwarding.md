@@ -426,15 +426,22 @@ move constructor
 * 可移动的类型：基本类型（如`int`）、定义了移动操作的类（如STL容器）和所有成员都可移动的类。
 * 不可移动的类型：禁止了移动操作的类（如`std::mutex`）和包含不可移动成员的类。这种类型只能通过传指针或引用的方式来避免拷贝。
 
-（2）只有当参数是非`const`左值，并且将`std::move()`的结果用于初始化或赋值给另一个对象时，使用`std::move()`才有意义。赋给右值引用变量没有任何意义，因为并没有执行任何移动操作（见3.3节结尾的示例）。
+（2）**std::move≠移动。** 只有当参数是非`const`左值，并且将`std::move()`的结果用于**初始化或赋值给另一个对象**时才会执行移动操作。
+* 对右值使用`std::move()`没有意义，因为结果仍然是右值。
+* 不要对`const`对象使用`std::move()`，因为返回类型是`const T&&`，会执行拷贝操作而不是移动操作。
+* 将`std::move()`的结果赋给右值引用变量没有意义，因为并没有执行任何移动操作（见3.3节结尾的示例）。
 
-（3）不要在`return`语句中使用`std::move()`，因为会影响NRVO。见[Move-eligible expressions](https://en.cppreference.com/w/cpp/language/value_category#Move-eligible_expressions)和[Automatic move from local variables and parameters](https://en.cppreference.com/w/cpp/language/return#Automatic_move_from_local_variables_and_parameters)。
+（3）不要对仍然需要的对象使用`std::move()`。已被移动的标准库对象处于一种“合法但未指定的状态”，因此不应该再被使用。
 
-（4）**移动≠避免拷贝。** 即使类型是可移动的，也要考虑移动是否确实比拷贝更快。
+（4）不要在`return`语句中使用`std::move()`，因为会影响NRVO。见[Move-eligible expressions](https://en.cppreference.com/w/cpp/language/value_category#Move-eligible_expressions)和[Automatic move from local variables and parameters](https://en.cppreference.com/w/cpp/language/return#Automatic_move_from_local_variables_and_parameters)。
+
+（5）**移动≠避免拷贝。** 即使类型是可移动的，也要考虑移动是否确实比拷贝更快。
 * 对于基本类型，移动等价于拷贝（示例见[Compiler Explorer](https://godbolt.org/z/Efz9n9hcc)）。
 * 对于拥有资源的类，移动语义只能省略资源的拷贝，而类本身的数据成员仍然需要拷贝，且移动的字节数一般是拷贝的2倍（拷贝+置空）。
 
-对于一个具体的类，要想知道移动是否比拷贝更快，需要比较二者拷贝的字节数。例如：
+对于一个具体的类，要想知道移动是否比拷贝更快，需要比较二者拷贝的字节数。考虑下面的两个例子。
+
+①只包含基本类型成员的类（POD类型）
 
 ```cpp
 struct Point {
@@ -445,9 +452,9 @@ struct Point {
 * 拷贝的字节数 = `2 * sizeof(int)` = 8
 * 移动的字节数 = `2 * sizeof(int)` = 8
 
-因此，对于只包含基本类型成员的类（POD类型），移动和拷贝的性能相同，移动语义没有任何意义。
+对于这种类型，移动和拷贝的性能完全相同。
 
-对于同时包含基本类型和容器类型成员的类：
+②同时包含基本类型和容器类型成员的类
 
 ```cpp
 struct C {
@@ -487,7 +494,7 @@ struct C {
 };
 ```
 
-注：对于类`C`，即使没有提供移动构造函数和移动赋值，编译器也会自动生成（但成员`k`是直接拷贝而不是使用`std::exchange()`）。
+注：对于这个类，即使没有提供移动构造函数和移动赋值，编译器也会自动生成（但成员`k`是直接拷贝而不是使用`std::exchange()`）。
 
 （2）将局部对象传递给接受右值引用参数的函数。例如：
 
@@ -502,6 +509,20 @@ bool f(std::vector<X>& v) {
 ```
 
 这几乎是真实业务代码中唯一需要使用`std::move()`的情况。当然，仍然需要满足前提：类`X`可移动，且移动比拷贝更快。如果类`X`不可移动，可用智能指针来包装：`vector<shared_ptr<X>>`。另外，如果不需要额外的初始化操作，可用`v.push_back(X(args...))`或`v.emplace_back(args...)`来代替（前者也会调用移动构造函数，即使类`X`不可拷贝，而后者直接原地构造）。
+
+（3）对于不再需要的对象，将其资源转移给另一个对象。例如：
+
+```cpp
+void process(Data data);
+
+void f() {
+    Data foo_data(...);
+    process(std::move(foo_data));  // calls move constructor of Data
+    // foo_data can no longer be used
+}
+```
+
+调用`process()`函数时，将`foo_data`的资源转移给了形参`data`，因此在调用之后不能再使用`foo_data`。（在实际中，一般会将`process()`的参数定义为`const Data&`，这样就不需要使用`std::move()`）
 
 ## 4.完美转发
 除了移动语义，右值引用还有一个重要的用途——实现**完美转发**(perfect forwarding)。下面首先介绍引用折叠和转发引用的概念，之后介绍`std::forward()`函数，并通过一个示例说明如何实现完美转发。
