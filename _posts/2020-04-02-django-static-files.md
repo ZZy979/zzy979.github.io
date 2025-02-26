@@ -23,7 +23,7 @@ render_with_liquid: false
 （2）在settings.py中添加
 
 ```python
-STATIC_URL = '/static/'
+STATIC_URL = 'static/'
 STATIC_ROOT = '/path/to/static'
 ```
 
@@ -31,19 +31,14 @@ STATIC_ROOT = '/path/to/static'
 
 （3）在整个项目的URLconf中添加提供静态文件的视图
 
-Django提供静态文件的视图是`django.views.static.serve`
-
 ```python
 from django.conf import settings
-from django.views import static
+from django.conf.urls.static import static
 
 urlpatterns = [
-    ...
-    path('static/<path:path>', static.serve, {'document_root': settings.STATIC_ROOT}, name='static'),
-]
+    # ... the rest of your URLconf goes here ...
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 ```
-
-其中`"static/"`前缀对应`STATIC_URL`设置，`"<path:path>"`的第一个`path`表示匹配URL路径（见[Path converters](https://docs.djangoproject.com/en/stable/topics/http/urls/#path-converters)），第二个`path`表示将匹配结果传递给视图`serve()`的`path`参数。
 
 （4）部署代码后运行`python manage.py collectstatic`命令，Django将把所有用到的静态文件拷贝到`STATIC_ROOT`指定的目录下。
 

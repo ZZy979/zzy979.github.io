@@ -101,8 +101,10 @@ admin.site.register(Book, BookAdmin)
 * `ordering`：字段名列表，指定对象的排序方式，字段名前加`"-"`表示倒序排序，例如`['-pub_date', 'author']`表示先按`pub_date`倒序排序、再按`author`升序排序
 
 详情界面常用选项：
-* `readonly_fields`：字段名列表，指定表单中只读的字段
+* `fields`：字段名称列表，指定表单中包含的字段
 * `exclude`：字段名称列表，指定表单中排除的字段
+* `fieldsets`：控制表单中的字段分组显示
+* `readonly_fields`：字段名列表，指定表单中只读的字段
 * `raw_id_fields`：字段名列表，表单中的外键字段默认显示为`<select>`或`<select multiple>`标签（此时下拉列表需要查询全部关联对象，当数据量很大时会非常慢）；`raw_id_fields`中指定的（外键）字段将改为`<input>`标签，内容为逗号分隔的外键id，从而省去大量数据库查询
 
 ### 1.5 为模型提供初始数据
