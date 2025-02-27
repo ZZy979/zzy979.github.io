@@ -110,6 +110,10 @@ admin.site.register(Book, BookAdmin)
 ### 1.5 为模型提供初始数据
 <https://docs.djangoproject.com/en/stable/howto/initial-data/>
 
+可以使用数据迁移：<https://docs.djangoproject.com/en/stable/topics/migrations/#data-migrations>
+
+也可以使用`manage.py loaddata`命令加载fixture：<https://docs.djangoproject.com/en/stable/topics/db/fixtures/>
+
 ### 1.6 模型继承
 <https://docs.djangoproject.com/en/stable/topics/db/models/#model-inheritance>
 
@@ -315,6 +319,7 @@ class Suit(models.IntegerChoices):
 下面以`Question`和`Choice`两个模型为例（`q`表示`Question`类的对象，`c`表示`Choice`类的对象）。
 
 ### 3.1 创建对象
+使用关键字参数创建模型对象，调用`save()`保存到数据库：
 
 ```python
 q = Question(question_text="What's new?", pub_date=datetime.now())
@@ -337,8 +342,27 @@ q.question_text = "What's up?"
 q.save()
 ```
 
-* `q.id`为空时`q.save()`执行`INSERT`语句；`q.id`非空时`q.save()`执行`UPDATE`语句。
-* 设置外键的值：`c.question = q`
+`q.id`为空时`q.save()`执行`INSERT`语句；`q.id`非空时`q.save()`执行`UPDATE`语句。
+
+捷径：`update()`，以上两行代码等价于
+
+```python
+q.update(question_text="What's up?")
+```
+
+#### 更新外键字段
+更新`ForeignKey`字段的方式与普通字段完全相同：
+
+```python
+c.question = q
+c.save()
+```
+
+使用关联对象更新`ForeignKey`字段的“另一边”（如`q.choice_set`）或`ManyToManyField`字段，参考：<https://docs.djangoproject.com/en/stable/ref/models/relations/>。例如：
+* `q.choice_set.add(c)`
+* `q.choice_set.set([c1, c2, ...])`
+* `q.choice_set.remove(c)`
+* `q.choice_set.clear()`
 
 ### 3.3 删除对象
 
@@ -351,14 +375,13 @@ q.delete()
 
 QuerySet API参考：<https://docs.djangoproject.com/en/stable/ref/models/querysets/>
 
-查询全部对象：`Question.objects.all()`
+（1）查询全部对象：`Question.objects.all()`
 
-查询记录数量：`Question.objects.count()`
+（2）查询记录数量：`Question.objects.count()`
 
-条件过滤：
+（3）条件过滤
 * `filter(**kwargs)`返回一个新的`QuerySet`，包含满足指定条件的对象
 * `exclude(**kwargs)`返回一个新的`QuerySet`，包含不满足指定条件的对象
-* `get(**kwargs)`返回满足条件的单个对象，如果不存在则产生`Question.DoesNotExist`异常
 
 注意：`QuerySet`是惰性求值的，构造的过程不执行任何数据库查询，只有最终获取对象时才执行查询。
 
@@ -366,8 +389,18 @@ QuerySet API参考：<https://docs.djangoproject.com/en/stable/ref/models/querys
 
 完整语法：<https://docs.djangoproject.com/en/stable/ref/models/querysets/#field-lookups>
 
-举例：
+（4）获取单个对象
+* `get(**kwargs)`返回满足条件的单个对象，如果不存在则产生`Question.DoesNotExist`，如果匹配到多个对象则产生`MultipleObjectsReturned`
+* `get_or_create(**kwargs)`查询单个对象，如果不存在则创建，返回`(object, created)`
 
+（5）限制查询结果：可以使用Python的列表切片语法对`QuerySet`进行限制，等价于SQL的`LIMIT`和`OFFSET`子句
+* `Question.objects.all()[:5]`返回前5个对象(`LIMIT 5`)
+* `Question.objects.all()[5:10]`返回第6~10个对象(`OFFSET 5 LIMIT 5`)
+* `Question.objects.order_by('-pub_date')[0]`返回最新发布的一个问题(`LIMIT 1`)
+
+（6）排序：`order_by(*fields)`
+
+#### 示例
 （1）基本查询
 
 ①查询主键(id)为1的问题

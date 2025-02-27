@@ -9,7 +9,7 @@ tags: [django, unit test]
 ## 1.编写测试
 在应用目录下的tests.py中编写测试。
 
-Django的测试框架基于Python的`unittest`模块。要创建测试用例，继承`django.test.TestCase`类并在添加一个或多个以`test`开头的测试方法（以`test`开头是`unittest`模块的要求，而不是Django的）。
+Django的测试框架基于Python的`unittest`模块。要创建测试用例，继承`django.test.TestCase`类并添加一个或多个以`test`开头的测试方法（以`test`开头是`unittest`模块的要求，而不是Django的）。
 
 例如：
 
@@ -76,10 +76,10 @@ class QuestionIndexViewTests(TestCase):
         response = self.client.get(reverse('polls:index'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "No polls are available.")
-        self.assertQuerysetEqual(response.context['latest_question_list'], [])
+        self.assertQuerySetEqual(response.context['latest_question_list'], [])
 ```
 
-其中`assertContains()`和`assertQuerysetEqual()`是`django.test.TestCase`类增加的方法。
+其中`assertContains()`和`assertQuerySetEqual()`是`django.test.TestCase`类增加的方法。
 
 ## 4.建议
 * 给软件增加的每一个功能都应伴随一个测试，可以先写测试后编码，也可以先编码后测试。
