@@ -267,3 +267,15 @@ path('', views.IndexView.as_view(), name='index')
 则在polls/index.html中可以使用`object_list`或`latest_question_list`访问该视图返回的对象列表。
 
 注意：`ListView`做的事情是查询对象列表、将结果保存在`context`中、使用`context`渲染模板，而不是生成HTML页面中的列表，使用的模板还是需要自己提供。
+
+### 4.3 编辑视图
+<https://docs.djangoproject.com/en/stable/ref/class-based-views/generic-editing/>
+
+* `django.views.generic.FormView` 显示一个表单，错误时重新显示表单和错误信息；成功时重定向到新URL
+* `django.views.generic.CreateView` 显示一个模型表单，用于创建并保存一个对象
+* `django.views.generic.UpdateView` 显示一个模型表单，用于编辑一个已有对象
+* `django.views.generic.DeleteView` 显示确认页面并删除一个已有对象
+
+完整示例：<https://github.com/ZZy979/library_management/blob/master/library/views.py>
+* 视图：`BookCreateView`、`BookUpdateView`和`BookDeleteView`
+* 模板：book_form.html和book_confirm_delete.html
