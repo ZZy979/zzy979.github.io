@@ -2,7 +2,7 @@
 title: 【C++】thread_local变量
 date: 2024-06-06 10:34 +0800
 categories: [C/C++]
-tags: [cpp, multi-thread, thread-local]
+tags: [cpp, concurrency, thread, thread-local]
 ---
 在C++多线程环境下，全局变量、局部变量、静态变量和`thread_local`变量的区别如下：
 

@@ -23,7 +23,7 @@ tags: [java]
 * [第9章 集合]({% post_url 2024-11-18-java-note-v1ch09-collections %})
 * [第10章 图形用户界面]({% post_url 2024-12-09-java-note-v1ch10-graphical-user-interface-programming %})
 * [第11章 Swing用户界面组件]({% post_url 2025-01-01-java-note-v1ch11-user-interface-components-with-swing %})
-* 第12章 并发
+* [第12章 并发]({% post_url 2025-01-12-java-note-v1ch12-concurrency %})
 
 ### 卷II 高级特性
 * 第1章 流

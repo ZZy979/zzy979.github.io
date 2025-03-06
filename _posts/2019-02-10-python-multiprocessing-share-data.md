@@ -2,7 +2,7 @@
 title: Python多进程共享数据的问题
 date: 2019-02-10 16:38:33 +0800
 categories: [Python]
-tags: [python, multiprocessing]
+tags: [python, multiprocessing, concurrency]
 ---
 Python的多进程共享数据在Windows和Linux下会产生不同的结果，分别测试直接访问全局变量、传递参数和使用Manager三种情况。
 

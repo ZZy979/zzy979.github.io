@@ -549,6 +549,7 @@ scores.forEach((k, v) -> System.out.println("key=" + k + ", value=" + v));
 * `put(k, v)` 将值`v`关联到键`k`，返回旧的值
 * `putIfAbsent(k, v)` 如果键`k`不存在则将其关联到值`v`并返回`null`，否则返回当前值
 * `replace(k, v)` 如果键`k`存在则将其关联到值`v`并返回旧的值，否则返回`null`
+* `replace(k, oldValue, newValue)` 如果键`k`关联的值等于`oldValue`则将其替换为`newValue`并返回`true`，否则返回`false`
 * `remove(k)` 如果键`k`存在则将其删除，返回之前关联的值
 * `containsKey(k)` 如果映射中存在键`k`则返回`true`
 * `containsValue(v)` 如果映射中存在值`v`则返回`true`
@@ -589,12 +590,12 @@ counts.merge(word, 1, Integer::sum);
 * `compute(k, f)` 大致等价于`put(k, f(k, get(k)))`
 * `computeIfAbsent(k, f)` 大致等价于`putIfAbsent(k, f(k))`
 * `computeIfPresent(k, f)` 大致等价于`if (get(k) != null) put(k, f(k, get(k)))`
-* `replaceAll(f)` 大致等价于`for (K k : keySet()) put(k, f(k, v))`
+* `replaceAll(f)` 大致等价于`for ((k, v) : entrySet()) put(k, f(k, v))`
 
 ### 9.4.3 映射视图
 Java集合框架不认为映射是一种集合（`Map`没有扩展`Collection`）（相反，C++ STL认为映射是键值对的集合）。不过，可以得到映射的**视图**(view)——实现了`Collection`或其子接口的对象。
 
-有3种视图：键集、值集合（不是集）以及键值对集（条目集）。以下方法
+有三种视图：键集、值集合（不是集）以及键值对集（条目集）。以下方法
 
 ```java
 Set<K> keySet()
@@ -602,7 +603,7 @@ Collection<V> values()
 Set<Map.Entry<K, V>> entrySet()
 ```
 
-分别返回这3个视图。（条目集的元素是实现了`Map.Entry`接口的类的对象。）
+分别返回这三个视图。（条目集的元素是实现了`Map.Entry`接口的类的对象。）
 
 注意，`keySet()`返回的不是`HashSet`或`TreeSet`，而是实现了`Set`接口的另外某个类的对象（`HashMap`和`TreeMap`各有一个名为`KeySet`的内部类）。
 
