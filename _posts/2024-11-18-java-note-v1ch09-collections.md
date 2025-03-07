@@ -1,5 +1,5 @@
 ---
-title: 《Java核心技术》笔记 第9章 集合
+title: 《Java核心技术》笔记 卷I 第9章 集合
 date: 2024-11-18 22:08:07 +0800
 categories: [Java, Core Java]
 tags: [java, collection, iterator, linked list, array list, hash table, set, hash set, tree set, queue, priority queue, map, hash map, tree map, algorithm, sort, binary search, configuration]

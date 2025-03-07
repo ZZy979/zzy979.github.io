@@ -1,5 +1,5 @@
 ---
-title: 《Java核心技术》笔记 第1章 Java概述
+title: 《Java核心技术》笔记 卷I 第1章 Java概述
 date: 2024-07-13 11:54:07 +0800
 categories: [Java, Core Java]
 tags: [java]

@@ -1,5 +1,5 @@
 ---
-title: 《Java核心技术》笔记 第4章 对象和类
+title: 《Java核心技术》笔记 卷I 第4章 对象和类
 date: 2024-08-24 23:12:13 +0800
 categories: [Java, Core Java]
 tags: [java, object-oriented programming, class, instance field, method, date and time, constructor, "null", this pointer, static method, factory method, overloading, initialization, random number, record, package, import statement, class path, jar file]

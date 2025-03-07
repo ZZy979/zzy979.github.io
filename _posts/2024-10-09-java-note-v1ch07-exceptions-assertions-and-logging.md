@@ -1,5 +1,5 @@
 ---
-title: 《Java核心技术》笔记 第7章 异常、断言和日志
+title: 《Java核心技术》笔记 卷I 第7章 异常、断言和日志
 date: 2024-10-09 21:47:04 +0800
 categories: [Java, Core Java]
 tags: [java, exception, error handling, try statement, assertion, logging]

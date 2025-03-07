@@ -1,5 +1,5 @@
 ---
-title: 《Java核心技术》笔记 第6章 接口、Lambda表达式和内部类
+title: 《Java核心技术》笔记 卷I 第6章 接口、Lambda表达式和内部类
 date: 2024-09-19 22:56:02 +0800
 categories: [Java, Core Java]
 tags: [java, interface, sort, lambda expression, method reference, inner class, service loader, proxy]

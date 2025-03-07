@@ -1,5 +1,5 @@
 ---
-title: 《Java核心技术》笔记 第2章 Java编程环境
+title: 《Java核心技术》笔记 卷I 第2章 Java编程环境
 date: 2024-07-17 22:39:06 +0800
 categories: [Java, Core Java]
 tags: [java, hello world, jshell]

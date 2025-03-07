@@ -1,5 +1,5 @@
 ---
-title: 《Java核心技术》笔记 第5章 继承
+title: 《Java核心技术》笔记 卷I 第5章 继承
 date: 2024-09-05 22:00:23 +0800
 categories: [Java, Core Java]
 tags: [java, class, inheritance, polymorphism, type conversion, array list, variadic argument, enumeration, sealed class, reflection, exception, jar file]

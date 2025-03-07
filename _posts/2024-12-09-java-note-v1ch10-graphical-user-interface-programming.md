@@ -1,5 +1,5 @@
 ---
-title: 《Java核心技术》笔记 第10章 图形用户界面
+title: 《Java核心技术》笔记 卷I 第10章 图形用户界面
 date: 2024-12-09 21:39:59 +0800
 categories: [Java, Core Java]
 tags: [java, gui, swing, property, event handling, configuration]

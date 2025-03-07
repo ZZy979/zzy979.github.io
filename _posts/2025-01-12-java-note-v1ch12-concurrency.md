@@ -1,5 +1,5 @@
 ---
-title: 《Java核心技术》笔记 第12章 并发
+title: 《Java核心技术》笔记 卷I 第12章 并发
 date: 2025-01-12 11:16:39 +0800
 categories: [Java, Core Java]
 tags: [java, concurrency, thread, lock, condition variable, intrinsic lock, synchronized method, synchronized block, atomic, thread-local, blocking queue, concurrent hash map, thread pool, future, process]

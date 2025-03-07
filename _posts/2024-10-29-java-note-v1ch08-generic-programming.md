@@ -1,5 +1,5 @@
 ---
-title: 《Java核心技术》笔记 第8章 泛型编程
+title: 《Java核心技术》笔记 卷I 第8章 泛型编程
 date: 2024-10-29 21:58:25 +0800
 categories: [Java, Core Java]
 tags: [java, generic programming, type erasure, bridge method, wildcard type, reflection]

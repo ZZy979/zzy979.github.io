@@ -1,5 +1,5 @@
 ---
-title: 《Java核心技术》笔记 第11章 Swing用户界面组件
+title: 《Java核心技术》笔记 卷I 第11章 Swing用户界面组件
 date: 2025-01-01 15:15:52 +0800
 categories: [Java, Core Java]
 tags: [java, gui, swing]
