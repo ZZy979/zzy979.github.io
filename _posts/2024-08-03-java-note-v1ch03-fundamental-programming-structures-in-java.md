@@ -175,11 +175,11 @@ public static void main(String\u005B\u005D args)
 
 注：Unicode字符的完整列表见 <https://symbl.cc/en/unicode-table/> 。
 
-为了能够用二进制表示Unicode码点，同时避免浪费存储空间，需要一种将码点映射到**代码单元**(code unit)序列的变长编码规则。这种编码规则称为Unicode Transformation Format (UTF)，常见的有UTF-8、UTF-16和UTF-32。参考：
+为了能够用二进制表示Unicode码点，同时避免浪费存储空间，需要一种将码点映射到**码元**(code unit)序列的变长编码规则。这种编码规则称为Unicode Transformation Format (UTF)，常见的有UTF-8、UTF-16和UTF-32。参考：
 * [UTF-16 - Wikipedia](https://en.wikipedia.org/wiki/UTF-16)
 * [Unicode FAQ](https://www.unicode.org/faq/utf_bom.html)
 
-Java采用UTF-16编码。UTF-16编码使用1个或2个16位的代码单元表示一个码点。例如，希腊字母π的码点为U+03C0，编码为一个代码单元`\u03C0`；数学符号𝕆的码点为U+1D546，编码为两个代码单元`\uD835`和`\uDD46`。（编码算法的具体描述见[RFC 2781](https://datatracker.ietf.org/doc/html/rfc2781)）。
+Java采用UTF-16编码。UTF-16编码使用1个或2个16位的码元表示一个码点。例如，希腊字母π的码点为U+03C0，编码为一个码元`\u03C0`；数学符号𝕆的码点为U+1D546，编码为两个码元`\uD835`和`\uDD46`。（编码算法的具体描述见[RFC 2781](https://datatracker.ietf.org/doc/html/rfc2781)）。
 
 ```java
 jshell> '\u03C0'
@@ -189,9 +189,14 @@ jshell> "\uD835\uDD46"
 $2 ==> "𝕆"
 ```
 
-在Java中，`char`类型描述了UTF-16编码中的一个代码单元（因为`char`类型刚好是16位）。
+在Java中，`char`类型描述了UTF-16编码中的一个码元（因为`char`类型刚好是16位）。
 
-强烈建议不要在程序中使用`char`类型，除非确实需要处理UTF-16代码单元。最好将字符串当作抽象数据类型（见3.6节）。
+强烈建议不要在程序中使用`char`类型，除非确实需要处理UTF-16码元。最好将字符串当作抽象数据类型（见3.6节）。
+
+注：在Java中，字符串的编码涉及多个层次
+* Java编译器的默认编码是操作系统默认编码(`Charset.defaultCharset()`)。可以通过`javac`的`-encoding`选项指定源文件的编码，例如：`javac -encoding UTF-8 MyClass.java`。
+* JVM内部的字符串编码是UTF-16。
+* IO流的默认编码也取决于操作系统。可以在构造IO流时指定编码；也可以在启动JVM时指定`file.encoding`属性，例如：`java -Dfile.encoding=UTF-8 MyClass`。
 
 ### 3.3.5 boolean类型
 `boolean`（布尔）类型只有两个值：`false`和`true`，用来判定逻辑条件。整数和布尔值之间**不能**相互转换。
@@ -624,7 +629,7 @@ String greeting = "Hello";
 greeting = greeting.substring(0, 3) + "p!";
 ```
 
-由于不能修改Java字符串中的字符，所以在Java文档中将`String`类的对象称为**不可变的**(immutable)。如同数字`3`永远是3，字符串`"Hello"`永远包含字符H、e、l、l、o的代码单元序列。你不能修改这些值。不过，可以修改字符串**变量**的内容，让它**引用另外一个字符串**（如下图所示）。
+由于不能修改Java字符串中的字符，所以在Java文档中将`String`类的对象称为**不可变的**(immutable)。如同数字`3`永远是3，字符串`"Hello"`永远包含字符H、e、l、l、o的码元序列。你不能修改这些值。不过，可以修改字符串**变量**的内容，让它**引用另外一个字符串**（如下图所示）。
 
 ![给字符串变量赋值](/assets/images/java-note-v1ch03-fundamental-programming-structures-in-java/给字符串变量赋值.png)
 
@@ -654,10 +659,10 @@ if (greeting.substring(0, 3) == "Hel") ...
 
 有时要检查一个字符串既不是`null`也不是空串，可以使用`s != null && s.isEmpty()`。
 
-### 3.6.6 码点和代码单元
-Java字符串是`char`值序列。在3.3.3节已经看到，`char`类型用于表示采用UTF-16编码的Unicode码点的代码单元。最常用的Unicode字符可以用一个代码单元表示，而补充字符（例如Emoji）需要两个代码单元。
+### 3.6.6 码点和码元
+Java字符串是`char`值序列。在3.3.3节已经看到，`char`类型用于表示采用UTF-16编码的Unicode码点的码元。最常用的Unicode字符可以用一个码元表示，而补充字符（例如Emoji）需要两个码元。
 
-`length()`方法返回字符串的代码单元（`char`值）个数。例如：
+`length()`方法返回字符串的码元（`char`值）个数。例如：
 
 ```java
 String greeting = "Hello";
@@ -666,7 +671,7 @@ String sentence = "🍺Beer";
 int m = sentence.length(); // is 6
 ```
 
-![字符串和代码单元](/assets/images/java-note-v1ch03-fundamental-programming-structures-in-java/字符串和代码单元.png)
+![字符串和码元](/assets/images/java-note-v1ch03-fundamental-programming-structures-in-java/字符串和码元.png)
 
 要得到实际长度，即码点个数，调用`codePointCount()`：
 
@@ -675,7 +680,7 @@ int cpCount = greeting.codePointCount(0, greeting.length()); // is 5
 int cpCount2 = sentence.codePointCount(0, sentence.length()); // is 5
 ```
 
-调用`s.charAt(n)`返回位置`n`的代码单元（可能不是一个完整字符），`n`介于0~`s.length()-1`之间。例如：
+调用`s.charAt(n)`返回位置`n`的码元（可能不是一个完整字符），`n`介于0~`s.length()-1`之间。例如：
 
 ```java
 char first = greeting.charAt(0); // first is 'H'
@@ -683,7 +688,7 @@ char last = greeting.charAt(4); // last is 'o'
 char ch = sentence.charAt(1); // ch is '\uDF7A'
 ```
 
-注意：`ch`不是`'B'`，而是🍺的第二个代码单元。
+注意：`ch`不是`'B'`，而是🍺的第二个码元。
 
 要得到第i个码点，使用以下语句：
 
@@ -742,7 +747,7 @@ int codePoint = 0x1F37A;
 String str = Character.toString(codePoint); // "🍺"
 ```
 
-注释：Java虚拟机不一定把字符串实现为`char`数组。Java 9使用了一种更紧凑的表示：只包含单字节代码单元的字符串使用`byte`数组，其他字符串使用`char`数组。
+注释：Java虚拟机不一定把字符串实现为`char`数组。Java 9使用了一种更紧凑的表示：只包含单字节码元的字符串使用`byte`数组，其他字符串使用`char`数组。
 
 ### 3.6.7 String API
 Java中的`String`类包含近100个方法。完整列表参见[在线文档](https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html)。

@@ -26,7 +26,7 @@ tags: [java]
 * [第12章 并发]({% post_url 2025-01-12-java-note-v1ch12-concurrency %})
 
 ### 卷II 高级特性
-* 第1章 流
+* [第1章 流]({% post_url 2025-03-07-java-note-v2ch01-streams %})
 * 第2章 输入和输出
 * 第3章 XML
 * 第4章 网络

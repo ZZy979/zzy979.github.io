@@ -1650,7 +1650,7 @@ CompletableFuture<List<URL>> imageURLs = readPage(url)
 
 在工作线程中实现用户反馈很烦琐，所以每个用户界面库都提供了某种辅助类来管理有关细节，如Swing中的`SwingWorker`、JavaFX中的`Task`以及Android中的`AsyncTask`。
 
-程序清单12-11中的程序提供了加载文本文件和取消加载过程的命令。应该用一个长文件来测试这个程序，例如《基督山伯爵》(The Count of Monte Cristo)的全文([crsto10.txt](https://github.com/ZZy979/Core-Java-code/blob/main/v1ch09/testdata/crsto10.txt))。文件在一个单独的线程中加载。在读取文件的过程中，Open菜单项被禁用，Cancel项启用（如下图所示）。每读取一行后，状态栏中的行计数器会更新。读取完成后，Open菜单项会重新启用，Cancel项被禁用，状态栏文本设置为Done。
+程序清单12-11中的程序提供了加载文本文件和取消加载过程的命令。应该用一个长文件来测试这个程序，例如《基督山伯爵》(The Count of Monte Cristo)的全文([crsto10.txt](https://github.com/ZZy979/Core-Java-code/blob/main/gutenberg/crsto10.txt))。文件在一个单独的线程中加载。在读取文件的过程中，Open菜单项被禁用，Cancel项启用（如下图所示）。每读取一行后，状态栏中的行计数器会更新。读取完成后，Open菜单项会重新启用，Cancel项被禁用，状态栏文本设置为Done。
 
 ![在单独的线程中加载文件](/assets/images/java-note-v1ch12-concurrency/在单独的线程中加载文件.png)
 

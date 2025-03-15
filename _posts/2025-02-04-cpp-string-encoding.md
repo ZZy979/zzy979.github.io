@@ -74,9 +74,9 @@ e6 b5 a3 e7 8a b2 e3 82 bd
 如果输入字符集与源文件编码不一致，则可能输出乱码，或者编译器报错 "error: converting to execution character set: Illegal byte sequence" 。
 
 ### 2.2 UTF字符串
-C++11和C++20引入的UTF字符串（`u8string`、`u16string`和`u32string`）采用特定的UTF编码（UTF-8、UTF-16和UTF-32），而不是由执行字符集决定，每个字符表示一个代码单元。编译器会根据输入字符集将UTF字符串常量转换为对应编码的二进制表示。
+C++11和C++20引入的UTF字符串（`u8string`、`u16string`和`u32string`）采用特定的UTF编码（UTF-8、UTF-16和UTF-32），而不是由执行字符集决定，每个字符表示一个码元。编译器会根据输入字符集将UTF字符串常量转换为对应编码的二进制表示。
 
-注：关于UTF编码、代码单元等概念，参见[《Java核心技术》笔记 卷I 第3章]({% post_url 2024-08-03-java-note-v1ch03-fundamental-programming-structures-in-java %}) 3.3.4和3.6.6节以及[《Python基础教程》笔记 第1章]({% post_url 2023-11-05-python-note-ch01-instant-hacking-the-basics %}) 1.10.4节。
+注：关于UTF编码、码元等概念，参见[《Java核心技术》笔记 卷I 第3章]({% post_url 2024-08-03-java-note-v1ch03-fundamental-programming-structures-in-java %}) 3.3.4和3.6.6节以及[《Python基础教程》笔记 第1章]({% post_url 2023-11-05-python-note-ch01-instant-hacking-the-basics %}) 1.10.4节。
 
 例如：
 
