@@ -125,14 +125,14 @@ Git 2.23.0引入了一个新的命令git restore，可替代git reset和git chec
 
 | 占位符 | 描述 |
 | ----- | ----- |
-| %H | 提交的哈希值 |
-| %h | 提交的简短哈希值 |
-| %an | 作者姓名 |
-| %ae | 作者邮箱 |
-| %ad | 作者提交日期 |
-| %ar | 作者提交相对日期 |
-| %s | 提交信息标题 |
-| %b | 提交信息主体 |
+| `%H` | 提交的哈希值 |
+| `%h` | 提交的简短哈希值 |
+| `%an` | 作者姓名 |
+| `%ae` | 作者邮箱 |
+| `%ad` | 作者提交日期 |
+| `%ar` | 作者提交相对日期 |
+| `%s` | 提交信息标题 |
+| `%b` | 提交信息主体 |
 
 #### revision-range参数
 `<revision-range>`参数的作用是列出沿着给定提交的父链接能够到达的所有提交，但排除可以从前面带有`^`的提交到达的提交。可以理解为集合操作，每个提交表示从该提交可达的提交集合，结果是所有提交对应集合的并集与前面带有`^`的提交对应集合的差集。
@@ -160,6 +160,11 @@ A - B - D - E (bar)
 
 若要仅从工作目录删除文件而不改变暂存区，直接从本地删除文件即可
 
+`git clean [-d] [-f] [<path>...]`  删除所有未跟踪的文件
+* `-d`：也删除未跟踪的目录
+* `-f`：强制删除
+* 如果未指定路径则默认为当前目录
+
 ### 2.6 重命名和移动
 `git mv <src> <dst>`  将文件src重命名为dst，相当于执行以下三条命令：
 
@@ -176,10 +181,10 @@ git add <dst>
 ## 3.分支管理
 `git branch [-r | -a] [-v]`  列出分支
 * 无参数：仅列出本地分支
-* -r：列出远程分支
-* -a：列出本地和远程分支
-* -v：显示分支指向的提交
-* -vv：显示分支指向的提交及跟踪的远程分支
+* `-r`：列出远程分支
+* `-a`：列出本地和远程分支
+* `-v`：显示分支指向的提交
+* `-vv`：显示分支指向的提交及跟踪的远程分支
 
 `git branch <branch-name> [<start-point>]`  创建新分支，起始点默认为HEAD
 
@@ -205,6 +210,7 @@ Git 2.23.0引入了一个新的命令git switch，可替代git checkout进行切
 * 否则进行一次三方合并（当前分支、被合并分支以及二者的公共祖先），在当前分支上生成一次新的提交
 
 典型用法：将开发分支合并到主分支，当前分支应当是主分支
+
 ```
 git checkout master
 git merge new-feat
@@ -223,6 +229,7 @@ git merge new-feat
 * rebase与merge的区别是可以保持线性的提交历史
 
 典型用法：将开发分支rebase到主分支上，当前分支应当是开发分支
+
 ```
 git checkout new-feat
 git rebase master
@@ -254,6 +261,7 @@ ssh-add -l -E md5
 
 多个SSH key：同一台机器可以创建多个SSH key（例如需要使用不同的邮箱），在创建SSH key时提示输入文件位置的步骤输入不同的文件名即可（例如~/.ssh/id_rsa_2），此时需要创建配置文件
 * 在.ssh目录下创建一个config文件，内容如下：
+
 ```
 Host github.com
     HostName github.com
@@ -261,6 +269,7 @@ Host github.com
     IdentityFile ~/.ssh/id_rsa_2
     PreferredAuthentications publickey
 ```
+
 否则会报错git@github.com: Permission denied (publickey)
 * 测试：`ssh -T git@github.com`
 
@@ -269,11 +278,11 @@ Host github.com
 
 `git remote [-v]`  列出已关联的远程仓库
 
-`git remote add <name> <url>`  添加远程仓库，习惯上名称取origin，url的格式是git@github.com:{username}/{project-name}.git或https://github.com/{username}/{project-name}.git，需要先在GitHub上创建相应的仓库
+`git remote add <name> <url>`  添加远程仓库，习惯上名称取origin，GitHub仓库的url格式为git@github.com:{username}/{project-name}.git或https://github.com/{username}/{project-name}.git，需要先在GitHub上创建相应的仓库
 
 `git push [-u] [<remote> [<branch>]]`  将指定分支的提交推送到远程仓库并更新远程分支
 * 如果省略分支名则默认为**当前分支**，如果省略远程仓库名则默认为origin
-* 如果远程仓库没有对应的分支则使用参数-u使本地分支与远程分支关联
+* 如果远程仓库没有对应的分支则使用参数`-u`使本地分支与远程分支关联
 * 常用形式：`git push origin foo`  将foo分支的提交推送到远程仓库，更新origin/foo分支
 
 `git fetch [<remote> [<branch>]]`  获取远程仓库指定分支的提交
@@ -285,15 +294,18 @@ Host github.com
 * 相当于git fetch+git merge，若有冲突则需手动解决冲突
 * 如果指定了`--rebase`选项则使用rebase合并，即git fetch+git rebase
 * 常用形式：`git pull origin foo`  获取远程仓库foo分支的提交，并将当前分支合并到origin/foo（当前分支应当是foo，此时应当是fast-forward合并），相当于
-  ```
-  git fetch origin foo
-  git merge origin/foo
-  ```
+
+```
+git fetch origin foo
+git merge origin/foo
+```
+
 * 无参数形式：`git pull` 获取远程仓库所有分支，并将当前分支合并到origin/当前分支，如果当前分支没有跟踪远程分支则不合并，相当于
-  ```
-  git fetch
-  git merge origin/当前分支
-  ```
+
+```
+git fetch
+git merge origin/当前分支
+```
 
 ### 4.3 远程分支管理
 `git branch -vv`  查看本地分支跟踪的远程分支
@@ -303,7 +315,7 @@ Host github.com
 * 例如：`git branch -t foo origin/foo`或`git branch foo origin/foo`将创建foo分支，并使其跟踪远程分支origin/foo
 
 `git checkout -b <branch> (-t | --track) <remote-branch>`  创建新分支，跟踪指定的远程分支，并切换到新分支
-* 类似于git branch，如果git checkout的第二个参数是一个远程分支，则可省略-t或-b选项
+* 类似于git branch，如果git checkout的第二个参数是一个远程分支，则可省略`-t`或`-b`选项
 * 例如：以下几条命令等价，都将创建foo分支，使其跟踪远程分支origin/foo并切换到foo分支：
   ```
   git checkout -b foo -t origin/foo
@@ -325,40 +337,51 @@ Host github.com
 
 ### 4.4 多人协作工作流程
 （1）切换到master分支，拉取远程仓库的修改
+
 ```
 checkout master
 git pull
 ```
+
 * 如果本地有未提交的修改可使用`git stash`：
-  ```
-  git stash
-  git pull
-  git stash pop
-  ```
+
+```
+git stash
+git pull
+git stash pop
+```
 
 （2）在本地创建一个新分支（假设名为new-feat），用于开发新功能
+
 ```
 git checkout -b new-feat
 # develop
 git commit -m "new feature"
 ```
+
 * 开发同一个功能最好保持单次提交，如果已经在本地提交，但尚未推送到远程仓库，之后又有其他修改，则可使用`git commit --amend`将修改“合并”到上一次提交
 
 （3）将提交推送到远程仓库
+
 ```
 git push -u origin new-feat
 ```
+
 * 如果已经推送到远程仓库，之后又有其他修改，要保持单次提交可强制推送到远程new-feat分支
-  ```
-  git commit --amend
-  git push -f origin new-feat
-  ```
+
+```
+git commit --amend
+git push -f origin new-feat
+```
+
 * 如果向远程仓库推送时master分支上已经有很多新的提交，则之后合并时可能产生合并冲突，可以先在本地rebase到master分支再推送，从而提前解决合并冲突
-  ```
-  git fetch origin master
-  git rebase master
-  git push origin new-feat
-  ```
+
+```
+git fetch origin master
+git rebase master
+git push origin new-feat
+```
+
 （4）在GitHub或GitLab上创建PR、代码评审、合并到master分支
 
 ## 5.标签管理

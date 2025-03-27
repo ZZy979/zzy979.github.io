@@ -1265,6 +1265,8 @@ $OUT_DIR = "build64_release/foo"
 $BUILD_DIR = "build64_release"
 ```
 
+另外，也可以使用[扩展机制](https://github.com/chen3feng/blade-build/blob/master/doc/en/build_rules/extension.md)来创建自定义构建规则。
+
 ## 7.命令行参考
 官方文档：[Command Line](https://github.com/chen3feng/blade-build/blob/master/doc/en/command_line.md)
 
