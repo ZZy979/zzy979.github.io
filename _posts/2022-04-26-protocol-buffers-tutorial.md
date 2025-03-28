@@ -1088,6 +1088,8 @@ python list_people.py data.bin
 ## 4.Protocol Buffers语言
 [Language Guide (proto 2)](https://protobuf.dev/programming-guides/proto2/)
 
+[Language Guide (proto 3)](https://protobuf.dev/programming-guides/proto3/)
+
 ### 4.1 导入其他消息类型
 可以使用`import`语句导入其他.proto文件中定义的消息。例如，有以下目录结构：
 
@@ -1413,3 +1415,50 @@ person {
 使用`google::protobuf::TextFormat`类的以下函数将文本格式字符串解析为消息对象：
 * `static bool Parse(ZeroCopyInputStream* input, Message* output)`
 * `static bool ParseFromString(const string& input, Message* output)`
+
+### 4.6 proto3
+proto2和proto3版本在语法和生成的代码上有一些显著区别。
+
+| 特性 | proto2 | proto3 |
+| --- | --- | --- |
+| 版本声明 | `syntax = "proto2";` | `syntax = "proto3";` |
+| 字段修饰符 | `required`、`optional`或`repeated` | `optional`（可省略）或`repeated` |
+| 默认值 | 支持 | 不支持 |
+| 枚举 | 第一个值不必为0 | 第一个值必须为0 |
+| 扩展 | 支持 | 不支持 |
+| 生成代码 | 数值或字符串类型的可选字段生成`has_`方法 | 数值或字符串类型的可选字段不生成`has_`方法 |
+
+例如，3.1.3节中的addressbook.proto使用proto3语法定义如下：
+
+```protobuf
+syntax = "proto3";
+
+package tutorial;
+
+message Person {
+  string name = 1;
+  int32 id = 2;
+  string email = 3;
+
+  enum PhoneType {
+    PHONE_TYPE_UNSPECIFIED = 0;
+    PHONE_TYPE_MOBILE = 1;
+    PHONE_TYPE_HOME = 2;
+    PHONE_TYPE_WORK = 3;
+  }
+
+  message PhoneNumber {
+    string number = 1;
+    PhoneType type = 2;
+  }
+
+  repeated PhoneNumber phones = 4;
+}
+```
+
+主要区别：
+* 所有`optional`修饰符都可省略。
+* 不能指定`PhoneNumber`的`type`字段的默认值，只能是`PHONE_TYPE_UNSPECIFIED`。
+* 对于数值或字符串类型的可选字段不生成`has_`方法。例如，`id`字段只生成`id()`、`set_id()`和`clear_id()`，没有`has_id()`。因此**无法区分该字段是没有被设置，还是设置为默认值**。消息类型的可选字段仍然会生成`has_`方法。
+
+proto2和proto3生成代码的区别详见[C++ Generated Code Guide](https://protobuf.dev/reference/cpp/cpp-generated/)。
