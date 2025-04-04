@@ -1241,7 +1241,7 @@ public class Employee {
 }
 ```
 
-如果源文件中没有`package`语句，那么这个源文件中的类就属于**无名包**(unnamed package)。到目前为止，所有示例中的类都在无名包中。
+如果源文件中没有`package`语句，那么这个源文件中的类就属于**无名包**(unnamed package)（也叫做**默认包**）。到目前为止，所有示例中的类都在无名包中。
 
 必须将源文件放到与完整包名匹配的子目录中。例如，`com.horstmann.corejava`包中的所有源文件应该位于子目录com/horstmann/corejava中。编译器将类文件也放在相同的目录结构中。
 

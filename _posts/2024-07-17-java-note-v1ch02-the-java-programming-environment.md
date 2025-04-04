@@ -210,6 +210,8 @@ IntelliJ IDEA可以从 <https://www.jetbrains.com.cn/idea/download/> 下载（�
 
 ![使用IntelliJ IDEA编辑源文件](/assets/images/java-note-v1ch02-the-java-programming-environment/使用IntelliJ IDEA编辑源文件.png)
 
+注：上述方法在卷II第9章会遇到问题，因为无法创建多个module-info.java文件。一种好的方法是将每章的子目录分别当作一个[模块](https://www.jetbrains.com/help/idea/creating-and-managing-modules.html)（见[提交59513c2](https://github.com/ZZy979/Core-Java-code/commit/59513c258cdb18af6d8f8b851a92099f2a80cea1)），卷II第9章中的每个Java模块同时也是一个IntelliJ IDEA模块。
+
 ## 2.4 JShell
 Java 9引入了另一种使用Java的方法——JShell。JShell程序提供了一个“读取-求值-打印循环”(Read-Evaluate-Print Loop, REPL)（类似于Python交互式解释器和Scala REPL）。输入一个Java表达式，JShell会求值，打印结果，并等待下一个输入。
 

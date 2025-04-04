@@ -13,6 +13,7 @@ Java 1.0有一个`Date`类，事后证明它过于简单了。当Java 1.1引入`
 
 注：
 * `Instant`对象内部存储了（UTC时间）距离纪元经过的秒数以及当前秒内的纳秒数，`getEpochSecond()`和`getNano()`方法分别返回这两个值。静态方法`ofEpochSecond()`创建给定时间戳（秒数）对应的`Instant`对象。
+* 静态方法`System.currentTimeMillis()`返回当前时刻（单位为毫秒），等价于`Instant.now().toEpochMilli()`。
 * `Instant` **不包含时区**。例如，时间戳3600表示UTC时间1970-1-1 01:00:00或北京时间1970-1-1 09:00:00。
 
 为了得到两个时刻之间的差，可以使用静态方法`Duration.between()`。例如，下面测量算法的运行时间：

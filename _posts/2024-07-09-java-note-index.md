@@ -34,7 +34,7 @@ tags: [java]
 * [第6章 日期和时间API]({% post_url 2025-03-16-java-note-v2ch06-the-date-and-time-api %})
 * 第7章 国际化
 * 第8章 脚本、编译与注解处理
-* 第9章 Java平台模块系统
+* [第9章 Java平台模块系统]({% post_url 2025-03-24-java-note-v2ch09-the-java-platform-module-system %})
 * 第10章 安全
 * 第11章 高级Swing和图形
 * 第12章 本地方法
