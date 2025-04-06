@@ -19,7 +19,7 @@ Java 9引入了[Java平台模块系统](https://openjdk.org/projects/jigsaw/spec
 
 Java平台在编译时和虚拟机中强制执行封装(encapsulation)和依赖(dependencies)。
 
-与传统的通过类路径使用JAR文件的方式，Java平台模块系统有两个优点：
+与传统的通过类路径使用JAR文件的方式相比，Java平台模块系统有两个优点：
 1. 强封装：可以控制哪些包是可访问的，无需操心维护那些不打算公共使用的代码。
 2. 可靠配置：可以避免常见的类路径问题，例如重复或缺少类。
 

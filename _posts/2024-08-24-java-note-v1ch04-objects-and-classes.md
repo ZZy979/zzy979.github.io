@@ -1389,26 +1389,7 @@ set CLASSPATH=C:\classdir;.;C:\archives\archive.jar
 
 直到退出shell，类路径设置均有效。
 
-注：继续考虑4.8.4节中的例子。假设项目2中的`com.mycompany.PayrollApp`类需要使用项目1提供的`com.horstmann.corejava.Employee`类，目录结构如下：
-
-```
-/home/user/
-    project1/
-        com/horstmann/corejava/
-            Employee.java
-            Employee.class
-    project2/
-        com/mycompany/
-            PayrollApp.java
-            PayrollApp.class
-```
-
-则应该在/home/user/project2目录中使用以下命令编译并运行`PayrollApp`类：
-
-```shell
-javac -cp /home/user/project1:. com/mycompany/PayrollApp.java
-java -cp /home/user/project1:. com.mycompany.PayrollApp
-```
+注：另见[《从命令行构建Java项目》]({% post_url 2025-04-04-build-java-project-from-command-line %})。
 
 ## 4.9 JAR文件
 在将应用程序打包时，你希望向用户提供单一的文件，而不是一个包含大量类文件的目录。Java归档(Java archive, JAR)文件就是为此目的而设计的。JAR文件既可以包含类文件，也可以包含诸如图像和声音等其他类型的文件。另外，JAR文件是使用ZIP格式压缩的。
