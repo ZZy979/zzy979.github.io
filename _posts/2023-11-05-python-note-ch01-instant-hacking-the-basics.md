@@ -2,7 +2,7 @@
 title: 《Python基础教程》笔记 第1章 基础知识
 date: 2023-11-05 16:47:23 +0800
 categories: [Python, Beginning Python]
-tags: [python, hello world, expression, integer division, variable, assignment, io, if statement, function, module, import statement, mathematical function, complex number, turtle graphics, comment, string, raw string, encoding, unicode]
+tags: [python, hello world, expression, integer division, variable, assignment, io, if statement, function, module, import statement, mathematical function, complex number, turtle graphics, comment, string, raw string, character encoding, unicode]
 ---
 在本章中，你将学习如何借助计算机能够听懂的语言——Python来控制计算机。Python的官方网站是 <https://www.python.org/>，官方文档：<https://docs.python.org/3/>。
 
@@ -726,14 +726,14 @@ UnicodeEncodeError: 'ascii' codec can't encode character '\xe6' in position 1: o
 'Hællå, wørld!'
 ```
 
-`bytes`对象本身并不知道编码，因此你必须负责跟踪这一点。如果解码时使用了错误的编码，将出现错误消息或得到乱码：
+`bytes`对象本身并不知道编码，因此你必须负责跟踪这一点。如果解码时使用了错误的编码，将出现错误消息或得到乱码。例如：
 
 ```python
->>> b = '綠色史萊姆'.encode('big5')
->>> print(b.decode('big5'))
-綠色史萊姆
->>> print(b.decode('ansi'))
-厚︹弟﹊
+>>> b = b'\xba\xf1\xa6\xe2\xa5\x76\xb5\xdc\xa9\x69'
+>>> b.decode('big5')
+'綠色史萊姆'
+>>> b.decode('gbk', errors='replace')
+'厚︹�v弟﹊'
 ```
 
 如果想更详细地了解Python中的Unicode，可参考官方文档Unicode HOWTO: <https://docs.python.org/3/howto/unicode.html> 。

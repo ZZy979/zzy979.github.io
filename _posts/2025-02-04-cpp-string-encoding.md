@@ -2,7 +2,7 @@
 title: 【C++】字符串编码问题
 date: 2025-02-04 13:59:45 +0800
 categories: [C/C++]
-tags: [cpp, string, encoding, unicode]
+tags: [cpp, string, character encoding, unicode]
 ---
 C++的源代码字符集处理是一个复杂的过程。如果程序中使用了中文，而字符集设置得不正确，就会出现乱码。本文介绍C++的字符串编码问题，以及如何正确地设置字符集。
 
@@ -69,7 +69,7 @@ e6 b5 a3 e7 8a b2 e3 82 bd
 浣犲ソ
 ```
 
-可以看到，打印`std::string`时，如果执行字符集与控制台的编码不一致，就会输出乱码。Windows CMD的编码为GBK；Linux Shell的编码为UTF-8。
+`std::ostream`本身不执行任何字符编码转换。因此在打印字符串时，如果执行字符集与控制台的编码不一致，就会输出乱码（Windows CMD的编码为GBK；Linux Shell的编码为UTF-8）。类似地，将字符串输出到`std::fstream`时，写入文件的字节就是字符串在执行字符集中的编码。
 
 如果输入字符集与源文件编码不一致，则可能输出乱码，或者编译器报错 "error: converting to execution character set: Illegal byte sequence" 。
 
@@ -117,7 +117,7 @@ u32string: sizeof char = 4, length = 2
 ```
 
 ### 2.3 宽字符串
-在C++11之前，宽字符`wchar_t`和宽字符串`std::wstring`是C++中表示Unicode字符的唯一方式，详见[wide strings](https://en.cppreference.com/w/cpp/string/wide)。与UTF字符串不同的是，宽字符串的编码不是固定的：在Windows上采用UTF-16编码（等价于`std::u16string`），在Linux和macOS上采用UTF-32编码（等价于`u32string`）。
+在C++11之前，宽字符`wchar_t`和宽字符串`std::wstring`是C++中表示Unicode字符的唯一方式，详见[wide strings](https://en.cppreference.com/w/cpp/string/wide)。与UTF字符串不同的是，宽字符串的编码不是固定的：在Windows上采用UTF-16编码（等价于`std::u16string`），在Linux和macOS上采用UTF-32编码（等价于`std::u32string`）。
 
 例如：
 
@@ -151,7 +151,7 @@ sizeof char = 4, length = 2
 00004f60 0000597d 
 ```
 
-注意，要打印宽字符串本身，应该使用`std::wcout`而不是`std::out`。但字符串并不会显示出来，因为控制台的编码不是UTF-16或UTF-32。
+注意，要打印宽字符串本身，应该使用`std::wcout`而不是`std::out`。但字符串并不会显示出来，因为控制台的编码不是UTF-16或UTF-32。要将宽字符输出到文件，应该使用`std::wofstream`。
 
 ## 3.总结
 在C++中，为了避免乱码问题，需要正确地设置字符集：
@@ -160,4 +160,5 @@ sizeof char = 4, length = 2
 
 ## 参考
 * <https://gcc.gnu.org/onlinedocs/cpp/Character-sets.html>
+* [Character sets and encodings - cppreference](https://en.cppreference.com/w/cpp/language/charset)
 * [源码字符集(the source character set) 与 执行字符集(the execution character set)](https://www.cnblogs.com/victor-ma/articles/3836243.html)
