@@ -562,7 +562,7 @@ class C {
 public:
     C() {}
     C(const C& c) { std::cout << "copy constructor\n"; }
-    C(C&& c) { std::cout << "move constructor\n"; }
+    C(C&& c) noexcept { std::cout << "move constructor\n"; }
 };
 
 template<class T, class Arg>
