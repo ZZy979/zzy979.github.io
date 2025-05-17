@@ -74,32 +74,6 @@ my-app/
 * src/main/java：项目的源代码目录
 * src/test/java：项目的测试代码目录
 
-如果有资源文件，应该将其放在src/main/resources目录中，在打包时会与类文件一起打包到JAR中。测试资源应该放在src/test/resources目录中。
-
-```
-my-app/
-  pom.xml
-  src/
-    main/
-      java/
-        com/mycompany/app/
-          App.java
-      resources/
-        application.properties
-    test/
-      java/
-        com/mycompany/app/
-          AppTest.java
-      resources/
-        test.properties
-```
-
-在代码中，可以通过如下方式访问资源文件：
-
-```java
-InputStream is = getClass().getResourceAsStream("/application.properties");
-```
-
 ### 3.2 编译项目
 在项目根目录中执行以下命令来编译项目：
 
@@ -130,6 +104,52 @@ $ java -cp target/my-app-1.0-SNAPSHOT.jar com.mycompany.app.App
 Hello World!
 ```
 
+或者也可以使用[exec-maven-plugin](https://www.mojohaus.org/exec-maven-plugin/)插件运行：
+
+```shell
+mvn exec:java -Dexec.mainClass=com.mycompany.app.App
+```
+
+这样生成的JAR不包含依赖，不能直接使用`java -jar`命令执行。要生成包含依赖的JAR，可以使用[maven-assembly-plugin](https://maven.apache.org/plugins/maven-assembly-plugin/)插件，在pom.xml中添加以下配置：
+
+```xml
+<build>
+    <plugins>
+        <plugin>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <configuration>
+                <descriptorRefs>
+                    <descriptorRef>jar-with-dependencies</descriptorRef>
+                </descriptorRefs>
+                <archive>
+                    <manifest>
+                        <mainClass>com.mycompany.app.App</mainClass>
+                    </manifest>
+                </archive>
+            </configuration>
+            <executions>
+                <execution>
+                    <id>make-assembly</id>
+                    <phase>package</phase>
+                    <goals>
+                        <goal>single</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
+    </plugins>
+</build>
+```
+
+其中，`<mainClass>`指定JAR文件的主类，`<execution>`将插件目标`assembly:single`绑定到`package`阶段。
+
+现在执行`mvn package`命令，将在target目录中生成my-app-1.0-SNAPSHOT-jar-with-dependencies.jar，其中包含了当前项目和所有依赖的类文件（不包括`provided`依赖和排除的传递依赖）。可以直接使用`java -jar`命令来执行：
+
+```shell
+$ java -jar my-app-1.0-SNAPSHOT-jar-with-dependencies.jar
+Hello World!
+```
+
 ### 3.5 安装到本地仓库
 将项目安装到本地仓库：
 
@@ -154,7 +174,34 @@ mvn install
 mvn clean
 ```
 
-### 3.7 添加依赖
+### 3.7 资源文件
+如果有资源文件，应该将其放在src/main/resources目录中，在打包时会与类文件一起打包到JAR中。测试资源应该放在src/test/resources目录中。
+
+```
+my-app/
+  pom.xml
+  src/
+    main/
+      java/
+        com/mycompany/app/
+          App.java
+      resources/
+        application.properties
+    test/
+      java/
+        com/mycompany/app/
+          AppTest.java
+      resources/
+        test.properties
+```
+
+在代码中，可以通过如下方式访问资源文件：
+
+```java
+InputStream is = getClass().getResourceAsStream("/application.properties");
+```
+
+### 3.8 添加依赖
 在pom.xml文件的`<dependencies>`中添加项目所需的依赖。
 
 例如，添加JUnit依赖：
@@ -170,7 +217,7 @@ mvn clean
 
 下次构建时，Maven会自动从中央仓库(<https://mvnrepository.com/>)下载所需的依赖库。
 
-### 3.8 使用插件
+### 3.9 使用插件
 Maven的核心是一个插件执行框架，大部分工作都是由**插件**(plugin)完成的。例如，`mvn compile`命令实际上执行了`compiler`插件的`compile`目标，因此等价于`mvn compiler:compile`。
 
 可以通过在pom.xml文件的`<build>`中添加或配置插件来自定义项目的构建。例如，可以通过配置maven-compiler-plugin插件指定Java版本（等价于Java编译器的`-source`和`-target`选项）：
@@ -383,8 +430,6 @@ POM的根元素是`<project>`，常用的子元素如下：
 * `runtime`：仅在测试和运行时可用（如JDBC驱动）。
 * `system`：类似于`provided`，但需要显式指定本地JAR路径，而不会从仓库下载。
 * `import`：用于从其他POM文件中导入依赖配置。
-
-在打包时，`provided`依赖和排除的传递依赖不会出现在包中。
 
 ### 6.3 传递依赖
 Maven会自动包含传递依赖，因此无需指定项目依赖所需的依赖库。Maven会根据依赖的作用域和传递性规则自动解析依赖树。
@@ -620,6 +665,9 @@ Maven会按照子模块的依赖关系依次构建每个子模块，并将构建
 ```
 
 注意，子模块之间应该避免循环依赖。
+
+## 8.示例
+完整项目示例：<https://github.com/ZZy979/mvnex-examples>
 
 ## 参考
 * [Maven by Example](https://books.sonatype.com/mvnex-book/reference/index.html)
