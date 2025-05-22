@@ -794,7 +794,7 @@ IntStream zeroToNinetyNine = IntStream.range(0, 100); // Upper bound is excluded
 IntStream zeroToHundred = IntStream.rangeClosed(0, 100); // Upper bound is included
 ```
 
-`CharSequence`接口具有`codePoints()`和`chars()`方法，生成字符的Unicode码点或UTF-16码元构成的`IntStream`（详见3.3.4和3.6.6节）。
+`CharSequence`接口具有`codePoints()`和`chars()`方法，生成字符的Unicode码点或UTF-16码元构成的`IntStream`（详见卷I第3章 3.3.4和3.6.6节）。
 
 ```java
 String sentence = "\uD835\uDD46 is the set of octonions.";
