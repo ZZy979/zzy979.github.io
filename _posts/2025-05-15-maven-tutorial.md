@@ -97,7 +97,10 @@ mvn test
 mvn package
 ```
 
-打包后的JAR文件会生成在target目录中。可以通过以下命令运行打包的应用程序：
+打包后的JAR文件会生成在target目录中。
+
+### 3.5 运行程序
+可以通过以下命令运行打包的应用程序：
 
 ```shell
 $ java -cp target/my-app-1.0-SNAPSHOT.jar com.mycompany.app.App
@@ -110,7 +113,7 @@ Hello World!
 mvn exec:java -Dexec.mainClass=com.mycompany.app.App
 ```
 
-这样生成的JAR不包含依赖，不能直接使用`java -jar`命令执行。要生成包含依赖的JAR，可以使用[maven-assembly-plugin](https://maven.apache.org/plugins/maven-assembly-plugin/)插件，在pom.xml中添加以下配置：
+注意：默认情况下，`mvn package`命令生成的JAR不包含依赖，不能直接使用`java -jar`命令执行。要生成包含依赖的JAR，可以使用[maven-assembly-plugin](https://maven.apache.org/plugins/maven-assembly-plugin/)插件，在pom.xml中添加以下配置：
 
 ```xml
 <build>
@@ -150,7 +153,7 @@ $ java -jar my-app-1.0-SNAPSHOT-jar-with-dependencies.jar
 Hello World!
 ```
 
-### 3.5 安装到本地仓库
+### 3.6 安装到本地仓库
 将项目安装到本地仓库：
 
 ```shell
@@ -167,14 +170,14 @@ mvn install
 </dependency>
 ```
 
-### 3.6 清理项目
+### 3.7 清理项目
 删除生成的target目录：
 
 ```shell
 mvn clean
 ```
 
-### 3.7 资源文件
+### 3.8 资源文件
 如果有资源文件，应该将其放在src/main/resources目录中，在打包时会与类文件一起打包到JAR中。测试资源应该放在src/test/resources目录中。
 
 ```
@@ -201,7 +204,7 @@ my-app/
 InputStream is = getClass().getResourceAsStream("/application.properties");
 ```
 
-### 3.8 添加依赖
+### 3.9 添加依赖
 在pom.xml文件的`<dependencies>`中添加项目所需的依赖。
 
 例如，添加JUnit依赖：
@@ -215,9 +218,11 @@ InputStream is = getClass().getResourceAsStream("/application.properties");
 </dependency>
 ```
 
-下次构建时，Maven会自动从中央仓库(<https://mvnrepository.com/>)下载所需的依赖库。
+下次构建时，Maven会自动从中央仓库(<https://repo1.maven.org/maven2/>)下载所需的依赖库。
 
-### 3.9 使用插件
+可以在 <https://mvnrepository.com/> 搜索Maven依赖库。
+
+### 3.10 使用插件
 Maven的核心是一个插件执行框架，大部分工作都是由**插件**(plugin)完成的。例如，`mvn compile`命令实际上执行了`compiler`插件的`compile`目标，因此等价于`mvn compiler:compile`。
 
 可以通过在pom.xml文件的`<build>`中添加或配置插件来自定义项目的构建。例如，可以通过配置maven-compiler-plugin插件指定Java版本（等价于Java编译器的`-source`和`-target`选项）：
@@ -438,7 +443,7 @@ Maven会自动包含传递依赖，因此无需指定项目依赖所需的依赖
 
 完整的传递依赖作用域规则参见[Dependency Scope](https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#Dependency_Scope)。
 
-当遇到同一个依赖的多个版本时，Maven会按照**最近优先原则**选择依赖版本（即选择依赖树中离当前项目最近的依赖的版本）。如果两个依赖版本的距离相同，则选择第一个声明的版本。
+当产生依赖版本冲突（即遇到同一个依赖的多个版本）时，Maven会按照**最近优先原则**选择依赖版本（即选择依赖树中离当前项目最近的依赖的版本）。如果两个依赖版本的距离相同，则选择第一个声明的版本。
 
 例如，在下面的依赖树中，会使用D 1.0，因为路径A -> E -> D更短。
 
@@ -640,16 +645,7 @@ my-app/
 </project>
 ```
 
-### 7.4 构建多模块项目
-在父项目目录下执行以下命令，可以构建整个多模块项目：
-
-```shell
-mvn clean install
-```
-
-Maven会按照子模块的依赖关系依次构建每个子模块，并将构建结果安装到本地仓库。
-
-### 7.5 模块之间的依赖
+### 7.4 模块之间的依赖
 如果子模块之间存在依赖关系，可以在pom.xml中声明依赖。
 
 例如，my-module2依赖my-module1，则在my-module2/pom.xml中声明：
@@ -665,6 +661,15 @@ Maven会按照子模块的依赖关系依次构建每个子模块，并将构建
 ```
 
 注意，子模块之间应该避免循环依赖。
+
+### 7.5 构建多模块项目
+在父项目目录中执行以下命令，可以构建整个多模块项目：
+
+```shell
+mvn clean install
+```
+
+Maven会按照子模块的依赖关系依次构建每个子模块，并将构建结果安装到本地仓库。
 
 ## 8.示例
 完整项目示例：<https://github.com/ZZy979/mvnex-examples>
