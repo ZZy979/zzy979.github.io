@@ -2,9 +2,9 @@
 title: Scala基础教程
 date: 2022-04-01 11:35:00 +0800
 categories: [Scala]
-tags: [scala]
+tags: [scala, hello world, variable, if statement, for statement, while statement, do-while statement, match expression, try statement, class, method, interface, collection, tuple]
 ---
-## 简介
+## 1.简介
 Scala是一种结合了面向对象和函数式编程的、静态类型的高级编程语言。
 
 Scala代码被编译成.class文件，运行在Java虚拟机(JVM)上，可以调用Java类库。
@@ -13,12 +13,13 @@ Scala代码被编译成.class文件，运行在Java虚拟机(JVM)上，可以调
 
 官方文档：<https://docs.scala-lang.org/>
 * [Scala语言规范](https://www.scala-lang.org/files/archive/spec/2.13/)
-* [Scala标准库](https://www.scala-lang.org/api/current/index.html)
+* [Scala标准库](https://www.scala-lang.org/api/2.13.16/)
 * [代码风格指南](https://docs.scala-lang.org/style/index.html)
 
 官方教程：
 * [Tour of Scala](https://docs.scala-lang.org/tour/tour-of-scala.html)
 * [Scala Book](https://docs.scala-lang.org/overviews/scala-book/introduction.html)
+* [Guides and Overviews](https://docs.scala-lang.org/overviews/index.html)
 
 在线运行环境：
 * [Scastie](https://scastie.scala-lang.org/)
@@ -26,16 +27,19 @@ Scala代码被编译成.class文件，运行在Java虚拟机(JVM)上，可以调
 
 sbt构建工具：<https://www.scala-sbt.org/index.html>
 
-## 安装
-### 第1步：安装Java
+## 2.安装
+第1步：安装Java
+
 由于Scala运行在JVM上，因此首先要安装JDK并配置JAVA_HOME环境变量。可从[Oracle Java](https://www.oracle.com/java/technologies/downloads/)或[AdoptOpenJDK](https://adoptopenjdk.net/)下载。
 
-### 第2步：安装Scala
+第2步：安装Scala
+
 下载地址：<https://www.scala-lang.org/download/all.html>
 
 要使用IDE编辑Scala，可安装IntelliJ IDEA的Scala插件或VSCode的Metals插件
 
-### 第3步：配置环境变量
+第3步：配置环境变量
+
 将SCALA_HOME环境变量设置为Scala安装/解压目录，并将$SCALA_HOME/bin目录添加到PATH环境变量。例如，在~/.bashrc文件末尾增加：
 
 ```bash
@@ -52,7 +56,8 @@ $ scalac -version
 Scala compiler version 2.13.8 -- Copyright 2002-2021, LAMP/EPFL and Lightbend, Inc.
 ```
 
-## Hello, world
+## 3.基础
+### 3.1 Hello, world
 Scala的 "Hello, world" 程序如下：
 
 ```scala
@@ -84,7 +89,7 @@ $ scala Hello
 Hello, world!
 ```
 
-## Scala REPL
+### 3.2 Scala REPL
 Scala REPL ("Read-Evaluate-Print-Loop")是一个命令行解释器，可以将其用作playground来测试Scala代码（相当于Python的IDLE）。
 
 在命令行输入scala即可启动REPL会话：
@@ -97,8 +102,6 @@ Type in expressions for evaluation. Or try :help.
 scala> 
 ```
 
-输入`:help`查看帮助，输入`:quit`退出。
-
 在REPL中可以输入Scala表达式：
 
 ```scala
@@ -109,7 +112,11 @@ scala> val y = x + 1
 val y: Int = 2
 ```
 
-## 两种类型的变量
+输入`:help`查看帮助，输入`:quit`或`:q`退出。
+
+详见[Scala REPL overview](https://docs.scala-lang.org/overviews/repl/overview.html)。
+
+### 3.3 两种类型的变量
 Scala有两种类型的变量：
 * `val`是不可变变量，类似于Java中的`final`，应该是首选
 * `var`创建一个可变变量，只有在有特定原因时才应该使用它
@@ -121,7 +128,7 @@ val x = 1   // 不可变
 var y = 0   // 可变
 ```
 
-## 声明变量类型
+### 3.4 声明变量类型
 在Scala中创建变量时通常不声明变量类型，Scala会自动推断类型：
 
 ```scala
@@ -138,8 +145,12 @@ val s: String = "a string"
 val p: Person = new Person("Regina")
 ```
 
-## 控制结构
-### if/else
+内置类型
+字符串插值
+命令行IO
+
+## 4.控制结构
+### 4.1 if/else
 Scala的`if/else`控制结构与其他语言类似：
 
 ```scala
@@ -160,54 +171,7 @@ if (test1) {
 val x = if (a < b) a else b
 ```
 
-### match表达式
-Scala的`match`表达式类似于Java的`switch`语句：
-
-```scala
-val result = i match {
-  case 1 => "one"
-  case 2 => "two"
-  case _ => "not 1 or 2"
-}
-```
-
-`match`表达式不仅限于整数，它可以与任何数据类型一起使用：
-
-```scala
-val booleanAsString = b match {
-  case true => "true"
-  case false => "false"
-}
-```
-
-下面是一个将`match`用作方法体的示例，与多种不同的类型进行匹配：
-
-```scala
-def getClassAsString(x: Any): String = x match {
-  case s: String => s + " is a String"
-  case i: Int => "Int"
-  case f: Float => "Float"
-  case l: List[_] => "List"
-  case p: Person => "Person"
-  case _ => "Unknown"
-}
-```
-
-（这里是判断x的类型而不是具体值，相当于Java 14的`instanceof`模式匹配和Java 17的`switch`模式匹配）
-
-### try/catch
-Scala的`try/catch`控制结构用于捕获异常，类似于Java，但其语法与`match`表达式一致：
-
-```scala
-try {
-  writeToFile(text)
-} catch {
-  case fnfe: FileNotFoundException => println(fnfe)
-  case ioe: IOException => println(ioe)
-}
-```
-
-### for循环和表达式
+### 4.2 for循环和表达式
 Scala的`for`循环有三种形式：
 
 ```scala
@@ -244,7 +208,7 @@ val fruitLengths = for {
 
 从字面上即可理解代码的含义。
 
-### while和do/while
+### 4.3 while和do/while
 Scala的`while`和`do/while`循环语法如下：
 
 ```scala
@@ -259,12 +223,59 @@ do {
 } while (condition)
 ```
 
-## 类
+### 4.4 match表达式
+Scala的`match`表达式类似于Java的`switch`语句：
+
+```scala
+val result = i match {
+  case 1 => "one"
+  case 2 => "two"
+  case _ => "not 1 or 2"
+}
+```
+
+`match`表达式不仅限于整数，它可以与任何数据类型一起使用：
+
+```scala
+val booleanAsString = b match {
+  case true => "true"
+  case false => "false"
+}
+```
+
+下面是一个将`match`用作方法体的示例，与多种不同的类型进行匹配：
+
+```scala
+def getClassAsString(x: Any): String = x match {
+  case s: String => s + " is a String"
+  case i: Int => "Int"
+  case f: Float => "Float"
+  case l: List[_] => "List"
+  case p: Person => "Person"
+  case _ => "Unknown"
+}
+```
+
+（这里是判断x的类型而不是具体值，相当于Java 14的`instanceof`模式匹配和Java 17的`switch`模式匹配）
+
+### 4.5 try/catch
+Scala的`try/catch`控制结构用于捕获异常，类似于Java，但其语法与`match`表达式一致：
+
+```scala
+try {
+  writeToFile(text)
+} catch {
+  case fnfe: FileNotFoundException => println(fnfe)
+  case ioe: IOException => println(ioe)
+}
+```
+
+## 5.类
 下面是一个Scala类的例子：
 
 ```scala
 class Person(var firstName: String, var lastName: String) {
-  def printFullName() = println(s"$firstName $lastName")
+  def printFullName(): Unit = println(s"$firstName $lastName")
 }
 ```
 
@@ -279,7 +290,7 @@ p.printFullName()
 
 注意，不需要创建 "get" 和 "set" 方法来访问类中的字段。
 
-## 方法
+## 6.方法
 像其他OOP语言一样，Scala类也有方法。Scala方法的语法如下：
 
 ```scala
@@ -301,7 +312,7 @@ val x = sum(1, 2)
 val y = concatenate("foo", "bar")
 ```
 
-## 特质(Traits)
+## 7.特质
 Scala的特质(traits)类似于Java的接口，可以将代码分解为小的模块化单元。例如，给定三个trait：
 
 ```scala
@@ -338,10 +349,12 @@ class Cat extends Speaker with TailWagger with Runner {
 }
 ```
 
-## 集合类
+## 8.集合类
 虽然可以在Scala中使用Java集合类，但强烈建议学习基本的Scala集合类：`List`、`ListBuffer`、`Vector`、`ArrayBuffer`、`Map`和`Set`。Scala 集合类的一大好处是它们提供了许多强大的方法，可以使用这些方法来简化代码。
 
-### 创建列表
+详细介绍见[Scala Book - Scala Collections](https://docs.scala-lang.org/overviews/scala-book/collections-101.html)和[Mutable and Immutable Collections](https://docs.scala-lang.org/overviews/collections-2.13/overview.html)。
+
+### 8.1 创建列表
 Scala提供了很多创建列表的方法，例如：
 
 ```scala
@@ -358,7 +371,7 @@ scala> val letters = ('a' to 'f' by 2).toList
 val letters: List[Char] = List(a, c, e)
 ```
 
-### 序列方法
+### 8.2 序列方法
 给定两个列表：
 
 ```scala
@@ -410,9 +423,7 @@ val res19: Int = 3628800
 
 第一个例子求`nums`中所有数字的和，第二个例子求`nums`中所有数字的积。
 
-详细介绍见[Scala Book - Scala Collections](https://docs.scala-lang.org/overviews/scala-book/collections-101.html)和[Overview - Scala Collections](https://docs.scala-lang.org/overviews/collections-2.13/introduction.html)。
-
-## 元组
+## 9.元组
 元组可以将不同类型的元素放在一个小容器中。一个元组可以包含2~22个值，并且所有值都可以具有不同的类型。例如，下面是一个包含`Int`、`Double`和`String`三种类型的元组：
 
 ```scala

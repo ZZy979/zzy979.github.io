@@ -2,7 +2,7 @@
 title: 面向Java程序员的Scala教程
 date: 2022-04-12 00:35:37 +0800
 categories: [Scala]
-tags: [scala]
+tags: [scala, hello world, lambda expression, class, inheritance, case class, match expression, interface, generic programming]
 ---
 官方教程：[Scala for Java Programmers](https://docs.scala-lang.org/tutorials/scala-for-java-programmers.html)
 
