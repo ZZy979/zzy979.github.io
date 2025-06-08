@@ -557,7 +557,7 @@ v.push_back(7.9);  // v == {2.7, 5.6, 7.9}, v.size() == 3
 
 [计算温度的平均值和中位数](https://github.com/ZZy979/PPP-code/blob/main/ch04/mean_median_temperature.cpp)
 
-其中，读取循环每次读取一个`double`并添加到向量结尾。使用读取操作`cin >> temp`作为循环条件，如果正确读取了一个值，则`cin >> temp`为`true`，否则为`false`。因此`while`循环将读取所有`double`，直到读到其他类型的数据为止（例如字符 '|'）。任何非`double`类型的数据都可以作为输入结束的标志，也可以使用EOF终止输入（见3.5.1节）。
+其中，读取循环每次读取一个`double`并添加到向量结尾。使用读取操作`cin >> temp`作为循环条件，如果正确读取了一个值，则`cin >> temp`为`true`，否则为`false`。因此`while`循环将读取所有`double`，直到读到其他类型的数据为止（例如字符`'|'`）。任何非`double`类型的数据都可以作为输入结束的标志，也可以使用EOF终止输入（见3.5.1节）。
 
 为了计算平均值，只需将所有元素累加到`sum`中，然后除以元素个数(`temps.size()`)即可。
 

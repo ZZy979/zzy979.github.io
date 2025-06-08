@@ -383,7 +383,7 @@ public static Optional<Double> squareRoot(Double x) {
 ```java
 Optional<Double> result = MyMath.inverse(x).flatMap(MyMath::squareRoot);
 // or
-Optional<Double> result = Optional.of(x)
+Optional<Double> result = Optional.of(-4.0)
     .flatMap(MyMath::inverse)
     .flatMap(MyMath::squareRoot);
 ```

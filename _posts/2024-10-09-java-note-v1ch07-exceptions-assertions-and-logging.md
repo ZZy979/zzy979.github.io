@@ -823,14 +823,14 @@ java -Djava.util.logging.config.file=configFile MainClass
 
 属性`.level`指定默认的日志级别，`<logger-name>.level`指定记录器的日志级别，例如：
 
-```
+```properties
 .level=INFO
 com.mycompany.myapp.level=FINE
 ```
 
 稍后将看到，记录器并不将消息发送到控制台——那是处理器的任务。处理器也有级别，可以通过`<handler-name>.level`属性指定。要在控制台上看到`FINE`级别的日志，就需要设置
 
-```
+```properties
 java.util.logging.ConsoleHandler.level=FINE
 ```
 
@@ -853,7 +853,7 @@ java.util.logging.ConsoleHandler.level=FINE
 
 一个程序可以包含多个资源包（例如，一个用于菜单，另一个用于日志消息）。每个资源包都有一个名字（如 "com.mycompany.logmessages" ）。要为资源包添加映射，需要为每个地区提供一个文件。例如，英语消息映射位于文件com/mycompany/logmessages_en.properties，德语消息映射位于文件com/mycompany/logmessages_de.properties（en和de是语言代码）。将这些文件与应用程序的类文件放在一起，以便`ResourceBundle`类自动找到它们。这些文件都是纯文本文件，包含如下所示的条目：
 
-```
+```properties
 readingFile=Achtung! Datei wird eingelesen
 renamingFile=Datei wird umbenannt
 ```
@@ -872,7 +872,7 @@ logger.info("readingFile");
 
 要在本地化的消息中包含参数，可以使用`{0}`、`{1}`等占位符。例如：
 
-```
+```properties
 readingFile=Reading file {0}
 renamingFile=Renaming file {0} to {1}
 ```
@@ -897,7 +897,7 @@ logger.logrb(Level.INFO, bundle, "renamingFile", oldName, newName);
 
 与记录器一样，处理器也有日志级别。一条日志的级别必须高于记录器和处理器**二者**的级别才会被记录。默认的记录器和控制台处理器的级别都是`INFO`。要记录`FINE`级别的日志，需要修改配置文件：
 
-```
+```properties
 .level=FINE
 handlers=java.util.logging.ConsoleHandler
 java.util.logging.ConsoleHandler.level=FINE
