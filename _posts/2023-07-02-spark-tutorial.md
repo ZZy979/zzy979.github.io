@@ -567,6 +567,78 @@ scala> spark.sql("SELECT name FROM people WHERE age > 21").show
 +----+
 ```
 
+SQL语法参考：[SQL Reference](https://spark.apache.org/docs/latest/sql-ref.html)
+
+#### 5.3.1 窗口函数
+<https://spark.apache.org/docs/latest/sql-ref-syntax-qry-select-window.html>
+
+窗口函数对一组行（称为窗口）进行操作，并为每行计算一个返回值。窗口函数可用于处理排名、前缀和、移动平均值等任务。
+
+例如，有如下的员工数据：
+
+```sql
+CREATE TABLE employees (name STRING, dept STRING, salary INT, age INT);
+
+INSERT INTO employees VALUES
+    ("Lisa", "Sales", 10000, 35),
+    ("Evan", "Sales", 32000, 38),
+    ("Fred", "Engineering", 21000, 28),
+    ("Alex", "Sales", 30000, 33),
+    ("Tom", "Engineering", 23000, 33),
+    ("Jane", "Marketing", 29000, 28),
+    ("Jeff", "Marketing", 35000, 38),
+    ("Paul", "Engineering", 29000, 23),
+    ("Chloe", "Engineering", 23000, 25);
+```
+
+计算每个部门内员工的年龄排名：
+
+```sql
+SELECT name, dept, age, RANK() OVER (PARTITION BY dept ORDER BY age) AS rank FROM employees;
++-----+-----------+---+----+
+| name|       dept|age|rank|
++-----+-----------+---+----+
+| Alex|      Sales| 33|   1|
+| Lisa|      Sales| 35|   2|
+| Evan|      Sales| 38|   3|
+| Paul|Engineering| 23|   1|
+|Chloe|Engineering| 25|   2|
+| Fred|Engineering| 28|   3|
+|  Tom|Engineering| 33|   4|
+| Jane|  Marketing| 28|   1|
+| Jeff|  Marketing| 38|   2|
++-----+-----------+---+----+
+```
+
+计算每个部门内员工薪水的前缀和：
+
+```sql
+SELECT name, dept, salary, SUM(salary) OVER (PARTITION BY dept ORDER BY salary) AS prefix_salary FROM employees;
++-----+-----------+------+-------------+
+| name|       dept|salary|prefix_salary|
++-----+-----------+------+-------------+
+| Lisa|      Sales| 10000|        10000|
+| Alex|      Sales| 30000|        40000|
+| Evan|      Sales| 32000|        72000|
+| Fred|Engineering| 21000|        21000|
+|Chloe|Engineering| 23000|        67000|
+|  Tom|Engineering| 23000|        67000|
+| Paul|Engineering| 29000|        96000|
+| Jane|  Marketing| 29000|        29000|
+| Jeff|  Marketing| 35000|        64000|
++-----+-----------+------+-------------+
+```
+
+使用代码实现：
+
+```scala
+import org.apache.spark.sql.expressions.Window
+
+val window = Window.partitionBy("dept").orderBy("salary")
+val result = df.withColumn("prefix_salary", sum("salary").over(window))
+  .select("name", "dept", "salary", "prefix_salary")
+```
+
 ### 5.4 创建Dataset
 可以使用`toDS()`方法从Scala集合创建Dataset，必须先导入`spark.implicits._`。例如：
 
