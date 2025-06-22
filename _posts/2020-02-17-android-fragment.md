@@ -11,6 +11,8 @@ tags: [android, fragment]
 * 片段Fragment表示界面的一部分，可以在一个Activity中组合多个Fragment，一个Fragment也可以被多个Activity复用
 * Fragment必须嵌入在Activity中，不能独立存在，有自己的生命周期，并且受宿主Activity生命周期的影响，可以在Activity中动态添加和删除Fragment
 
+注意：Android SDK自带的`android.app.Fragment`已经过时，建议使用Jetpack Fragment库，参见[【AndroidX】Fragment]({% post_url 2025-06-21-androidx-fragment %})。
+
 1.定义Fragment，实现onCreateView()方法返回布局：
 
 ```java
