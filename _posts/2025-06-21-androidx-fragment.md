@@ -13,7 +13,7 @@ Fragment表示应用界面中可重复使用的部分，通过将界面划分为
 Fragment需要依赖[AndroidX Fragment库](https://developer.android.google.cn/jetpack/androidx/releases/fragment)。在build.gradle文件中添加以下依赖项：
 
 ```groovy
-implementation "androidx.fragment:fragment:1.8.8"
+implementation 'androidx.fragment:fragment:1.8.8'
 ```
 
 ### 2.1 创建fragment类
@@ -77,7 +77,19 @@ public class ExampleActivity extends AppCompatActivity {
 }
 ```
 
-注意，只有在`savedInstanceState`为`null`时才会创建fragment事务，这是为了确保fragment仅在activity首次创建时添加一次。当activity重新创建时，fragment会自动从`savedInstanceState`中恢复。
+注意，只有在`savedInstanceState`为`null`时才会创建fragment事务，这是为了确保fragment仅在activity首次创建时添加一次。当activity重新创建时，fragment会自动从`savedInstanceState`中恢复，此时可以通过`findFragmentById()`获得fragment实例，如下所示。
+
+```java
+@Override
+protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    if (savedInstanceState == null) {
+        ...
+    } else {
+        fragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container_view);
+    }
+}
+```
 
 如果fragment需要初始数据，可以通过在`FragmentTransaction.add()`调用中提供一个`Bundle`将参数传递到fragment，如下所示：
 
@@ -151,7 +163,7 @@ public class RandomGoodDeedFragment extends Fragment {
 }
 ```
 
-注：也可以使用ViewModel来保存UI状态，这样就无需手动保存和恢复，详见[ViewModel概览](https://developer.android.google.cn/topic/libraries/architecture/viewmodel)。
+注：也可以使用ViewModel来保存UI状态，这样就无需手动保存和恢复，详见[【Android】ViewModel]({% post_url 2025-06-24-android-view-model %})。
 
 ## 4.与fragment通信
 为了正确响应用户事件和共享状态信息，通常需要在activity和fragment之间或者两个fragment之间进行通信。
@@ -180,7 +192,7 @@ public class ItemViewModel extends ViewModel {
 }
 ```
 
-`LiveData`是可感知生命周期的、可观测的数据容器类，详细信息参见[LiveData概览](https://developer.android.google.cn/topic/libraries/architecture/livedata)。
+`LiveData`是可感知生命周期的、可观察的数据容器类，详细信息参见[LiveData概览](https://developer.android.google.cn/topic/libraries/architecture/livedata)。
 
 Fragment及其宿主activity都可以通过将activity传入`ViewModelProvider`构造器来获取ViewModel的共享实例。二者都可以观察和修改其中的数据。
 
