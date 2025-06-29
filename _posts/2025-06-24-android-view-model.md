@@ -5,7 +5,7 @@ categories: [Android]
 tags: [android, view model, jetpack]
 ---
 ## 1.简介
-ViewModel是一种状态数据容器，用于将状态暴露给UI（如activity或fragment）以及封装相关的业务逻辑。其主要优点是：
+ViewModel是一种状态数据容器，用于将状态公开给UI（如activity或fragment）以及封装相关的业务逻辑。其主要优点是：
 * 能够在配置变更（如旋转屏幕）时保持状态数据，使得UI重建后无需重新获取数据。
 * 将UI与业务逻辑分离，从而更好地遵循单一职责原则。
 
@@ -36,7 +36,7 @@ implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.0'
 implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.9.0'
 ```
 
-注意：为了使用ViewModel，必须将应用迁移到AndroidX（参见[Jetpack库](https://developer.android.google.cn/jetpack)）：
+注意：为了使用ViewModel，必须将应用迁移到AndroidX（参见[Jetpack库](https://developer.android.google.cn/jetpack)）。为此需要
 * 添加以下依赖
 
 ```groovy
@@ -50,7 +50,7 @@ implementation 'androidx.fragment:fragment:1.7.0'
 Android SDK原生的`android.app.Activity`和`android.app.Fragment`无法使用ViewModel。
 
 ### 2.2 创建ViewModel类
-下面实现计数器ViewModel。扩展`ViewModel`类，并使用`MutableLiveData`来保存计数器的值。
+下面实现计数器ViewModel。在src/main/java目录下创建文件com/example/CounterViewModel.java：
 
 ```java
 package com.example;
@@ -90,6 +90,8 @@ public class CounterViewModel extends ViewModel {
 }
 ```
 
+`CounterViewModel`扩展了`ViewModel`类，并使用`LiveData`来保存计数器的值。
+
 `LiveData`是可感知生命周期的、可观察的数据容器类。使用步骤如下：
 1. 创建`LiveData`的实例以存储某种类型的数据。这通常在`ViewModel`类中完成。
 2. 创建`Observer`对象并实现`onChanged()`方法，该方法定义当`LiveData`对象存储的数据发生变化时要执行的动作（如更新UI）。
@@ -100,7 +102,7 @@ public class CounterViewModel extends ViewModel {
 `LiveData`类的`getValue()`方法返回数据的值。子类`MutableLiveData`表示可变的`LiveData`，提供了`setValue()`和`postValue()`方法修改数据的值。`CounterViewModel`利用这些方法实现了增加、减少和重置计数器值的方法。注意，`getValue()`方法可能返回`null`，因此必须以`null`安全的方式使用其返回值。
 
 ### 2.3 在Activity中使用ViewModel
-`MainActivity`类的代码如下：
+`MainActivity`与`CounterViewModel`类位于同一目录中，代码如下：
 
 ```java
 package com.example;
@@ -136,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
 }
 ```
 
-在`onCreate()`方法中，首先创建`ViewModelProvider`对象（以activity自身为存储拥有者），然后调用其`get()`方法获得ViewModel实例。当系统第一次调用activity的`onCreate()`方法时会创建一个ViewModel对象；重建的activity会得到与之前同样的ViewModel实例。
+在`onCreate()`方法中，首先创建`ViewModelProvider`对象（以activity自身为存储拥有者），然后调用其`get()`方法获得ViewModel实例。当系统第一次调用activity的`onCreate()`方法时，会创建一个ViewModel对象。重建的activity会得到与之前相同的ViewModel实例。
 
 接下来为存储计数器值的`LiveData`附加了观察者（以activity自身为生命周期拥有者），并在其中更新计数器标签的文本。
 
@@ -198,12 +200,16 @@ public class MainActivity extends AppCompatActivity {
 
 <img src="/assets/images/android-view-model/计数器应用屏幕录像.gif" width="40%" alt="计数器应用屏幕录像">
 
+如果不使用ViewModel，那么必须在三个按钮的监听器中手动更新标签文本，并且activity需要实现`onSaveInstanceState()`和`onRestoreInstanceState()`方法来保存和恢复状态数据（否则当activity重建时数据会丢失）。
+
 ## 3.ViewModel的生命周期
-ViewModel的生命周期与其作用域直接关联（作用域是创建`ViewModelProvider`时指定的`ViewModelStoreOwner`对象，如activity）。`ViewModel`会一直留在内存中，直到其作用域消失（例如activity结束时，或fragment分离时）。
+ViewModel的生命周期与其作用域直接关联，作用域是创建`ViewModelProvider`时指定的`ViewModelStoreOwner`对象（如activity或fragment）。`ViewModel`会一直留在内存中，直到其作用域消失（如activity结束，或fragment分离）。
 
 下图说明了activity经历屏幕旋转然后结束时的生命周期状态。这些基本状态同样适用于fragment的生命周期。
 
 ![ViewModel生命周期](https://developer.android.google.cn/static/images/topic/libraries/architecture/viewmodel-lifecycle.png)
+
+从activity首次创建到结束并销毁，ViewModel一直存在。
 
 ## 4.最佳实践
 以下是实现ViewModel时应该遵循的一些最佳实践：
@@ -222,7 +228,7 @@ testImplementation 'org.mockito:mockito-core:4.11.0'
 testImplementation 'androidx.arch.core:core-testing:2.2.0'
 ```
 
-在src/test/java目录下创建文件com/example/CounterViewModelTest.java
+在src/test/java目录下创建文件com/example/CounterViewModelTest.java：
 
 ```java
 package com.example;
