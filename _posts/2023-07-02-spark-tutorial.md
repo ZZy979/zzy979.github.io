@@ -231,7 +231,7 @@ RDD支持两种类型的操作：
 
 默认情况下，每次对RDD执行action操作都会重新计算。可以使用`persist()`或`cache()`方法将其放在内存中，从而加快查询。
 
-##### 基本操作
+##### 4.2.3.1 基本操作
 下面的代码展示了RDD的基本操作（文本文件来自[To be, or not to be](https://poets.org/poem/hamlet-act-iii-scene-i-be-or-not-be)）：
 
 ```scala
@@ -253,7 +253,7 @@ totalLength: Int = 1453
 
 完整列表参考[RDD API文档](https://spark.apache.org/docs/latest/api/scala/org/apache/spark/rdd/RDD.html)。
 
-##### 将函数传递给Spark
+##### 4.2.3.2 将函数传递给Spark
 Spark的API很大程度上依赖于在驱动程序中将函数传递到集群上运行。有两种推荐的方法：
 * [匿名函数语法](http://docs.scala-lang.org/tour/basics.html#functions)。例如`map(line => line.length())`、`reduce(_ + _)`。
 * 单例`object`中的静态方法。例如：
@@ -297,7 +297,7 @@ def doStuff(rdd: RDD[String]): RDD[String] = {
 }
 ```
 
-##### 理解闭包
+##### 4.2.3.3 理解闭包
 Spark的难点之一是在集群上执行代码时理解变量的作用域和生命周期。修改作用域之外的变量的RDD操作经常会造成混淆。
 
 例如，考虑下面的RDD元素求和。在本地模式下(`--master local[n]`)与部署到集群上（例如通过spark-submit提交到YARN）运行，其行为可能会有所不同。
@@ -312,8 +312,6 @@ rdd.foreach(x => counter += x)
 println("Counter value: " + counter)
 ```
 
-本地vs集群模式
-
 上述代码的行为是未定义的，可能无法按预期工作。为了执行作业，Spark会将RDD操作分解为任务(task)，每个任务由一个执行器(executor)执行。在执行之前，Spark会计算任务的**闭包**(closure)。闭包是执行器在RDD上执行计算（在本例中是`foreach()`）时需要的变量和方法。这个闭包被序列化并发送给每个执行器。
 
 发送给每个执行器的闭包内的变量是**副本**。因此，当`counter`在`foreach()`函数中被引用时，它不再是驱动节点内存中的`counter`！执行器只能看到闭包中的副本。因此，驱动节点上`counter`的最终值仍然为0。
@@ -322,11 +320,9 @@ println("Counter value: " + counter)
 
 为了确保在这些场景中有明确定义的行为，应该使用累加器（详见4.3.2节）。
 
-打印RDD的元素
-
 另一个常见的习惯用法是尝试使用`rdd.foreach(println)`打印RDD的元素。在单台机器上，这将生成预期的输出。然而，在集群模式下，输出将被写入执行器的stdout，因此驱动节点的stdout不会显示输出！要在驱动节点上打印所有元素，可以使用`collect()`方法先将RDD元素传回驱动节点再打印：`rdd.collect().foreach(println)`。如果只需要打印几个元素，可以使用`take()`：`rdd.take(100).foreach(println)`。
 
-##### 使用键值对
+##### 4.2.3.4 使用键值对
 在Scala中，使用`RDD[Tuple2]`即可实现键值对操作。例如，下面的代码使用`reduceByKey`操作统计单词出现次数：
 
 ```scala
@@ -337,6 +333,40 @@ wordCount.sortBy(_._2, false).take(10)
 ```
 
 键值对RDD独有的操作定义在[PairRDDFunctions](https://spark.apache.org/docs/latest/api/scala/org/apache/spark/rdd/PairRDDFunctions.html)，例如`groupByKey`、`reduceByKey`、`join`、`saveAsNewAPIHadoopFile`等。
+
+##### 4.2.3.5 Shuffle操作
+Shuffle是Spark在分布式计算过程中将数据重新分布的过程。可能导致shuffle的操作包括：
+* 重新分区操作，如`repartition`和`coalesce`
+* 分组操作，如`groupByKey`和`reduceByKey`
+* join操作，如`join`和`cogroup`
+
+例如，在`reduceByKey`操作中，一个键的所有值可能位于不同分区、甚至不同机器上，必须使这些值位于同一个分区或节点上才能计算结果。Spark必须读取所有分区的数据，找到所有键对应的所有值，然后对于每个键将跨分区的值汇总起来以计算最终结果——这叫做**shuffle**。
+
+Shuffle是一种非常昂贵的操作，因为它涉及磁盘I/O、数据序列化和网络I/O。为了组织shuffle所需的数据，Spark会生成一系列任务——map任务用于组织数据，reduce任务用于聚合数据。
+
+可以通过调整配置参数来优化shuffle性能，参见[Shuffle Behavior](https://spark.apache.org/docs/latest/configuration.html#shuffle-behavior)。
+
+#### 4.2.4 RDD持久化
+RDD **持久化**（或**缓存**）是一种将RDD存储到内存或磁盘中的机制。如果一个RDD被多个action操作使用，持久化可以避免重复计算，从而提升性能。
+
+可以使用`persist()`或`cache()`方法将RDD标记为需要持久化。`persist()`方法允许指定**存储级别**(storage level)，`cache()`方法是使用默认存储级别的简写形式。
+
+例如：
+
+```scala
+val rdd = sc.parallelize(Seq.range(0, 1000000)).persist(StorageLevel.MEMORY_AND_DISK)
+val sum = rdd.reduce(_ + _) // 触发计算并缓存
+val count = rdd.count() // 直接使用缓存
+```
+
+常用的持久化级别如下：
+* `MEMORY_ONLY`（默认）：将RDD存储到内存中，内存不足时部分分区不会被缓存
+* `MEMORY_AND_DISK`：将RDD存储到内存，内存不足时将超出部分存储到磁盘
+* `MEMORY_ONLY_SER`：将RDD序列化后存储到内存中，减少内存占用，但增加了序列化开销
+* `MEMORY_AND_DISK_SER`：将RDD序列化后存储到内存中，内存不足时将超出部分存储到磁盘
+* `DISK_ONLY`：将RDD存储到磁盘
+
+Spark会监控缓存使用情况，并按照LRU原则删除旧的数据分区。如果想手动删除一个RDD，可以使用`unpersist()`方法。
 
 ### 4.3 共享变量
 通常，当传递给Spark操作（例如`map()`或`reduce()`）的函数在远程集群节点上执行时，函数中使用的变量会被拷贝到每台机器，并且远程机器对变量的更新不会传回驱动节点。Spark提供了两种类型的共享变量：广播变量和累加器。
