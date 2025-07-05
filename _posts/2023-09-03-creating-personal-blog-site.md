@@ -244,3 +244,38 @@ toc: false
 
 > 注意：Chirpy生成的目录只显示二级标题(##)和三级标题(###)，一级标题(#)不会显示在目录中。参考[issue #491](https://github.com/cotes2020/jekyll-theme-chirpy/issues/491#issuecomment-1015659620)。
 {: .prompt-warning }
+
+### 4.8 升级版本
+可以按照以下步骤升级Chirpy主题版本。假设要升级到v7.3.0。
+
+1.参照[chirpy-starter/Gemfile](https://github.com/cotes2020/chirpy-starter/blob/v7.3.0/Gemfile)更新Gemfile中的依赖版本。
+
+![update-dependency-version](/assets/images/creating-personal-blog-site/update-dependency-version.png)
+
+2.在根目录中执行以下命令：
+
+```shell
+bundle
+```
+
+3.参照[jekyll-theme-chirpy/assets](https://github.com/cotes2020/jekyll-theme-chirpy/tree/v7.3.0/assets)更新assets/lib子模块。
+
+![update-submodule](/assets/images/creating-personal-blog-site/update-submodule.png)
+
+```shell
+cd assets/lib
+git fetch origin main
+git reset --hard 02f4ada
+```
+
+4.测试新版本，在根目录中执行以下命令：
+
+```shell
+bundle exec jekyll serve
+```
+
+如果样式显示不正常，尝试清除浏览器缓存。
+
+5.提交更新。
+
+参考commit：<https://github.com/ZZy979/zzy979.github.io/commit/f6fb9a6be37d312a8464cb117b8ba1b1db8dabb6>
