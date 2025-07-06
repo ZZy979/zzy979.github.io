@@ -1,5 +1,5 @@
 ---
-title: 《Java核心技术》笔记 第3章 XML
+title: 《Java核心技术》笔记 卷II 第3章 XML
 date: 2025-06-09 22:48:24 +0800
 categories: [Java, Core Java]
 tags: [java, xml, dtd, xpath, dom, sax, xsl]

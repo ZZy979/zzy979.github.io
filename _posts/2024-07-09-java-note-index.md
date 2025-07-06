@@ -28,7 +28,7 @@ tags: [java]
 ### 卷II 高级特性
 * [第1章 流]({% post_url 2025-03-07-java-note-v2ch01-streams %})
 * [第2章 输入和输出]({% post_url 2025-04-07-java-note-v2ch02-input-and-output %})
-* [第3章 XML]{% post_url 2025-06-09-java-note-v2ch03-xml %}
+* [第3章 XML]({% post_url 2025-06-09-java-note-v2ch03-xml %})
 * [第4章 网络]({% post_url 2025-05-23-java-note-v2ch04-networking %})
 * 第5章 数据库编程
 * [第6章 日期和时间API]({% post_url 2025-03-16-java-note-v2ch06-the-date-and-time-api %})
