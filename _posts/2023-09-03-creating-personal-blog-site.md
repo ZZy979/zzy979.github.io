@@ -246,13 +246,13 @@ toc: false
 {: .prompt-warning }
 
 ### 4.8 升级版本
-可以按照以下步骤升级Chirpy主题版本。假设要升级到v7.3.0。
+可以按照以下步骤升级Chirpy主题版本。假设从v6.4.2升级到v7.3.0。
 
 1.参照[chirpy-starter/Gemfile](https://github.com/cotes2020/chirpy-starter/blob/v7.3.0/Gemfile)更新Gemfile中的依赖版本。
 
 ![update-dependency-version](/assets/images/creating-personal-blog-site/update-dependency-version.png)
 
-2.在根目录中执行以下命令：
+2.安装新版本依赖，在根目录中执行以下命令：
 
 ```shell
 bundle
@@ -268,7 +268,11 @@ git fetch origin main
 git reset --hard 02f4ada
 ```
 
-4.测试新版本，在根目录中执行以下命令：
+4.参照[chirpy-starter/_config.yml](https://github.com/cotes2020/chirpy-starter/blob/v7.3.0/_config.yml)更新配置文件_config.yml。
+
+新版本可能修改了某些配置项的名字。例如，评论系统配置由`comments.active`变为`comments.provider`，使用旧的名字会导致评论系统无法显示。完整diff列表参见[v6.4.2...v7.3.0](https://github.com/cotes2020/chirpy-starter/compare/v6.4.2...v7.3.0)。
+
+5.测试新版本，在根目录中执行以下命令：
 
 ```shell
 bundle exec jekyll serve
@@ -276,6 +280,8 @@ bundle exec jekyll serve
 
 如果样式显示不正常，尝试清除浏览器缓存。
 
-5.提交更新。
+6.提交更新。
 
-参考commit：<https://github.com/ZZy979/zzy979.github.io/commit/f6fb9a6be37d312a8464cb117b8ba1b1db8dabb6>
+参考commit：
+* [升级Chirpy版本](https://github.com/ZZy979/zzy979.github.io/commit/f6fb9a6be37d312a8464cb117b8ba1b1db8dabb6)
+* [更新配置文件](https://github.com/ZZy979/zzy979.github.io/commit/526a7781a3e205556fca501860b4d6b8763af7e7)
