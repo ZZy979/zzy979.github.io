@@ -252,6 +252,12 @@ toc: false
 
 ![update-dependency-version](/assets/images/creating-personal-blog-site/update-dependency-version.png)
 
+注：Chirpy v7.3.0有bug，会导致搜索功能失效，参见：[cotes2020/jekyll-theme-chirpy#2416](https://github.com/cotes2020/jekyll-theme-chirpy/issues/2416)。Gemfile中的`~> 7.2`表示`>= 7.2, < 8.0`，会安装当前最新版本v7.3.0。要使用v7.2.4，直接指定版本号：
+
+```
+gem "jekyll-theme-chirpy", "7.2.4"
+```
+
 2.安装新版本依赖，在根目录中执行以下命令：
 
 ```shell
