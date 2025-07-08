@@ -246,9 +246,9 @@ toc: false
 {: .prompt-warning }
 
 ### 4.8 升级版本
-可以按照以下步骤升级Chirpy主题版本。假设从v6.4.2升级到v7.3.0。
+可以按照以下步骤升级Chirpy主题版本。假设从v6.4.2升级到v7.2.4。
 
-1.参照[chirpy-starter/Gemfile](https://github.com/cotes2020/chirpy-starter/blob/v7.3.0/Gemfile)更新Gemfile中的依赖版本。
+1.参照[chirpy-starter/Gemfile](https://github.com/cotes2020/chirpy-starter/blob/v7.2.4/Gemfile)更新Gemfile中的依赖版本。
 
 ![update-dependency-version](/assets/images/creating-personal-blog-site/update-dependency-version.png)
 
@@ -258,19 +258,19 @@ toc: false
 bundle
 ```
 
-3.参照[jekyll-theme-chirpy/assets](https://github.com/cotes2020/jekyll-theme-chirpy/tree/v7.3.0/assets)更新assets/lib子模块。
+3.参照[jekyll-theme-chirpy/assets](https://github.com/cotes2020/jekyll-theme-chirpy/tree/v7.2.4/assets)更新assets/lib子模块。
 
 ![update-submodule](/assets/images/creating-personal-blog-site/update-submodule.png)
 
 ```shell
 cd assets/lib
 git fetch origin main
-git reset --hard 02f4ada
+git reset --hard b9e18a1
 ```
 
-4.参照[chirpy-starter/_config.yml](https://github.com/cotes2020/chirpy-starter/blob/v7.3.0/_config.yml)更新配置文件_config.yml。
+4.参照[chirpy-starter/_config.yml](https://github.com/cotes2020/chirpy-starter/blob/v7.2.4/_config.yml)更新配置文件_config.yml。
 
-新版本可能修改了某些配置项的名字。例如，评论系统配置由`comments.active`变为`comments.provider`，使用旧的名字会导致评论系统无法显示。完整diff列表参见[v6.4.2...v7.3.0](https://github.com/cotes2020/chirpy-starter/compare/v6.4.2...v7.3.0)。
+新版本可能修改了某些配置项的名字。例如，评论系统配置由`comments.active`变为`comments.provider`，使用旧的名字会导致评论系统无法显示。完整diff列表参见[v6.4.2...v7.2.4](https://github.com/cotes2020/chirpy-starter/compare/v6.4.2...v7.2.4)。
 
 5.测试新版本，在根目录中执行以下命令：
 
@@ -278,7 +278,7 @@ git reset --hard 02f4ada
 bundle exec jekyll serve
 ```
 
-如果样式显示不正常，尝试清除浏览器缓存。
+查看样式显示、目录、搜索、评论区等功能是否正常。如果某项功能不正常，尝试清除浏览器缓存。
 
 6.提交更新。
 
