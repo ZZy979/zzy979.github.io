@@ -352,7 +352,9 @@ class Cat extends Speaker with TailWagger with Runner {
 ## 8.集合类
 虽然可以在Scala中使用Java集合类，但强烈建议学习基本的Scala集合类：`List`、`ListBuffer`、`Vector`、`ArrayBuffer`、`Map`和`Set`。Scala 集合类的一大好处是它们提供了许多强大的方法，可以使用这些方法来简化代码。
 
-详细介绍见[Scala Book - Scala Collections](https://docs.scala-lang.org/overviews/scala-book/collections-101.html)和[Mutable and Immutable Collections](https://docs.scala-lang.org/overviews/collections-2.13/overview.html)。
+详细介绍见：
+* [Scala Book - Scala Collections](https://docs.scala-lang.org/overviews/scala-book/collections-101.html)
+* [Mutable and Immutable Collections (2.13)](https://docs.scala-lang.org/overviews/collections-2.13/overview.html)或[Mutable and Immutable Collections (2.8-2.12)](https://docs.scala-lang.org/overviews/collections/introduction.html)
 
 ### 8.1 创建列表
 Scala提供了很多创建列表的方法，例如：

@@ -434,7 +434,12 @@ SQL参考：<https://spark.apache.org/docs/latest/sql-ref.html>
 ### 5.1 创建DataFrame
 使用`SparkSession`，可以从RDD、Hive表或[Spark数据源](https://spark.apache.org/docs/latest/sql-data-sources.html)创建DataFrame。
 
-例如，[people.json](https://github.com/apache/spark/blob/master/examples/src/main/resources/people.json)包含一些人员信息，每行是一条记录，有name和age两个属性：
+#### 5.1.1 JSON文件
+可以使用`spark.read.json(path)`读取JSON数据集并转换为DataFrame，Spark SQL会自动推断schema。使用`dataframe.write.json(path)`写出JSON文件。
+
+注意，这里的JSON文件格式实际上叫做[JSON Lines](http://jsonlines.org/)，每行都是一个单独的JSON对象。
+
+例如，文件[people.json](https://github.com/apache/spark/blob/master/examples/src/main/resources/people.json)包含一些人员信息：
 
 ```json
 {"name":"Michael"}
@@ -442,12 +447,10 @@ SQL参考：<https://spark.apache.org/docs/latest/sql-ref.html>
 {"name":"Justin", "age":19}
 ```
 
-注：这种文件格式实际上叫做[JSON Lines](http://jsonlines.org/)。
-
 下面的代码基于以上JSON文件的内容创建了一个DataFrame：
 
 ```scala
-scala> val df = spark.read.json("examples/src/main/resources/people.json")
+scala> val df = spark.read.json("people.json")
 df: org.apache.spark.sql.DataFrame = [age: bigint, name: string]                
 
 // Displays the content of the DataFrame to stdout
@@ -461,7 +464,38 @@ scala> df.show
 +----+-------+
 ```
 
-注：也可以使用`toDF()`方法从Scala集合创建DataFrame，必须先导入`spark.implicits._`。可以通过`toDF()`的参数指定列名，Spark将自动推断类型。例如：
+#### 5.1.2 CSV文件
+Spark SQL提供了`spark.read.csv(path)`读取CSV格式的文件或目录并转换为DataFrame，`dataframe.write.csv(path)`写出CSV文件。可以使用`option()`指定读写选项，例如列名、分隔符等。
+
+例如，文件people.csv的内容如下：
+
+```
+name,age,job
+Jorge,30,Developer
+Bob,32,Developer
+```
+
+下面的代码将这个CSV文件读取为DataFrame，使用第一行作为列名，并自动推断schema：
+
+```scala
+scala> val df = spark.read.option("header", "true").option("inferSchema", "true").csv(path)
+df: org.apache.spark.sql.DataFrame = [name: string, age: int ... 1 more field]
+
+scala> df.show
++-----+---+---------+
+| name|age|      job|
++-----+---+---------+
+|Jorge| 30|Developer|
+|  Bob| 32|Developer|
++-----+---+---------+
+```
+
+如果不指定`header`选项，则将第一行视为数据内容，列名为_c0, _c1...；如果不指定`inferSchema`选项，则所有列的类型均为字符串。
+
+完整选项列表参见[CSV Files - Data Source Option](https://spark.apache.org/docs/latest/sql-data-sources-csv.html#data-source-option)。
+
+#### 5.1.3 Scala集合
+可以使用`toDF()`方法从Scala集合创建DataFrame，必须先导入`spark.implicits._`。可以通过`toDF()`的参数指定列名，Spark将自动推断类型。例如：
 
 ```scala
 // for toDF()
@@ -493,6 +527,25 @@ scala> df.show
 |  30|   Andy|
 |  19| Justin|
 +----+-------+
+```
+
+如果集合元素类型是case类，则无需指定列名：
+
+```scala
+scala> case class Person(name: String, age: Int, job: String)
+
+scala> val data = Seq(Person("Jorge", 30, "Developer"), Person("Bob", 32, "Developer"))
+
+scala> val df = data.toDF()
+df: org.apache.spark.sql.DataFrame = [name: string, age: int ... 1 more field]
+
+scala> df.show
++-----+---+---------+
+| name|age|      job|
++-----+---+---------+
+|Jorge| 30|Developer|
+|  Bob| 32|Developer|
++-----+---+---------+
 ```
 
 ### 5.2 DataFrame操作
