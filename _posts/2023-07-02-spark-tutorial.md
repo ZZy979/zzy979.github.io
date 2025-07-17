@@ -9,7 +9,8 @@ Apache Spark是一个开源的分布式计算框架，旨在提供快速、通�
 
 * 官方网站：<https://spark.apache.org/>
 * 官方文档：<https://spark.apache.org/docs/latest/index.html>
-* Scala API文档：<https://spark.apache.org/docs/latest/api/scala/org/apache/spark/index.html>
+  * Scala API文档：<https://spark.apache.org/docs/latest/api/scala/org/apache/spark/index.html>
+  * PySpark文档：<https://spark.apache.org/docs/latest/api/python/index.html>
 
 ## 2.下载
 下载页面：<https://spark.apache.org/downloads.html>
@@ -1023,7 +1024,7 @@ val ssc = new StreamingContext(conf, Seconds(1))
 5. 或者使用`ssc.stop()`手动停止处理。
 
 ### 6.4 离散流(DStream)
-**离散流**(discretized stream, DStream)是Spark Streaming提供的基本抽象，表示连续的数据流。DStream在内部表示为RDD序列，每个RDD包含来自一定时间间隔的数据，如下图所示。
+**离散流**(discretized stream, DStream)是Spark Streaming提供的基本抽象，表示连续的数据流。DStream在内部表示为**RDD序列**，每个RDD包含来自一定时间间隔的数据，如下图所示。
 
 ![DStream](https://spark.apache.org/docs/latest/img/streaming-dstream.png)
 
@@ -1032,23 +1033,28 @@ val ssc = new StreamingContext(conf, Seconds(1))
 ![DStream ops](https://spark.apache.org/docs/latest/img/streaming-dstream-ops.png)
 
 ### 6.5 输入DStream和接收器
-[输入DStream](https://spark.apache.org/docs/latest/api/scala/org/apache/spark/streaming/dstream/InputDStream.html)表示输入数据流。在6.1节的例子中，`lines`是表示从netcat接收到的数据流的输入DStream。每个输入DStream（除文件流外）都关联了一个**接收器**([Receiver](https://spark.apache.org/docs/latest/api/scala/org/apache/spark/streaming/receiver/Receiver.html))对象。
+输入DStream ([InputDStream](https://spark.apache.org/docs/latest/api/scala/org/apache/spark/streaming/dstream/InputDStream.html))表示输入数据流。在6.1节的例子中，`lines`是表示从netcat接收到的数据流的输入DStream。每个输入DStream（除文件流外）都关联了一个**接收器**([Receiver](https://spark.apache.org/docs/latest/api/scala/org/apache/spark/streaming/receiver/Receiver.html))对象。
 
-Spark Streaming提供了两种类型的内置数据源：
+Spark Streaming提供了一些内置数据源：
 
 （1）基本数据源：`StreamingContext` API直接提供的数据源，例如：
-* `socketTextStream()`：来自TCP套接字的文本数据
-* `textFileStream()`：读取HDFS目录下的文本文件
+* `socketStream()`或`socketTextStream()`：来自TCP套接字的数据。
+* `fileStream()`或`textFileStream()`：读取HDFS等文件系统上的文件（监测目录中的新文件）。
+* `queueStream()`：基于RDD队列创建输入DStream，通常用于测试Spark Streaming应用。
 
 （2）高级数据源：需要添加依赖的数据源，例如[Kafka](https://spark.apache.org/docs/latest/streaming-kafka-0-10-integration.html)、[Kinesis](https://spark.apache.org/docs/latest/streaming-kinesis-integration.html)等。
 
-另外，也可以[自定义接收器](https://spark.apache.org/docs/latest/streaming-custom-receivers.html)。
+（3）自定义数据源
+* 自定义接收器：继承`Receiver`类，在`onStart()`方法中启动新线程，在线程中调用`store()`方法存储接收到的数据，最后使用`ssc.receiverStream()`从接收器创建输入DStream。详见[Custom Receiver Guide](https://spark.apache.org/docs/latest/streaming-custom-receivers.html)。
+* 自定义输入DStream：继承`InputDStream`类，实现`compute()`、`start()`和`stop()`方法。`compute(time)`方法生成给定时间的RDD，`time`是按分批间隔对齐的时间戳。例如，假设分批间隔是5分钟，应用在10:03开始运行，则`compute()`方法会依次在10:05、10:10、10:15等时刻被调用，参数是对应的时间戳。
 
 ### 6.6 DStream操作
 完整列表见API文档[DStream](https://spark.apache.org/docs/latest/api/scala/org/apache/spark/streaming/dstream/DStream.html)和[PairDStreamFunctions](https://spark.apache.org/docs/latest/api/scala/org/apache/spark/streaming/dstream/PairDStreamFunctions.html)。
 
 #### 6.6.1 转换操作
-与RDD类似，DStream允许通过**转换**(transformation)操作修改其中的数据。常用的转换操作：`map`、`flatMap`、`filter`、`repartition`、`union`、`count`、`reduce`、`countByValue`、`reduceByKey`、`join`、`cogroup`、`transform`、`updateStateByKey`等。
+与RDD类似，DStream允许通过**转换**(transformation)操作修改其中的数据。常用的转换操作：`map`、`flatMap`、`filter`、`repartition`、`union`、`count`、`reduce`、`countByValue`等。
+
+键值对DStream独有的操作包括`groupByKey`、`reduceByKey`、`join`、`cogroup`等。
 
 #### 6.6.2 窗口操作
 Spark Streaming还提供了窗口操作，可以在数据的滑动窗口上执行转换操作，如下图所示。
@@ -1059,7 +1065,7 @@ Spark Streaming还提供了窗口操作，可以在数据的滑动窗口上执�
 
 窗口操作需要指定两个参数：窗口长度和滑动距离。在这个例子中，窗口长度为3个时间单位，滑动距离为2个时间单位。这两个参数必须是输入DStream分批间隔的整数倍。
 
-例如，在6.1节的例子中，如果希望每10秒钟计算过去30秒的单词数，可以对`pairs` DStream执行`reduceByKeyAndWindow()`操作：
+例如，在6.1节的例子中，如果希望每10秒钟计算过去30秒的单词数，可以对`pairs`执行`reduceByKeyAndWindow()`操作：
 
 ```scala
 // Reduce last 30 seconds of data, every 10 seconds
@@ -1101,7 +1107,7 @@ DStream的输出操作将数据输出到外部系统，例如数据库或文件�
 与RDD类似，DStream可以通过`persist()`方法将数据保存在内存中，这将自动保存DStream中的每个RDD。如果DStream中的数据将被多次计算（例如窗口操作），这会非常有用。窗口操作生成的DStream会自动保存在内存中，不需要手动调用`persist()`。
 
 ### 6.9 检查点
-https://spark.apache.org/docs/latest/streaming-programming-guide.html#checkpointing
+<https://spark.apache.org/docs/latest/streaming-programming-guide.html#checkpointing>
 
 ## 7.Structured Streaming
 <https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html>
