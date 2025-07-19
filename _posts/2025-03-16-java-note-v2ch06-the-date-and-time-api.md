@@ -164,38 +164,64 @@ LocalTime wakeup = bedtime.plusHours(8); // wakeup is 6:30:00
 ## 6.5 时区时间
 互联网编号分配机构(Internet Assigned Numbers Authority, IANA)保存着一个全世界所有时区的数据库(<https://www.iana.org/time-zones>)。Java使用IANA数据库。
 
-每个时区都有一个ID，例如America/New_York和Europe/Berlin。要获得所有可用的时区，调用`ZoneId.getAvailableZoneIds()`。
+每个时区都有一个ID，例如America/New_York和Europe/Berlin。给定一个时区ID，静态方法`ZoneId.of()`产生对应的`ZoneId`对象。要获得所有可用的时区，调用`ZoneId.getAvailableZoneIds()`。要获得系统默认时区，调用`ZoneId.systemDefault()`。
 
-给定一个时区ID，静态方法`ZoneId.of()`产生对应的`ZoneId`对象。可以通过调用`LocalDateTime`类的`atZone()`方法将其转换为`ZonedDateTime`对象。或者可以通过调用静态方法`ZonedDateTime.of()`来构造对象。例如：
+可以通过调用静态方法`ZonedDateTime.of()`来构造对象。例如：
 
 ```java
 ZonedDateTime apollo11launch = ZonedDateTime.of(1969, 7, 16, 9, 32, 0, 0, ZoneId.of("America/New_York"));
     // 1969-07-16T09:32-04:00[America/New_York]
 ```
 
-`ZonedDateTime`表示一个具体的时刻。调用`toInstant()`方法可以得到对应的`Instant`对象（UTC时间的相同时刻）。例如：
+`ZonedDateTime`表示一个具体的时刻。调用`toInstant()`方法可以得到对应的`Instant`对象（**UTC时区**的相同时刻）。例如：
 
 ```java
-LocalDateTime epoch = LocalDateTime.of(1970, 1, 1, 0, 0, 0);
-ZonedDateTime utcTime = ZonedDateTime.of(epoch, ZoneId.of("UTC")); // 1970-01-01T00:00Z[UTC]
-ZonedDateTime shTime = ZonedDateTime.of(epoch, ZoneId.of("Asia/Shanghai")); // 1970-01-01T00:00+08:00[Asia/Shanghai]
-long utcInstant = utcTime.toInstant(); // 1970-01-01T00:00:00Z
-long shInstant = shTime.toInstant(); // 1969-12-31T16:00:00Z
+ZonedDateTime utcTime = ZonedDateTime.of(1970, 1, 1, 0, 0, 0, 0, ZoneId.of("UTC")); // 1970-01-01T00:00Z[UTC]
+ZonedDateTime shTime = ZonedDateTime.of(1970, 1, 1, 0, 0, 0, 0, ZoneId.of("Asia/Shanghai")); // 1970-01-01T00:00+08:00[Asia/Shanghai]
+Instant utcInstant = utcTime.toInstant(); // 1970-01-01T00:00:00Z
+Instant shInstant = shTime.toInstant(); // 1969-12-31T16:00:00Z
 ```
 
-反过来，调用`Instant`类的`atZone()`方法可以得到指定时区的`ZonedDateTime`对象（相同本地时间，可能不是同一时刻）。例如：
+反过来，调用`Instant`类的`atZone()`方法可以得到指定时区的`ZonedDateTime`对象。例如：
 
 ```java
 Instant epoch = Instant.ofEpochSecond(0);
 ZonedDateTime utcTime = epoch.atZone(ZoneId.of("UTC")); // 1970-01-01T00:00Z[UTC]
-ZonedDateTime shTime = epoch.atZone(ZoneId.of("Asia/Shanghai")); // 1970-01-01T00:00+08:00[Asia/Shanghai]
+ZonedDateTime shTime = epoch.atZone(ZoneId.of("Asia/Shanghai")); // 1970-01-01T08:00+08:00[Asia/Shanghai]
 long utcTimestamp = utcTime.toEpochSecond(); // 0
-long shTimestamp = shTime.toEpochSecond(); // -28800
+long shTimestamp = shTime.toEpochSecond(); // 0
 ```
+
+注释：UTC代表“协调世界时”，这是英文 "Coordinated Universal Time" 和法文 "Temps Universel Coordiné" 首字母缩写的折中。UTC是没有夏令时的格林威治皇家天文台时间。
+
+注：
+* **相同的本地时间在不同时区表示不同时刻，相同的`Instant`在不同时区仍然表示相同时刻。**
+* 可以通过`LocalDateTime`类的`ofInstant()`和`toInstant()`方法与`Instant`相互转换，但需要指定时区或偏移量（表示“哪个时区的本地时间”）。例如：
+
+```java
+LocalDateTime.ofInstant(Instant.ofEpochSecond(0), ZoneId.of("UTC")); // 1970-01-01T00:00
+LocalDateTime.ofInstant(Instant.ofEpochSecond(0), ZoneId.of("Asia/Shanghai")); // 1970-01-01T08:00
+LocalDateTime.of(1970, 1, 1, 0).toInstant(ZoneOffset.of("Z")); // 1970-01-01T00:00:00Z
+LocalDateTime.of(1970, 1, 1, 0).toInstant(ZoneOffset.of("+8")); // 1969-12-31T16:00:00Z
+```
+
+* 可以通过调用`LocalDateTime`类的`atZone()`方法将其转换为`ZonedDateTime`对象，`ZonedDateTime`类的`toLocalDateTime()`方法完成反向转换（日期时间不变，添加或丢弃时区信息）。例如：
+
+```java
+LocalDateTime.of(1970, 1, 1, 0).atZone(ZoneId.of("UTC")); // 1970-01-01T00:00Z[UTC]
+LocalDateTime.of(1970, 1, 1, 0).atZone(ZoneId.of("Asia/Shanghai")); // 1970-01-01T00:00+08:00[Asia/Shanghai]
+ZonedDateTime.of(1970, 1, 1, 0, 0, 0, 0, ZoneId.of("UTC")).toLocalDateTime(); // 1970-01-01T00:00
+ZonedDateTime.of(1970, 1, 1, 0, 0, 0, 0, ZoneId.of("Asia/Shanghai")).toLocalDateTime(); // 1970-01-01T00:00
+ZonedDateTime.of(1970, 1, 1, 8, 0, 0, 0, ZoneId.of("Asia/Shanghai")).toLocalDateTime(); // 1970-01-01T08:00
+```
+
+* `Instant`与`ZonedDateTime`之间的转换如下图所示：
 
 ![Instant与ZonedDateTime之间的转换](/assets/images/java-note-v2ch06-the-date-and-time-api/Instant与ZonedDateTime之间的转换.png)
 
-注释：UTC代表“协调世界时”，这是英文 "Coordinated Universal Time" 和法文 "Temps Universel Coordiné" 首字母缩写的折中。UTC是没有夏令时的格林威治皇家天文台时间。
+* `LocalDateTime`与`Instant`和`ZonedDateTime`之间的转换如下图所示：
+
+![LocalDateTime与Instant和ZonedDateTime之间的转换](/assets/images/java-note-v2ch06-the-date-and-time-api/LocalDateTime与Instant和ZonedDateTime之间的转换.png)
 
 `ZonedDateTime`的很多方法都与`LocalDateTime`相同（参见API文档），它们大多数都很简单，但是夏令时带来了一些复杂性。
 

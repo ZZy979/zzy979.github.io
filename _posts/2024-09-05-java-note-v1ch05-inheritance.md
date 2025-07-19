@@ -1350,19 +1350,20 @@ ResourceTest.jar/
         title.txt
 ```
 
-* `Class`类会在**类路径**中查找资源文件（就像查找类文件一样）：
-  * 如果文件名以 "/" 开头，则在类路径下查找。
-  * 否则，在当前类文件所在目录（即 "类路径/包路径" ）下查找。
-
-在JAR文件中，类路径为JAR文件根目录。
-
-在上面的示例中，假设将项目根目录/path/to/project或JAR文件根目录/path/to/ResourceTest.jar添加到类路径，则`ResourceTest`类加载各个资源文件使用的文件名和最终定位的URL如下：
+* `Class.getResource()`方法会在以下位置查找资源文件：
+  * 如果文件名以 "/" 开头，则在类路径中查找。
+  * 否则，在当前类文件所在目录（即 "类路径/包路径" ）中查找。
+* 在JAR文件中，类路径为JAR文件根目录。
+* 在上面的示例中，假设将项目根目录/path/to/project或JAR文件/path/to/ResourceTest.jar添加到类路径，则`ResourceTest`类加载各个资源文件使用的文件名和最终定位的URL如下：
 
 | 文件名 | 文件系统URL | JAR文件内URL |
 | --- | --- | --- |
 | `"about.gif"` | file:/path/to/project/resources/about.gif | jar:file:/path/to/ResourceTest.jar!/resources/about.gif |
 | `"data/about.txt"` | file:/path/to/project/resources/data/about.txt | jar:file:/path/to/ResourceTest.jar!/resources/data/about.txt |
 | `"/corejava/title.txt"` | file:/path/to/project/corejava/title.txt | jar:file:/path/to/ResourceTest.jar!/corejava/title.txt |
+
+* `ClassLoader.getResource()`方法类似于`Class.getResource()`，但文件名必须是相对于类路径的完整路径，且不能以 "/" 开头。实际上，后者调用了前者并对文件名做了转换：添加包路径并删除开头的 "/" 。
+* `getResourceAsStream()`等价于`getResource().openStream()`。
 
 ### 5.9.4 使用反射分析类的能力
 下面简要介绍反射机制最重要的内容——检查类的结构。

@@ -1178,7 +1178,7 @@ boolean deleted = Files.deleteIfExists(path);
 文件操作标准选项的完整列表参见`StandardOpenOption`和`StandardCopyOption`的API文档。
 
 ### 2.4.5 获取文件信息
-下面的静态方法检查路径的某个属性，并返回一个布尔值：
+下面的`Files`类静态方法检查路径的某个属性，并返回一个布尔值：
 * `exists()`
 * `isHidden()`
 * `isReadable()`, `isWritable()`, `isExecutable()`
