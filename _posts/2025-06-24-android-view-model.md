@@ -202,6 +202,83 @@ public class MainActivity extends AppCompatActivity {
 
 如果不使用ViewModel，那么必须在三个按钮的监听器中手动更新标签文本，并且activity需要实现`onSaveInstanceState()`和`onRestoreInstanceState()`方法来保存和恢复状态数据（否则当activity重建时数据会丢失）。
 
+### 2.4 传递初始参数
+默认情况下，`ViewModelProvider`只会调用ViewModel的**默认构造器**。如果ViewModel不依赖外部数据，则可以在默认构造器中完成初始化（如上面的示例所示）：
+
+```java
+public CounterViewModel() {
+    counter.setValue(0);
+}
+```
+
+如果需要向ViewModel传递初始参数（例如计数器的初始值），有两种方式。
+
+第一种方式是在ViewModel中添加初始化方法，例如：
+
+```java
+public class CounterViewModel extends ViewModel {
+    // ...
+
+    public void init(int initialValue) {
+        counter.setValue(initialValue);
+    }
+}
+```
+
+注意，该方法只能在activity或fragment初次创建时调用（例如在activity的`onCreate()`方法中判断`savedInstanceState == null`）。否则，当activity重建时会重复初始化ViewModel，导致保存的数据被覆盖。
+
+```java
+public class MainActivity extends AppCompatActivity {
+    // ...
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        // ...
+        viewModel = new ViewModelProvider(this).get(CounterViewModel.class);
+        if (savedInstanceState == null)
+            viewModel.init(42);
+    }
+}
+```
+
+第二种方式是使用ViewModel工厂。首先，在ViewModel中添加接受初始参数的构造器：
+
+```java
+public class CounterViewModel extends ViewModel {
+    // ...
+
+    public CounterViewModel(int initialValue) {
+        counter.setValue(initialValue);
+    }
+}
+```
+
+然后创建一个实现了`ViewModelProvider.Factory`接口的类，通过构造器传递初始参数，并在`create()`方法中使用这些参数创建ViewModel对象：
+
+```java
+public class CounterViewModelFactory implements ViewModelProvider.Factory {
+    private int initialValue;
+
+    public CounterViewModelFactory(int initialValue) {
+        this.initialValue = initialValue;
+    }
+
+    @Override
+    public @NotNull <T extends ViewModel> T create(@NotNull Class<T> modelClass) {
+        if (modelClass.isAssignableFrom(CounterViewModel.class))
+            return (T) new CounterViewModel(initialValue);
+        throw new IllegalArgumentException("This factory can't create " + modelClass);
+    }
+}
+```
+
+最后，在创建ViewModel时，将工厂作为`ViewModelProvider`的第二个参数：
+
+```java
+viewModel = new ViewModelProvider(this, new CounterViewModelFactory(42))
+        .get(CounterViewModel.class);
+```
+
 ## 3.ViewModel的生命周期
 ViewModel的生命周期与其作用域直接关联，作用域是创建`ViewModelProvider`时指定的`ViewModelStoreOwner`对象（如activity或fragment）。`ViewModel`会一直留在内存中，直到其作用域消失（如activity结束，或fragment分离）。
 
