@@ -2,7 +2,7 @@
 title: 【Android】常用控件
 date: 2018-07-11 10:25 +0800
 categories: [Android]
-tags: [android, gui]
+tags: [android, gui, event handling]
 ---
 * 为了在代码中可以用变量表示控件，需要设置id：android:id="@+id/btDial"
 * 通过id获取控件到变量中：findViewById(R.id.btDial)

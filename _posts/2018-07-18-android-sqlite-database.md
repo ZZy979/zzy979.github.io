@@ -2,7 +2,7 @@
 title: 【Android】SQLite数据库
 date: 2018-07-18 11:18 +0800
 categories: [Android]
-tags: [android, database]
+tags: [android, database, sqlite]
 ---
 * 官方文档：<https://developer.android.google.cn/training/data-storage/sqlite.html>
 

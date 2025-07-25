@@ -2,7 +2,7 @@
 title: 《Python基础教程》笔记 第26章 项目7：自建公告板
 date: 2024-06-24 22:43:03 +0800
 categories: [Python, Beginning Python]
-tags: [python, cgi, database]
+tags: [python, cgi, database, sqlite]
 ---
 本章将实现一个基于Web的论坛。
 

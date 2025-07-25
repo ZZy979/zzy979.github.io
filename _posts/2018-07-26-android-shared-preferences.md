@@ -2,7 +2,7 @@
 title: 【Android】SharedPreferences
 date: 2018-07-26 16:12 +0800
 categories: [Android]
-tags: [android, shared preferences]
+tags: [android, shared preferences, configuration]
 ---
 * SharedPreferences是Android平台上一个轻量级的存储类，用来保存应用的一些常用配置
 * 其原理是通过Android系统生成一个**xml文件**保到：/data/data/包名/shared_prefs目录下，类似键值对的方式来存储数据。

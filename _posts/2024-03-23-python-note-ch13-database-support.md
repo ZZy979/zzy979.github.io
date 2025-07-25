@@ -2,7 +2,7 @@
 title: 《Python基础教程》笔记 第13章 数据库支持
 date: 2024-03-23 13:26:34 +0800
 categories: [Python, Beginning Python]
-tags: [python, database]
+tags: [python, database, sqlite]
 ---
 本章讨论Python数据库API（一种连接到SQL数据库的标准化方式），并演示如何使用该API来执行一些基本的SQL。
 

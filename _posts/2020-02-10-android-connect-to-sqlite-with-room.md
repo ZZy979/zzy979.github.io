@@ -2,7 +2,7 @@
 title: 【Android】使用Room连接SQLite数据库
 date: 2020-02-10 01:08 +0800
 categories: [Android]
-tags: [android, database]
+tags: [android, database, room]
 ---
 * Room是Google官方提供的数据库框架（相当于Android版的Spring Data JPA），官方强烈建议使用Room而不是SQLite API
 * Room在SQLite上提供了一个抽象层，可以更方便地访问和操作数据库，大大减少代码量

@@ -885,14 +885,19 @@ public int compareTo(Object other) { return compareTo((X) other); }
 
 ### 小结
 对于泛型类`C<T>`：
-* `C<int>`× `C<Integer>`√
-* `a instanceof C<String>`× `a instanceof C`√
-* `new T(args)`× `new C<String>(args)`√ `new C<T>(args)`√
-* `new T[n]`× `new C<String>[n]`× `new C<T>[n]`× `new C[n]`√
-* `T...`√ `C<String>...`√ `C<T>...`√
-* `T.class`× `C<String>.class`× `C<T>.class`× `C.class`√
-* `static T field;`×
-* `extends Exception`× `catch(T e)`×
+
+| 用法 | 错误 | 正确 |
+| --- | --- | --- |
+| 实例化 | `C<int>` | `C<Integer>` |
+| 类型检查 | `a instanceof C<String>` | `a instanceof C` |
+| 创建对象 | `new T()` | `new C<String>()` <br> `new C<T>()` |
+| 创建数组 | `new T[n]` <br> `new C<String>[n]` <br> `new C<T>[n]` | `new C[n]` |
+| 可变参数 | | `T...` <br> `C<String>...` <br> `C<T>...` |
+| 类对象 | `T.class` <br> `C<String>.class` <br> `C<T>.class` | `C.class` |
+| 调用静态方法 | `C<T>.f()` | `C.f()` |
+| 静态字段 | `static T field;` | |
+| 扩展异常类 | `C<T>`继承`Throwable` | |
+| 抛出/捕获异常 | `catch(T e)` | `throws T` |
 
 ## 8.7 泛型类型的继承规则
 使用泛型类时，需要了解有关继承的一些规则。
@@ -1128,25 +1133,27 @@ public static void maxminBonus(Manager[] a, Pair<? super Manager> result) {
 [程序清单8-3 pair3/PairTest3.java](https://github.com/ZZy979/Core-Java-code/blob/main/v1ch08/pair3/PairTest3.java)
 
 ### 小结
-与通配符类型赋值有关的所有规则本质上都是**替换原则**：只能将对象赋给相同类型或超类的变量。假设T<sub>x</sub>表示x的类型，`<`表示继承关系：`B < A`表示类`B`扩展类`A`。那么替换原则可以表述为：如果将对象x赋给变量v，则必须满足T<sub>x</sub> ≤ T<sub>v</sub>。
+与通配符类型赋值有关的所有规则本质上都是**替换原则**：只能将对象赋给相同类型或超类型的变量。假设T<sub>x</sub>表示x的类型，`<`表示继承关系：`B < A`表示`B`是`A`的子类。那么替换原则可以表述为：如果将对象x赋给变量v，则必须满足T<sub>x</sub> ≤ T<sub>v</sub>。
 
-（1）如果`B` ≤ `A`，则`C<B>` < `C<? extends A>` < `C<?>`，`C<A>` < `C<? super B>` < `C<?>`
+（1）如果`B` ≤ `A`，`C<T>`是一个泛型类，则
+* `C<B>` < `C<? extends A>` < `C<?>`
+* `C<A>` < `C<? super B>` < `C<?>`
 
-（2）传递参数时，是将实参赋给形参，要求T<sub>实参</sub> ≤ T<sub>形参</sub>
+（2）传递参数时，是将实参a赋给形参p，要求T<sub>a</sub> ≤ T<sub>p</sub>。当形参是通配符类型时，必须满足T<sub>a</sub> ≤ LowerBound(T<sub>p</sub>)。
 
-| 形参类型 | 实参类型 | 要求 |
+| 形参类型 | 实参类型 | 原因 |
 | --- | --- | --- |
-| `? extends T` | 无法调用 | T<sub>实参</sub> ≤ T<sub>形参</sub> ≤ T |
-| `? super T` | `T`或其子类 | T<sub>实参</sub> ≤ T ≤ T<sub>形参</sub> |
-| `?` | 无法调用 | T<sub>实参</sub> ≤ T<sub>形参</sub> |
+| `? extends T` | 无法调用 | T<sub>p</sub> ≤ T，下界未知 |
+| `? super T` | `T`或其子类 | T ≤ T<sub>p</sub>，下界为`T` |
+| `?` | 无法调用 | T<sub>p</sub>下界未知 |
 
-（3）获取返回值时，是将返回值赋给目标变量，要求T<sub>返回值</sub> ≤ T<sub>变量</sub>
+（3）获取返回值时，是将返回值r赋给目标变量v，要求T<sub>r</sub> ≤ T<sub>v</sub>。当返回值是通配符类型时，必须满足UpperBound(T<sub>r</sub>) ≤ T<sub>v</sub>。
 
-| 返回值类型 | 变量类型 | 要求 |
+| 返回值类型 | 变量类型 | 原因 |
 | --- | --- | --- |
-| `? extends T` | `T`或其超类 | T<sub>返回值</sub> ≤ T ≤ T<sub>变量</sub> |
-| `? super T` | `Object` | T ≤ T<sub>返回值</sub> ≤ T<sub>变量</sub> |
-| `?` | `Object` | T<sub>返回值</sub> ≤ T<sub>变量</sub> |
+| `? extends T` | `T`或其超类 | T<sub>r</sub> ≤ T，上界为`T` |
+| `? super T` | `Object` | T ≤ T<sub>r</sub>，上界为`Object` |
+| `?` | `Object` | T<sub>r</sub>上界为`Object` |
 
 ## 8.9 反射和泛型
 反射允许你在运行时分析任意对象。然而，如果对象是泛型类的实例，则得不到多少关于类型参数的信息，因为它们已经被擦除了。在下面几节中，你将学习利用反射可以获得泛型类的哪些信息。
