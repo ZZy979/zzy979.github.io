@@ -9,12 +9,64 @@ Apache Flink是一个开源的分布式流处理框架，旨在提供高效、�
 
 * 官方网站：<https://flink.apache.org/>
 * 官方文档：<https://nightlies.apache.org/flink/flink-docs-stable/>
-* API文档：<https://nightlies.apache.org/flink/flink-docs-stable/api/java/>
+* API文档：
+  * Java: <https://nightlies.apache.org/flink/flink-docs-stable/api/java/>
+  * Scala: <https://nightlies.apache.org/flink/flink-docs-release-1.17/api/scala/index.html>
+  * Python: <https://nightlies.apache.org/flink/flink-docs-stable/api/python/>
 
 ## 2.快速入门
-<https://nightlies.apache.org/flink/flink-docs-release-1.17/docs/dev/configuration/overview/>
+### 2.1 下载和安装
+<https://nightlies.apache.org/flink/flink-docs-stable/docs/try-flink/local_installation/>
 
-### 2.1 创建工程
+#### 2.1.1 下载Flink
+Flink可以在所有类UNIX环境上运行。首先需要安装Java 8+。之后从[下载页面](https://flink.apache.org/downloads/#all-stable-releases)下载Flink二进制包（例如[flink-1.17.2-bin-scala_2.12.tgz](https://archive.apache.org/dist/flink/flink-1.17.2/flink-1.17.2-bin-scala_2.12.tgz)）并解压。
+
+#### 2.1.2 启动和停止本地集群
+进入解压目录，运行以下脚本启动本地集群：
+
+```shell
+./bin/start-cluster.sh
+```
+
+Flink将在后台进程中运行。
+
+使用以下脚本停止集群：
+
+```shell
+./bin/stop-cluster.sh
+```
+
+#### 2.1.3 提交Flink作业
+Flink提供的命令行工具bin/flink可以将打包为JAR的程序提交到Flink集群执行。examples目录包含一些示例程序（源代码见[flink-examples](https://github.com/apache/flink/tree/master/flink-examples)）。
+
+执行以下命令将单词计数示例程序提交到本地集群：
+
+```shell
+./bin/flink run examples/streaming/WordCount.jar
+```
+
+可以查看日志验证输出：
+
+```shell
+$ tail log/flink-*-taskexecutor-*.out
+(nymph,1)
+(in,3)
+(thy,1)
+(orisons,1)
+(be,4)
+(all,2)
+(my,1)
+(sins,1)
+(remember,1)
+(d,4)
+```
+
+也可以在浏览器打开Flink的Web UI (<http://localhost:8081/>)查看集群和作业的状态。
+
+![data flow plan](/assets/images/flink-tutorial/dataflowplan.png)
+
+### 2.2 使用IDE
+#### 2.2.1 创建工程
 可以基于Flink提供的Archetype创建Flink工程。
 
 如果使用IDEA，在新建工程时选择Maven Archetype。Archetype填写org.apache.flink:flink-quickstart-java，如下图所示。
@@ -30,9 +82,32 @@ $ mvn archetype:generate                \
   -DarchetypeVersion=1.17.2
 ```
 
-自动生成的pom.xml已经包含了需要的依赖flink-streaming-java。如果使用Scala，则需要添加依赖flink-streaming-scala_2.12，其中2.12是Scala版本。
+#### 2.2.2 添加依赖
+<https://nightlies.apache.org/flink/flink-docs-stable/docs/dev/configuration/overview/>
 
-### 2.2 运行
+Flink提供了两类API：Datastream API以及Table API & SQL。可以根据需要添加对应的依赖：
+
+| API类型 | 依赖 |
+| --- | --- |
+| DataStream | flink-streaming-java |
+| DataStream with Scala | flink-streaming-scala_2.12 |
+| Table | flink-table-api-java |
+| Table with Scala | flink-table-api-scala_2.12 |
+| Table + DataStream | flink-table-api-java-bridge |
+| Table + DataStream with Scala | flink-table-api-scala-bridge_2.12 |
+
+其中2.12是Scala版本。例如，如果要使用DataStream API则添加以下依赖。
+
+```xml
+<dependency>
+    <groupId>org.apache.flink</groupId>
+    <artifactId>flink-streaming-java</artifactId>
+    <version>1.17.2</version>
+    <scope>provided</scope>
+</dependency>
+```
+
+#### 2.2.3 运行
 直接用IDEA运行创建的Flink工程会报错 "java.lang.ClassNotFoundException: org.apache.flink.streaming.api.environment.StreamExecutionEnvironment" ，因为Flink API是provided依赖。需要修改运行配置，将provided依赖添加到类路径，如下图所示。
 
 ![修改运行配置](/assets/images/flink-tutorial/修改运行配置.png)
@@ -40,7 +115,7 @@ $ mvn archetype:generate                \
 ### 2.3 示例：单词计数-批处理
 下面的程序读取指定的文本文件，计算每个单词的出现次数，并输出到指定的文件或打印到标准输出。
 
-[单词计数-批处理](https://github.com/ZZy979/flink-tutorial/blob/main/src/main/java/com/example/WordCount.java)
+[单词计数-批处理](https://github.com/ZZy979/flink-tutorial/blob/main/src/main/java/com/example/batch/WordCount.java)
 
 测试文件：[to_be_or_not_to_be.txt](https://github.com/ZZy979/flink-tutorial/blob/main/src/main/resources/to_be_or_not_to_be.txt)
 
@@ -64,7 +139,7 @@ $ mvn archetype:generate                \
 ### 2.4 示例：单词计数-流处理
 下面的程序从TCP套接字读取字符串，计算**每5秒窗口内**的单词计数，并打印到标准输出。
 
-[单词计数-流处理](https://github.com/ZZy979/flink-tutorial/blob/main/src/main/java/com/example/SocketWindowWordCount.java)
+[单词计数-流处理](https://github.com/ZZy979/flink-tutorial/blob/main/src/main/java/com/example/streaming/SocketWindowWordCount.java)
 
 可以使用nc命令启动一个简单的文本服务器（TCP连接）：
 
@@ -100,37 +175,59 @@ not to be
 
 在Flink中，应用由**数据流**(streaming dataflows)组成，数据流由用户定义的**算子**(operator)构成。数据流可抽象为有向图，以一个或多个**源**(source)算子开始、一个或多个**汇**(sink)算子结束。
 
-![数据流](https://nightlies.apache.org/flink/flink-docs-release-1.17/fig/learn-flink/program_dataflow.svg)
+![数据流](/assets/images/flink-tutorial/program_dataflow.svg)
 
 #### 3.1.1 并行数据流
 Flink程序本质上就是并行和分布式的。在执行中，流有一个或多个**分区**(partition)，每个算子有一个或多个**子任务**(subtask)。算子子任务是相互独立的，在不同线程中执行，可能位于不同机器上。
 
 算子子任务的数量称为算子的**并行度**(parallelism)。同一个程序的不同算子可以有不同的并行度。
 
-![并行数据流](https://nightlies.apache.org/flink/flink-docs-release-1.17/fig/learn-flink/parallel_dataflow.svg)
+![并行数据流](/assets/images/flink-tutorial/parallel_dataflow.svg)
 
 流可以在两个算子之间以一对一或重新分配的方式传输数据：
 * **一对一**(one-to-one)流（例如上图中的source和map算子之间）保持数据的分区和顺序，因此子任务source[1]和map[1]将以相同的顺序看到相同的数据。
 * **重新分配**(redistributing)流（例如上图中的map和keyBy/window算子之间，以及keyBy/window和sink算子之间）会改变流的分区，仅在每对发送和接收子任务（例如map[1]和keyBy/window[2]）之间保持数据顺序。
 
-### 3.2 DataStream API
+### 3.2 DataStream API简介
+<https://nightlies.apache.org/flink/flink-docs-stable/docs/learn-flink/datastream_api/>
+
 #### 3.2.1 支持的类型
 Flink的DataStream API支持任何可序列化的类型作为流元素，包括：
 * 基本类型，例如字符串、整型、布尔型、数组等
 * Java [元组](https://nightlies.apache.org/flink/flink-docs-stable/api/java/org/apache/flink/api/java/tuple/Tuple.html)和[POJO](https://en.wikipedia.org/wiki/Plain_old_Java_object) (plain old Java object)类型
 * Scala元组和case类
 
+对于Java，Flink定义了元组类型`Tuple0`~`Tuple25`。例如：
+
+```java
+Tuple2<String, Integer> person = Tuple2.of("Fred", 35);
+```
+
 POJO类型需要满足以下条件：
 * 类是公有的、独立的（没有非静态内部类）
 * 具有公有无参数构造器
 * 所有非静态、非`transient`字段要么是公有且非`final`的，要么具有公有getter和setter方法且遵循Java bean的命名规则
 
-例如下一节中的`Person`类。
+例如：
+
+```java
+public class Person {
+    public String name;
+    public Integer age;
+
+    public Person() {}
+
+    public Person(String name, Integer age) {
+        this.name = name;
+        this.age = age;
+    }
+}
+```
 
 #### 3.2.2 完整示例
 下面的示例输入人员信息的（有界）流，过滤出成年人，并打印出来。
 
-[AdultFilter.java](https://github.com/ZZy979/flink-tutorial/blob/main/src/main/java/com/example/AdultFilter.java)
+[AdultFilter.java](https://github.com/ZZy979/flink-tutorial/blob/main/src/main/java/com/example/streaming/AdultFilter.java)
 
 该示例中的数据流结构如下：
 
@@ -154,7 +251,7 @@ DataStream API调用构成一个数据流附加到执行环境，当调用`env.e
 
 注意：调用`execute()`时应用才真正开始运行。
 
-![分布式运行环境](https://nightlies.apache.org/flink/flink-docs-release-1.17/fig/distributed-runtime.svg)
+![分布式运行环境](/assets/images/flink-tutorial/distributed-runtime.svg)
 
 #### 3.2.4 基本算子
 source算子（`StreamExecutionEnvironment`类的方法）
@@ -163,7 +260,7 @@ source算子（`StreamExecutionEnvironment`类的方法）
 * `fromSequence()`：从整数区间创建流
 * `readTextFile()`：读取文本文件，每行作为一个元素
 * `socketTextStream()`：从套接字读取数据，使用指定的分隔符
-* `addSource()`：使用自定义source函数，见[DataStream Connectors](https://nightlies.apache.org/flink/flink-docs-stable/docs/connectors/datastream/overview/)
+* `addSource()`：使用自定义`SourceFunction`，见[DataStream Connectors](https://nightlies.apache.org/flink/flink-docs-stable/docs/connectors/datastream/overview/)
 
 转换算子（`DataStream`及其子类的方法）
 * `map()`：元素一对一映射
@@ -178,18 +275,22 @@ sink算子（`DataStream`及其子类的方法）
 * `writeAsText()`：写入文本文件，每个元素占一行
 * `writeAsCsv()`：写入CSV文件
 * `writeToSocket()`：写入套接字
-* `addSink()`：使用自定义sink函数
+* `addSink()`：使用自定义`SinkFunction`
 
 算子和流类型的转换关系如下图所示：
 
 ![算子和流类型](/assets/images/flink-tutorial/算子和流类型.png)
 
-完整列表参考：[DataStream API](https://nightlies.apache.org/flink/flink-docs-stable/docs/dev/datastream/overview/)、[Operators](https://nightlies.apache.org/flink/flink-docs-stable/docs/dev/datastream/operators/overview/)
+完整列表参考：
+* [DataStream API](https://nightlies.apache.org/flink/flink-docs-stable/docs/dev/datastream/overview/)
+* [Operators](https://nightlies.apache.org/flink/flink-docs-stable/docs/dev/datastream/operators/overview/)
 
 #### 3.2.5 练习
-<https://github.com/apache/flink-training/tree/master/ride-cleansing>
+[Ride Cleansing](https://github.com/apache/flink-training/tree/master/ride-cleansing)
 
 ### 3.3 数据管道和ETL
+<https://nightlies.apache.org/flink/flink-docs-stable/docs/learn-flink/etl/>
+
 Flink的一种非常常见的应用场景是实现ETL (extract-transform-load)管道，即从一个或多个数据源获取数据，进行一些转换和/或信息补充，并将结果保存起来。本节将介绍如何使用Flink的DataStream API来实现这类应用。
 
 #### 3.3.1 无状态转换
@@ -209,7 +310,8 @@ DataStream<Long> doubled = env.fromSequence(1, 5).map(x -> 2 * x);
 下面的代码将每个单词映射到其长度：
 
 ```java
-DataStream<Integer> wordLengths = env.fromElements("to be or not to be that is the question".split(" "))
+DataStream<Integer> wordLengths = env
+        .fromElements("to be or not to be that is the question".split(" "))
         .map(String::length);
 ```
 
@@ -221,14 +323,15 @@ DataStream<Integer> wordLengths = env.fromElements("to be or not to be that is t
 例如，下面的代码将文本行分割为单词：
 
 ```java
-DataStream<String> words = env.fromElements("to be or not to be", "that is the question")
+DataStream<String> words = env
+        .fromElements("to be or not to be", "that is the question")
         .flatMap(new LineSplitter());
 ```
 
 ```java
 class LineSplitter implements FlatMapFunction<String, String> {
     @Override
-    public void flatMap(String line, Collector<String> out) throws Exception {
+    public void flatMap(String line, Collector<String> out) {
         for (String word : line.split(" ")) {
             out.collect(word);
         }
@@ -247,7 +350,7 @@ DataStream<Long> oddNumbers = env.fromSequence(1, 5).flatMap(new OddNumber());
 ```java
 class OddNumber implements FlatMapFunction<Long, Long> {
     @Override
-    public void flatMap(Long x, Collector<Long> out) throws Exception {
+    public void flatMap(Long x, Collector<Long> out) {
         if (x % 2 == 1) {
             out.collect(x);
         }
@@ -256,6 +359,8 @@ class OddNumber implements FlatMapFunction<Long, Long> {
 ```
 
 结果为`[1, 3, 5]`（也可以用`filter()`实现）。
+
+[无状态转换示例](https://github.com/ZZy979/flink-tutorial/blob/main/src/main/java/com/example/streaming/StatelessTransformationExample.java)
 
 #### 3.3.2 分组
 ##### 3.3.2.1 keyBy()
@@ -274,61 +379,76 @@ KeyedStream<Person, Integer> keyedByAge = people.keyBy(p -> p.age);
 `keyBy()`操作会将流重新分区，这个开销是很大的，因为涉及网络通信、序列化和反序列化，如3.1.1节图所示。
 
 ##### 3.3.2.2 聚合
-分组后的流可以对每个组进行聚合操作。例如，下面的代码输出每组相同姓名的人员中年龄的最大值：
+分组后的流可以对每个组进行聚合操作（注意：是“**滚动**”聚合，例如`sum()`计算的是前缀和而不是总和，因为无限流不存在“总和”）。
+
+例如，下面的代码对单词计数：
 
 ```java
-DataStream<Person> people = env.fromElements(
-        new Person("Alice", 24),
-        new Person("Alice", 18),
-        new Person("Bob", 30),
-        new Person("Bob", 25),
-        new Person("Alice", 32));
-people.keyBy(p -> p.name).max("age").print();
-```
-
-注意，不是每组只输出一个最大值，而是每个元素对应其所属分组中**目前遇到的最大值**，因此输出结果为
-
-```
-Alice: age 24
-Alice: age 24
-Bob: age 30
-Bob: age 30
-Alice: age 32
-```
-
-下面的代码对单词计数：
-
-```java
-DataStream<Tuple2<String, Integer>> wordCounts = env.fromElements("to be or not to be".split(" "))
+DataStream<Tuple2<String, Integer>> wordCounts = env
+        .fromElements("to be or not to be".split(" "))
         .map(w -> Tuple2.of(w, 1))
         .returns(Types.TUPLE(Types.STRING, Types.INT));
 wordCounts.keyBy(t -> t.f0).sum(1).print();
 ```
 
-输出结果为
+输出结果为每个单词**目前**遇到的次数（顺序可能变化）：
 
 ```
-(to,1)
-(be,1)
-(or,1)
-(not,1)
-(to,2)
-(be,2)
+6> (not,1)
+8> (be,1)
+8> (or,1)
+9> (to,1)
+8> (be,2)
+9> (to,2)
 ```
 
-注：由于类型擦除，`Tuple2.of()`无法提供关于其字段类型的信息，如果不写`returns()`会报错 "The generic type parameters of 'Tuple2' are missing"，见[Java Lambda Expressions](https://nightlies.apache.org/flink/flink-docs-stable/docs/dev/datastream/java_lambdas/)。解决方法是实现`MapFunction`接口、使用匿名类或者`returns()`等能够显式指定类型的方式。
+注：由于类型擦除，`Tuple2.of()`无法提供关于其字段类型的信息。如果不写`returns()`会报错 "The generic type parameters of 'Tuple2' are missing"，见[Java Lambda Expressions](https://nightlies.apache.org/flink/flink-docs-stable/docs/dev/datastream/java_lambdas/)。解决方法是实现`MapFunction`接口、使用匿名子类或者`returns()`等能够显式指定类型的方式。
 
-如上面两个例子所示，`KeyedStream`的聚合操作是对**每个分组分别进行聚合**，并且是“**滚动**”聚合。例如`sum()`计算的是前缀和（部分和）而不是总和，即相当于Scala的`Array.scan()`而不是`Array.reduce()`、Python的`itertools.accumulate()`而不是`functools.reduce()`，因为无限流不存在“总和”。
+下面的代码统计每个用户**目前**停留时间最长的页面和对应的停留时间：
+
+```java
+public static class PageView {
+    public int userId;
+    public int pageId;
+    public int duration;
+    // ...
+}
+```
+
+```java
+DataStream<PageView> pageViews = env.fromElements(
+        new PageView(1, 2, 5),
+        new PageView(2, 1, 12),
+        new PageView(1, 3, 8),
+        new PageView(3, 2, 15),
+        new PageView(2, 3, 2));
+DataStream<PageView> longestStay = pageViews.keyBy(pv -> pv.userId).maxBy("duration");
+longestStay.print();
+```
+
+输出结果为：
+
+```
+12> PageView{userId=2, pageId=1, duration=12}
+11> PageView{userId=3, pageId=2, duration=15}
+9> PageView{userId=1, pageId=2, duration=5}
+12> PageView{userId=2, pageId=1, duration=12}
+9> PageView{userId=1, pageId=3, duration=8}
+```
+
+注：还有一个`max()`操作，与`maxBy()`的区别为：前者仅将记录的指定字段替换为最大值，其他字段保持不变；后者会用最大值对应的完整记录替换当前记录。如果将上面示例中的`maxBy()`替换为`max()`，则用户1输出的第二条记录为`PageView{userId=1, pageId=2, duration=8}`（`pageId`仍是第一条记录的，与`duration`不对应）。
+
+[分组聚合示例](https://github.com/ZZy979/flink-tutorial/blob/main/src/main/java/com/example/streaming/KeyedStreamExample.java)
 
 为了记录每个分组“当前遇到的最大值”或者“当前部分和”，Flink内部使用了状态（见3.3.3节）。当应用涉及状态时，就应该考虑状态的大小。如果key的取值空间是无限的，则Flink的状态需要的存储空间也同样是无限的。
 
 在流处理场景中，考虑有限窗口的聚合往往比整个流聚合更有意义（见3.4节）。
 
 `KeyedStream`提供了更通用的聚合算子`reduce()`，以及求和、最大值和最小值的三个特例：
-* `reduce()`：接受一个[ReduceFunction](https://nightlies.apache.org/flink/flink-docs-stable/api/java/org/apache/flink/api/common/functions/ReduceFunction.html)接口参数，对每个相同key的分组内的元素进行“滚动”聚合操作，即`a[0], a[1], a[2], ... -> a[0], f(a[0], a[1]), f(f(a[0], a[1]), a[2]), ...`
+* `reduce()`：接受一个[ReduceFunction](https://nightlies.apache.org/flink/flink-docs-stable/api/java/org/apache/flink/api/common/functions/ReduceFunction.html)接口参数，对每个相同key的分组内的元素进行“滚动”聚合操作，即`a0, a1, a2, ... -> a0, f(a0, a1), f(f(a0, a1), a2), ...`
 * `sum()`：计算前缀和
-* `max()`：计算当前遇到的最大值
-* `min()`：计算当前遇到的最小值
+* `max()`/`maxBy()`：计算当前遇到的最大值
+* `min()`/`minBy()`：计算当前遇到的最小值
 
 #### 3.3.3 有状态转换
 本节将介绍如何使用Flink的API来管理**状态**(state)。
@@ -342,7 +462,7 @@ Flink的`filter()`、`map()`、`flatMap()`等算子使用的函数接口`FilterF
 ##### 3.3.3.2 示例
 下面的例子对事件流去重，每个key只保留第一个事件。在该应用中，使用一个名为`Deduplicator`的`RichFlatMapFunction`来实现去重操作。
 
-[EventDeduplicator.java](https://github.com/ZZy979/flink-tutorial/blob/main/src/main/java/com/example/EventDeduplicator.java)
+[EventDeduplicator.java](https://github.com/ZZy979/flink-tutorial/blob/main/src/main/java/com/example/streaming/EventDeduplicator.java)
 
 程序将输出
 
@@ -371,18 +491,18 @@ d@4
 #### 3.3.4 连接流
 有时可能需要通过引入阈值、规则或其他参数来动态调整转换功能。Flink支持这种需求的模式称为**连接流**(connected stream)，其中一个算子有两个输入流，如下图所示。
 
-![连接流](https://nightlies.apache.org/flink/flink-docs-release-1.17/fig/connected-streams.svg)
+![连接流](/assets/images/flink-tutorial/connected-streams.svg)
 
 连接流也可以用于实现流的关联(join)。
 
 ##### 3.3.4.1 示例
 在该示例中，使用控制流`control`来指定要从单词流`streamOfWords`中过滤掉的单词。使用`connect()`算子连接两个流，之后在`flatMap()`算子中使用`RichCoFlatMapFunction`来实现这一功能。
 
-[WordFilter.java](https://github.com/ZZy979/flink-tutorial/blob/main/src/main/java/com/example/WordFilter.java)
+[WordFilter.java](https://github.com/ZZy979/flink-tutorial/blob/main/src/main/java/com/example/streaming/WordFilter.java)
 
 两个`KeyedStream`只有按相同的方式分组时才能连接，这确保来自两个流具有相同key的元素被发送到同一个实例。这使得按key连接(join)两个流成为可能。
 
-注：流的连接另见[Joining](https://nightlies.apache.org/flink/flink-docs-stable/docs/dev/datastream/operators/joining/)。
+注：流的连接另见文档[Joining](https://nightlies.apache.org/flink/flink-docs-stable/docs/dev/datastream/operators/joining/)和[join流示例](https://github.com/ZZy979/flink-tutorial/blob/main/src/main/java/com/example/streaming/JoiningStreams.java)。
 
 `ControlFunction`在状态中存储一个布尔值，被两个流共享。
 
@@ -393,9 +513,11 @@ d@4
 注意：对于同一个key，`flatMap1()`和`flatMap2()`的调用顺序是无法控制的，因为这两个流是相互竞争的。对于需要保证时间和/或顺序的场景，必须将元素缓存在状态中，直到它们能够被处理。
 
 #### 3.3.5 练习
-<https://github.com/apache/flink-training/tree/master/rides-and-fares>
+[Rides and Fares](https://github.com/apache/flink-training/tree/master/rides-and-fares)
 
 ### 3.4 流式分析
+<https://nightlies.apache.org/flink/flink-docs-stable/docs/learn-flink/streaming_analytics/>
+
 #### 3.4.1 事件时间和水印
 ##### 3.4.1.1 概要
 Flink支持三种时间语义：
@@ -441,7 +563,7 @@ DataStream<Event> events = ...;
 
 WatermarkStrategy<Event> strategy = WatermarkStrategy
         .<Event>forBoundedOutOfOrderness(Duration.ofSeconds(20))
-        .withTimestampAssigner((event, timestamp) -> event.timestamp);
+        .withTimestampAssigner((event, recordTimestamp) -> event.timestamp);
 
 DataStream<Event> withTimestampsAndWatermarks = events.assignTimestampsAndWatermarks(strategy);
 ```
@@ -470,23 +592,23 @@ Flink具有非常富有表现力的**窗口**(window)语义。本节将介绍：
 
 ```
 stream
-    .keyBy(<key selector>)
-    .window(<window assigner>)
-    .reduce|aggregate|process(<window function>);
+    .keyBy(keySelector)
+    .window(windowAssigner)
+    .reduce|aggregate|process(windowFunction);
 ```
 
 也可以在未分组的流上使用窗口，但处理不能并行化：
 
 ```
 stream
-    .windowAll(<window assigner>)
-    .reduce|aggregate|process(<window function>);
+    .windowAll(windowAssigner)
+    .reduce|aggregate|process(windowFunction);
 ```
 
 ##### 3.4.2.2 窗口分配器
 Flink有一些内置的窗口分配器，如下图所示。
 
-![窗口分配器](https://nightlies.apache.org/flink/flink-docs-release-1.17/fig/window-assigners.svg)
+![窗口分配器](/assets/images/flink-tutorial/window-assigners.svg)
 
 下面是如何使用这些窗口分配器的示例：
 * **滚动时间窗口**(tumbling time windows)：每分钟页面浏览量，`TumblingEventTimeWindows.of(Time.minutes(1))`
@@ -514,7 +636,7 @@ Flink有一些内置的窗口分配器，如下图所示。
 
 下面展示第一种和第三种方式的示例，用于计算传感器在1分钟窗口内的峰值，产生一个包含元组(key, 窗口结束时间戳, 最大值)的流。
 
-[SensorReadingProcessor.java](https://github.com/ZZy979/flink-tutorial/blob/main/src/main/java/com/example/SensorReadingProcessor.java)
+[SensorReadingProcessor.java](https://github.com/ZZy979/flink-tutorial/blob/main/src/main/java/com/example/streaming/SensorReadingProcessor.java)
 
 批处理方式使用`MyWastefulMax`，输出结果：
 
@@ -563,9 +685,11 @@ stream
 ```
 
 #### 3.4.3 练习
-<https://github.com/apache/flink-training/tree/master/hourly-tips>
+[Hourly Tips](https://github.com/apache/flink-training/tree/master/hourly-tips)
 
 ### 3.5 事件驱动的应用
+<https://nightlies.apache.org/flink/flink-docs-stable/docs/learn-flink/event_driven/>
+
 #### 3.5.1 ProcessFunction
 ##### 3.5.1.1 简介
 [ProcessFunction](https://nightlies.apache.org/flink/flink-docs-stable/api/java/org/apache/flink/streaming/api/functions/ProcessFunction.html)将事件处理与计时器和状态相结合，使其成为流处理应用的强大构建模块。这是使用Flink创建事件驱动应用的基础。
@@ -581,7 +705,8 @@ stream
 在上一节的练习[Hourly Tips](https://github.com/apache/flink-training/tree/master/hourly-tips)中，使用滚动窗口来计算每小时内每个司机的小费总和：
 
 ```java
-SingleOutputStreamOperator<Tuple3<Long, Long, Float>> hourlyTips = fares
+// compute the sum of the tips per hour for each driver
+DataStream<Tuple3<Long, Long, Float>> hourlyTips = fares
         .keyBy(fare -> fare.driverId)
         .window(TumblingEventTimeWindows.of(Time.hours(1)))
         .process(new AddTips());
@@ -590,13 +715,15 @@ SingleOutputStreamOperator<Tuple3<Long, Long, Float>> hourlyTips = fares
 下面使用`KeyedProcessFunction`实现同样的操作：
 
 ```java
-SingleOutputStreamOperator<Tuple3<Long, Long, Float>> hourlyTips = fares
+// compute the sum of the tips per hour for each driver
+DataStream<Tuple3<Long, Long, Float>> hourlyTips = fares
         .keyBy(fare -> fare.driverId)
-        .window(TumblingEventTimeWindows.of(Time.hours(1)))
         .process(new PseudoWindow(Time.hours(1)));
 ```
 
 ```java
+// Compute the sum of the tips for each driver in hour-long windows.
+// The keys are driverIds.
 class PseudoWindow extends KeyedProcessFunction<Long, TaxiFare, Tuple3<Long, Long, Float>> {
     private final long durationMillis;
     private transient MapState<Long, Float> sumOfTips;
@@ -703,9 +830,11 @@ hourlyTips.getSideOutput(PseudoWindow.lateFares).print();
 ```
 
 #### 3.5.3 练习
-<https://github.com/apache/flink-training/tree/master/long-ride-alerts>
+[Long Ride Alerts](https://github.com/apache/flink-training/tree/master/long-ride-alerts)
 
 ### 3.6 容错
+<https://nightlies.apache.org/flink/flink-docs-stable/docs/learn-flink/fault_tolerance/>
+
 #### 3.6.1 状态后端
 Flink管理的状态是一种分片的键值对存储，每个key对应的状态对象都保存在key所属的TaskManager本地。
 
@@ -734,13 +863,13 @@ Flink使用[Chandy-Lamport算法](https://en.wikipedia.org/wiki/Chandy-Lamport_a
 
 当TaskManager接收到检查点协调器（JobManager的一部分）的指示开始生成检查点时，它会让所有source记录自己的偏移量，并将编号的**检查点屏障**(checkpoint barrier)插入到它们的流中。这些屏障表示每个检查点在流中的位置（类似于水印的概念），如下图所示。
 
-![检查点屏障](https://nightlies.apache.org/flink/flink-docs-release-1.17/fig/stream_barriers.svg)
+![检查点屏障](/assets/images/flink-tutorial/stream_barriers.svg)
 
 检查点n将包含每个算子在消费了**严格位于屏障n之前的所有事件**后生成的状态。
 
 当每个算子接收到屏障之后就会记录其状态。有两个输入流的算子（例如`CoProcessFunction`）将进行屏障对齐，使得生成的快照包含消费了两个输入流各自的屏障之前的所有事件后生成的状态，如下图所示。
 
-![屏障对齐](https://nightlies.apache.org/flink/flink-docs-release-1.17/fig/stream_aligning.svg)
+![屏障对齐](/assets/images/flink-tutorial/stream_aligning.svg)
 
 ##### 3.6.3.3 恰好一次保证
 当流处理应用发生错误时，结果可能会产生丢失或重复。Flink根据应用和集群的配置可能产生以下结果：

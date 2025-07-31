@@ -885,11 +885,11 @@ Spark SQL支持从多种不同的数据源加载数据，包括文本文件、CS
 
 Spark Streaming用于处理流式数据，可以从多种数据源（例如Kafka、TCP套接字）消费数据，使用高层次函数（例如`map`、`reduce`、`join`和`window`）处理数据，并将处理后的数据输出到文件系统、数据库等。
 
-![Spark Streaming architecture](https://spark.apache.org/docs/latest/img/streaming-arch.png)
+![Spark Streaming architecture](/assets/images/spark-tutorial/streaming-arch.png)
 
 Spark Streaming内部将输入数据流划分成批次(batch)，之后使用Spark引擎处理。
 
-![Spark Streaming data flow](https://spark.apache.org/docs/latest/img/streaming-flow.png)
+![Spark Streaming data flow](/assets/images/spark-tutorial/streaming-flow.png)
 
 Spark Streaming提供的高层次抽象称为**离散流**(discretized stream, DStream)，内部表示为RDD序列。
 
@@ -1026,11 +1026,11 @@ val ssc = new StreamingContext(conf, Seconds(1))
 ### 6.4 离散流(DStream)
 **离散流**(discretized stream, DStream)是Spark Streaming提供的基本抽象，表示连续的数据流。DStream在内部表示为**RDD序列**，每个RDD包含来自一定时间间隔的数据，如下图所示。
 
-![DStream](https://spark.apache.org/docs/latest/img/streaming-dstream.png)
+![DStream](/assets/images/spark-tutorial/streaming-dstream.png)
 
 作用于DStream上的任何操作都会转换为底层RDD上的操作。例如，在6.1节的例子中，`lines.flatMap()`生成`words`，如下图所示。
 
-![DStream ops](https://spark.apache.org/docs/latest/img/streaming-dstream-ops.png)
+![DStream ops](/assets/images/spark-tutorial/streaming-dstream-ops.png)
 
 ### 6.5 输入DStream和接收器
 输入DStream ([InputDStream](https://spark.apache.org/docs/latest/api/scala/org/apache/spark/streaming/dstream/InputDStream.html))表示输入数据流。在6.1节的例子中，`lines`是表示从netcat接收到的数据流的输入DStream。每个输入DStream（除文件流外）都关联了一个**接收器**([Receiver](https://spark.apache.org/docs/latest/api/scala/org/apache/spark/streaming/receiver/Receiver.html))对象。
@@ -1059,7 +1059,7 @@ Spark Streaming提供了一些内置数据源：
 #### 6.6.2 窗口操作
 Spark Streaming还提供了窗口操作，可以在数据的滑动窗口上执行转换操作，如下图所示。
 
-![DStream window](https://spark.apache.org/docs/latest/img/streaming-dstream-window.png)
+![DStream window](/assets/images/spark-tutorial/streaming-dstream-window.png)
 
 落在窗口中的RDD将被组合并执行转换操作，以生成输出DStream中的RDD。
 
