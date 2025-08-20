@@ -16,8 +16,8 @@ tags: [android, database, room]
 1.在app/build.gradle中添加依赖
 
 ```
-implementation 'android.arch.persistence.room:runtime:1.1.1'
-annotationProcessor 'android.arch.persistence.room:compiler:1.1.1' 
+implementation 'androidx.room:room-runtime:2.7.1'
+annotationProcessor 'androidx.room:room-compiler:2.7.1'
 ```
 
 2.定义实体类
@@ -61,27 +61,23 @@ public interface UserDao {
 
 4.定义数据库
 
-由于创建RoomDatabase实例的成本相当高，因此官方推荐使用单例模式
+由于创建RoomDatabase实例的成本相当高，因此官方推荐使用单例模式。
+
+对于每个DAO类，定义一个无参数、返回DAO实例的抽象方法。
 
 ```java
 @Database(entities = {User.class}, version = 1)
-public abstract class SampleDatabase extends RoomDatabase {
+public abstract class AppDatabase extends RoomDatabase {
     /** The only instance */
-    private static SampleDatabase sInstance;
+    private static AppDatabase sInstance;
 
-    public static synchronized SampleDatabase getInstance(Context context) {
+    public static synchronized AppDatabase getInstance(Context context) {
         if (sInstance == null) {
             sInstance = Room
-                    .databaseBuilder(context.getApplicationContext(), SampleDatabase.class, "database-name")
+                    .databaseBuilder(context.getApplicationContext(), AppDatabase.class, "database-name")
                     .build();
         }
         return sInstance;
-    }
-
-    public static void closeInstance() {
-        if (sInstance != null) {
-            sInstance.close();
-            sInstance = null;
     }
 
     public abstract UserDao userDao();

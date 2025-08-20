@@ -260,7 +260,7 @@ source算子（`StreamExecutionEnvironment`类的方法）
 * `fromSequence()`：从整数区间创建流
 * `readTextFile()`：读取文本文件，每行作为一个元素
 * `socketTextStream()`：从套接字读取数据，使用指定的分隔符
-* `addSource()`：使用自定义`SourceFunction`，见[DataStream Connectors](https://nightlies.apache.org/flink/flink-docs-stable/docs/connectors/datastream/overview/)
+* `addSource()`：使用自定义`SourceFunction`
 
 转换算子（`DataStream`及其子类的方法）
 * `map()`：元素一对一映射
@@ -276,14 +276,16 @@ sink算子（`DataStream`及其子类的方法）
 * `writeAsCsv()`：写入CSV文件
 * `writeToSocket()`：写入套接字
 * `addSink()`：使用自定义`SinkFunction`
-
-算子和流类型的转换关系如下图所示：
-
-![算子和流类型](/assets/images/flink-tutorial/算子和流类型.png)
+  * 输出到文件：[FileSink](https://nightlies.apache.org/flink/flink-docs-stable/docs/connectors/datastream/filesystem/#file-sink)
 
 完整列表参考：
 * [DataStream API](https://nightlies.apache.org/flink/flink-docs-stable/docs/dev/datastream/overview/)
 * [Operators](https://nightlies.apache.org/flink/flink-docs-stable/docs/dev/datastream/operators/overview/)
+* [DataStream Connectors](https://nightlies.apache.org/flink/flink-docs-stable/docs/connectors/datastream/overview/)
+
+算子和流类型的转换关系如下图所示：
+
+![算子和流类型](/assets/images/flink-tutorial/算子和流类型.png)
 
 #### 3.2.5 练习
 [Ride Cleansing](https://github.com/apache/flink-training/tree/master/ride-cleansing)

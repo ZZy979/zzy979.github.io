@@ -7,7 +7,7 @@ tags: [mockito, java, unit test, mock]
 ## 1.简介
 Mockito是一个用于Java单元测试的mock框架，用于创建**模拟对象**(mock object)来替代真实对象，帮助开发者隔离外部依赖，从而专注于单元测试的逻辑。
 * 官方网站：<https://site.mockito.org/>
-* 官方文档：<https://javadoc.io/doc/org.mockito/mockito-core/latest/org/mockito/Mockito.html>
+* 官方文档：<https://javadoc.io/doc/org.mockito/mockito-core/4.11.0/org/mockito/Mockito.html>
 
 其他常见的Java mock框架有[jMock](http://jmock.org/)和[EasyMock](https://easymock.org/)。
 
@@ -261,7 +261,18 @@ public class ListTest {
 }
 ```
 
-注意：该注解需要使用`MockitoJUnitRunner`运行器或`MockitoRule`规则。
+注意：该注解需要使用`MockitoJUnitRunner`运行器或`MockitoRule`规则（如下所示）。
+
+```java
+public class ListTest {
+    @Rule
+    public MockitoRule mockitoRule = MockitoJUnit.rule();
+
+    @Mock
+    private List<String> myMockedList;
+    ...
+}
+```
 
 ### 3.9 打桩连续调用
 可以对同一个方法调用打桩指定不同的返回值/异常。
@@ -320,7 +331,7 @@ assertEquals("called with arguments: [1, foo]", mockedList.set(1, "foo"));
 ```
 
 ### 3.11 spy对象
-可以使用`spy()`创建真实对象的**间谍**(spy)。使用spy对象时，将会调用真实的方法，除非该方法被打桩（即“部分mock”）。
+可以使用`spy()`或`@Spy`注解创建真实对象的**间谍**(spy)。使用spy对象时，将会调用真实的方法，除非该方法被打桩（即“部分mock”）。
 
 ```java
 List<String> list = new LinkedList<>();

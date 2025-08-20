@@ -140,7 +140,7 @@ public class MainActivity extends AppCompatActivity {
 
 在`onCreate()`方法中，首先创建`ViewModelProvider`对象（以activity自身为存储拥有者），然后调用其`get()`方法获得ViewModel实例。当系统第一次调用activity的`onCreate()`方法时，会创建一个ViewModel对象。重建的activity会得到与之前相同的ViewModel实例。
 
-接下来为存储计数器值的`LiveData`附加了观察者（以activity自身为生命周期拥有者），并在其中更新计数器标签的文本。
+接下来为存储计数器值的`LiveData`附加了观察者，并在其中更新计数器标签的文本。Activity以自身为生命周期拥有者，fragment应使用`getViewLifecycleOwner()`。
 
 最后， "+" 、 "-" 和 "Reset" 三个按钮的监听器分别调用了ViewModel中增加、减少和重置计数器值的方法。
 

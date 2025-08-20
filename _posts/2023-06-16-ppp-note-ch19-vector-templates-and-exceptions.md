@@ -273,11 +273,17 @@ void vector<string>::push_back(const string& x) { /* ... */ }
 
 例如，`vector`的元素类型必须是可拷贝的（因为`push_back()`中的`elem[sz] = x;`是拷贝操作）。在第20和21章，我们将会看到要求参数支持算术运算的模板。
 
-注：
-* `std::vector`的`push_back(const T&)`要求元素类型`T`满足[CopyInsertable](https://en.cppreference.com/w/cpp/named_req/CopyInsertable)，`push_back(T&&)`要求`T`满足[MoveInsertable](https://en.cppreference.com/w/cpp/named_req/MoveInsertable)，`emplace_back(args...)`要求`T`满足MoveInsertable和[EmplaceConstructible](https://en.cppreference.com/w/cpp/named_req/EmplaceConstructible)，这是因为插入元素可能导致扩容，需要拷贝/移动已有元素。因此：
-  * 如果类`C`不可拷贝，则仍然可以定义`vector<C> v`，但`v.push_back(c)`编译失败。
-  * 如果类`C`没有默认构造函数，则可以定义`vector<C> v`，但`vector<C> v(5)`编译失败。
-  * 如果类`C`可默认构造，但不可拷贝、不可移动，则`v.emplace_back()`编译失败。
+注：C++11之前，`std::vector`要求元素类型必须是可拷贝的。从C++11起，不同操作对元素类型有不同的要求。
+* 构造函数（如`vector<T> v(n)`）：要求`T`满足[DefaultInsertable](https://en.cppreference.com/w/cpp/named_req/DefaultInsertable.html)（≈可默认构造）。
+* 拷贝操作（如`vector<T> v = v2`或`v.push_back(x)`）：要求`T`满足[CopyInsertable](https://en.cppreference.com/w/cpp/named_req/CopyInsertable)（≈可拷贝构造）。
+* 移动操作（如`vector<T> v = std::move(v2)`或`v.push_back(std::move(x))`）：要求`T`满足[MoveInsertable](https://en.cppreference.com/w/cpp/named_req/MoveInsertable)（≈可移动构造）。
+* `emplace_back(args...)`：要求`T`满足[EmplaceConstructible](https://en.cppreference.com/w/cpp/named_req/EmplaceConstructible)和MoveInsertable，这是因为插入元素可能导致扩容，需要拷贝/移动已有元素。
+* 扩容操作：C++11之前没有移动操作，因此总是使用拷贝操作；从C++11起，如果移动操作可用（定义了且为`noexcept`）则优先使用移动操作，否则退回到拷贝操作。
+* 例如：
+  * 如果类`C`没有默认构造函数，则可以定义`vector<C> v`，但不能`vector<C> v(5)`。
+  * 如果类`C`可移动、不可拷贝，则不能`v.push_back(c)`，但可以`v.push_back(C())`或`v.emplace_back()`。
+  * 如果类`C`可拷贝、不可移动，则可以`v.push_back(c)`，而`v.push_back(C())`仍然会调用拷贝构造函数。
+  * 如果类`C`可默认构造，但不可拷贝、不可移动，则不能`v.emplace_back()`。
 * 这些编译错误发生在模板实例化时，而不是编译模板本身的代码时，因为模板并不知道用户会提供什么样的实际类型。
 * 在这些情况下，可以用智能指针包装元素，例如`vector<shared_ptr<C>>`。
 
@@ -617,25 +623,23 @@ void f() {
 ```
 
 注：
-* C++20将`allocator`的`construct()`和`destroy()`函数移至`allocator_traits`类。
-* 实际上`allocator::allocate()`就是使用`malloc()`函数实现的，使用该函数代替`allocator`也能解决上述问题。使用`allocator`的另一个原因是：将内存分配/释放与对象构造/销毁分离，并抽象为接口，从而支持自定义内存管理策略，提供更好的灵活性。
-* 除了`allocator`外，标准库头文件\<cstdlib\>提供了`malloc()`函数，\<new\>提供了一组`operator new`和`operator new[]`函数，都能够分配未初始化内存。这些函数与`new`/`new[]`的区别和联系：
+* C++20将`allocator`的`construct()`和`destroy()`函数移至`allocator_traits`类，后者分别调用`std::construct_at()`和`std::destroy_at()`。
+* 实际上`allocator::allocate()`底层就是使用`malloc()`函数实现的，使用该函数代替`allocator`也能解决上述问题。使用`allocator`的另一个原因是：将内存分配/释放与对象构造/销毁分离，并抽象为接口，从而支持自定义内存管理策略，提供更好的灵活性。
+* 除了`allocator`外，标准库头文件\<cstdlib\>提供了`malloc()`函数，\<new\>提供了一组`operator new`和`operator new[]`函数，都能够分配未初始化内存。这些函数与`new`/`new[]`运算符的区别和联系：
     * `new`和`new[]`叫做[new表达式](https://en.cppreference.com/w/cpp/language/new)(new expression)，是语言级别的运算符；`operator new`和`operator new[]`叫做[分配函数](https://en.cppreference.com/w/cpp/memory/new/operator_new)(allocation functions)，是标准库头文件\<new\>中定义的一组库函数。
     * `new`在分配内存后会调用构造函数来初始化对象，而`operator new`和`malloc()`只负责分配内存。
     * `new`通过调用`operator new`分配内存，而`operator new`就是通过调用`malloc()`函数实现的。
-    * `new(p) T(args...)`这种特殊形式的`new`叫做[Placement new](https://en.cppreference.com/w/cpp/language/new#Placement_new)，并不分配内存，而是在已分配的未初始化内存空间中（原地）构造对象（这是手动调用构造函数的唯一方法）。
-* 下表总结了在自由存储上分配内存/初始化对象的各种方法：
+    * `new(p) T(args...)`这种特殊形式的`new`叫做[Placement new](https://en.cppreference.com/w/cpp/language/new#Placement_new)，并不分配内存，而是在已分配的未初始化内存空间中（原地）构造对象——在C++中这是在不分配内存的情况下调用构造函数的唯一方式。
+* 下表总结了在自由存储上分配内存/初始化对象的各种方式：
 
-| 方法 | 分配内存（字节） | 初始化对象（调用构造函数） |
+| 表达式 | 分配内存（字节） | 初始化对象 |
 | --- | --- | --- |
 | `new T(args...)` | `sizeof(T)` | 是 |
 | `new T[n]{...}` | `n * sizeof(T)` | 是 |
-| `new(p) T(args...)` | 无 | 是 |
 | `allocator<T>::allocate(n)` | `n * sizeof(T)` | 否 |
+| `operator new(n)`或`malloc(n)` | `n` | 否 |
 | `allocator<T>::construct(p, args...)` | 无 | 是 |
-| `operator new(n)` | `n` | 否 |
-| `operator new(n, p)` | 无 | 否 |
-| `malloc(n)` | `n` | 否 |
+| `new(p) T(args...)` | 无 | 是 |
 
 * 相应地，`delete`和`delete[]`会自动调用析构函数并释放内存；而`operator delete`和`free()`只负责释放内存，之前必须手动调用析构函数（`allocator<T>::destroy(p)`或`p->~T()`）。
 
@@ -961,7 +965,6 @@ unique_ptr<vector<int>> make_vec() {             // make a filled vector
 注：
 * `unique_ptr`的默认构造函数创建一个空指针。
 * C++14引入了`make_unique()`函数，用于创建`unique_ptr`，其参数将被转发给对象的构造函数，即`make_unique<T>(args...)`等价于`unique_ptr(new T(args...))`。
-* `make_vec()`在返回`unique_ptr`时并不会发生拷贝，因为`unique_ptr`定义了移动操作。另外，拷贝消除会将移动操作也优化掉。
 
 ### 19.5.5 通过移动返回
 幸运的是，`vector`的移动操作也能够解决该问题：
