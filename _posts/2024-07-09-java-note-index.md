@@ -33,7 +33,7 @@ tags: [java]
 * [第5章 数据库编程]({% post_url 2025-07-06-java-note-v2ch05-database-programming %})
 * [第6章 日期和时间API]({% post_url 2025-03-16-java-note-v2ch06-the-date-and-time-api %})
 * 第7章 国际化
-* 第8章 脚本、编译与注解处理
+* [第8章 脚本、编译和注解处理]({% post_url 2025-07-26-java-note-v2ch08-scripting-compiling-and-annotation-processing %})
 * [第9章 Java平台模块系统]({% post_url 2025-03-24-java-note-v2ch09-the-java-platform-module-system %})
 * 第10章 安全
 * 第11章 高级Swing和图形

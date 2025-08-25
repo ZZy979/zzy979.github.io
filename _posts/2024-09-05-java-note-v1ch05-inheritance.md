@@ -396,20 +396,12 @@ C++注释：Java中的受保护特性允许所有子类以及同一个包中的�
 * `protected`：本包和所有子类可访问
 * 无：本包可访问
 
-注：假设`B`类方法访问`A`类的字段`x`，下表总结了各种情况下的可访问性。其中“是否通过当前类访问”是指通过`B`类对象访问还是`A`类对象访问。
-
-| 修饰符 | 是否在相同包 | 是否是子类 | 是否通过当前类访问 | 可访问 |
+| 修饰符 | 类 | 包 | 子类 | 任何类 |
 | --- | --- | --- | --- | --- |
-| `public` | - | - | - | √ |
-| `private` | - | - | - | × |
-| `protected` | √ | √ | √ | √ |
-| `protected` | √ | √ | × | √ |
-| `protected` | √ | × | - | √ |
-| `protected` | × | √ | √ | √ |
-| `protected` | × | √ | × | × |
-| `protected` | × | × | - | × |
-| 无 | √ | - | - | √ |
-| 无 | × | - | - | × |
+| `public` | √ | √ | √ | √ |
+| `protected` | √ | √ | √ | × |
+| 无 | √ | √ | × | × |
+| `private` | √ | × | × | × |
 
 另见[Controlling Access to Members of a Class](https://docs.oracle.com/javase/tutorial/java/javaOO/accesscontrol.html)。
 
