@@ -324,7 +324,7 @@ trait Ord {
 
 `Any`类型是Scala中所有其他类型的超类。它可以看作是Java的`Object`类的更通用版本，因为它也是`Int`、`Float`等基本类型的超类。
 
-注：`Any`和`Object`的关系参考 [scala 中 Any、AnyRef、Object、AnyVal 关系以及主要特点分析](https://www.cnblogs.com/wudeyun/p/12866340.html)
+注：在Scala中，`Any`是所有类型的超类，它有两个子类`AnyVal`和`AnyRef`。`AnyVal`表示值类型（如`Int`、`Long`等），相当于Java中的基本类型。`AnyRef`表示引用类型（如`String`和任何自定义类型），等价于Java中的`Object`。参见[Unified Types](https://docs.scala-lang.org/tour/unified-types.html)。
 
 为了使一个对象可比较，只需继承`Ord`特质并定义`equals`和`<`方法即可。例如，定义一个表示日期的`Date`类：
 
