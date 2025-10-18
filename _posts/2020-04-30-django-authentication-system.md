@@ -2,7 +2,7 @@
 title: 【Django】认证系统
 date: 2020-04-30 22:22 +0800
 categories: [Django]
-tags: [django]
+tags: [django, authentication]
 ---
 Django默认提供了一个认证系统，该系统提供认证(authentication)和授权(authorization)两种功能。认证即用户登录，授权用于控制用户权限。
 

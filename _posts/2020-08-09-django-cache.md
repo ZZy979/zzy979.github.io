@@ -2,7 +2,7 @@
 title: 【Django】缓存
 date: 2020-08-09 09:50 +0800
 categories: [Django]
-tags: [django]
+tags: [django, cache]
 ---
 缓存可以理解为一个URL到页面的映射。如果用户请求的URL已在缓存中则直接返回结果页面；否则生成页面，加入缓存并返回。
 

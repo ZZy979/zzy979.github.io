@@ -2,7 +2,7 @@
 title: 【Django】视图
 date: 2020-03-29 20:59 +0800
 categories: [Django]
-tags: [django]
+tags: [django, view]
 ---
 ## 1.视图
 **视图**（view, MVC中的V）用于处理请求并返回特定功能的Web页面，用Python函数或类方法表示。

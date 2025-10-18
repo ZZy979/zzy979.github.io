@@ -2,7 +2,7 @@
 title: 《Java核心技术》笔记 卷II 第4章 网络
 date: 2025-05-23 19:53:29 +0800
 categories: [Java, Core Java]
-tags: [java, computer network, socket, http]
+tags: [java, computer network, socket, http, form]
 ---
 本章首先回顾网络相关的基本概念，然后编写连接到网络服务的Java程序，并展示网络客户端和服务器是如何实现的。最后将介绍如何用Java程序发送E-mail，以及如何从Web服务器获取信息。
 

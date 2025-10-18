@@ -2,7 +2,7 @@
 title: 【Django】模型
 date: 2020-03-30 00:52 +0800
 categories: [Django]
-tags: [django]
+tags: [django, model]
 ---
 ## 1.模型
 **模型**（model, MVC中的M）对应一个数据库表，相当于实体类。

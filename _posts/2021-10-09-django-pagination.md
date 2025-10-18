@@ -2,7 +2,7 @@
 title: 【Django】分页
 date: 2021-10-09 16:28 +0800
 categories: [Django]
-tags: [django]
+tags: [django, pagination]
 render_with_liquid: false
 ---
 **分页**(pagination)用于将数据划分为多个页，从而可以在查看数据列表时使用“上一页/下一页”链接。

@@ -2,7 +2,7 @@
 title: 【Django】表单
 date: 2025-02-22 22:37:23 +0800
 categories: [Django]
-tags: [django]
+tags: [django, form]
 render_with_liquid: false
 ---
 Django中的表单(form)是处理用户输入数据的强大工具，可用于生成HTML表单、验证用户输入的数据以及显示错误信息。

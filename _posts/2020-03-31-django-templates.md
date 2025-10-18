@@ -2,7 +2,7 @@
 title: 【Django】模板
 date: 2020-03-31 16:04 +0800
 categories: [Django]
-tags: [django]
+tags: [django, template]
 render_with_liquid: false
 ---
 ## 1.模板

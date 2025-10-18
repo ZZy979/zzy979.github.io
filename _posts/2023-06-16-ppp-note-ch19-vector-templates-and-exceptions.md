@@ -931,6 +931,8 @@ vector<int>* make_vec() {              // make a filled vector
 * **强保证**(strong guarantee)：除了提供基本保证外，函数还确保所有可观测值（非局部变量）在失败后与调用函数时的值相同。
 * **无抛出保证**(no-throw guarantee)：基本上C++所有内置功能都提供了无抛出保证——根本不会抛出异常。为了避免抛出异常，应该避免使用`throw`、`new`和引用类型的`dynamic_cast`。
 
+注：参见[Exception safety](https://en.cppreference.com/w/cpp/language/exceptions.html#Exception_safety)。
+
 基本保证和强保证对于思考程序的正确性是十分有用的。RAII对于根据这些思想编写简单的、高性能的代码是必不可少的。
 
 我们应该始终避免未定义行为（通常是灾难性的），例如对空指针解引用、除以0、对数组越界访问。捕获异常并不能保证你不违反基本的语言规则。

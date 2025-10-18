@@ -35,7 +35,7 @@ tags: [java]
 * 第7章 国际化
 * [第8章 脚本、编译和注解处理]({% post_url 2025-07-26-java-note-v2ch08-scripting-compiling-and-annotation-processing %})
 * [第9章 Java平台模块系统]({% post_url 2025-03-24-java-note-v2ch09-the-java-platform-module-system %})
-* 第10章 安全
+* [第10章 安全]({% post_url 2025-08-26-java-note-v2ch10-security %})
 * 第11章 高级Swing和图形
 * 第12章 本地方法
 

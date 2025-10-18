@@ -2,7 +2,7 @@
 title: Django入门教程
 date: 2020-03-29 20:22:09 +0800
 categories: [Django]
-tags: [django]
+tags: [django, hello world, model, view, template]
 render_with_liquid: false
 ---
 ## 1.简介
