@@ -1057,7 +1057,7 @@ conn.setAutoCommit(autoCommit);
 ## 5.10 Web和企业应用中的连接管理
 前面几节介绍的使用database.properties文件设置的简单数据库连接适用于小型测试程序，但无法扩展到大型应用程序。
 
-在Web或企业环境中部署JDBC应用时，数据库连接管理是与Java命名和目录接口(JNDI)集成的。可以将数据源属性存储在一个目录中，以便于集中管理。在这种环境中，可以使用以下代码建立数据库连接：
+在Web或企业环境中部署JDBC应用时，数据库连接管理是与[Java命名和目录接口](https://docs.oracle.com/javase/tutorial/jndi/index.html)(JNDI)集成的。可以将数据源属性存储在一个目录中，以便于集中管理。在这种环境中，可以使用以下代码建立数据库连接：
 
 ```java
 var jndiContext = new InitialContext();

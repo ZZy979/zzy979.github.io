@@ -37,7 +37,7 @@ tags: [java]
 * [第9章 Java平台模块系统]({% post_url 2025-03-24-java-note-v2ch09-the-java-platform-module-system %})
 * [第10章 安全]({% post_url 2025-08-26-java-note-v2ch10-security %})
 * 第11章 高级Swing和图形
-* 第12章 本地方法
+* [第12章 本地方法]({% post_url 2025-10-26-java-note-v2ch12-native-methods %})
 
 ## 代码
 <https://github.com/ZZy979/Core-Java-code>

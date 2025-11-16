@@ -767,8 +767,8 @@ AWT将事件分为**底层**(low-level)事件和**语义**(semantic)事件。语
 有些操作系统有一个存储配置信息的中心存储库。最著名的例子就是Windows注册表。`Preferences`类以一种平台无关的方式提供了这样一个中心存储库。在Windows中，`Preferences`类使用注册表来存储信息；在Linux中，信息则存储在本地文件系统中。当然，存储库的实现对使用`Preferences`类的程序员是透明的。
 
 注：`Preferences`实际上是一个抽象类
-* 在Windows中，实现类为`WindowsPreferences`，系统配置的注册表路径为HKEY_LOCAL_MACHINE\Software\JavaSoft\Prefs，用户配置的注册表路径为HKEY_CURRENT_USER\Software\JavaSoft\Prefs，参见Open JDK实现[WindowsPreferences.java](https://github.com/openjdk/jdk/blob/master/src/java.prefs/windows/classes/java/util/prefs/WindowsPreferences.java)。
-* 在Linux中，实现类为`FileSystemPreferences`，系统配置的存储路径默认为/etc/.java/.systemPrefs，用户配置的存储路径默认为$HOME/.java/.userPrefs，参见Open JDK实现[FileSystemPreferences.java](https://github.com/openjdk/jdk/blob/master/src/java.prefs/unix/classes/java/util/prefs/FileSystemPreferences.java) `setupSystemRoot()`和`setupUserRoot()`。
+* 在Windows中，实现类为`WindowsPreferences`，系统配置的注册表路径为HKEY_LOCAL_MACHINE\Software\JavaSoft\Prefs，用户配置的注册表路径为HKEY_CURRENT_USER\Software\JavaSoft\Prefs，参见Open JDK实现[WindowsPreferences.java](https://github.com/openjdk/jdk/blob/jdk-17-ga/src/java.prefs/windows/classes/java/util/prefs/WindowsPreferences.java)。
+* 在Linux中，实现类为`FileSystemPreferences`，系统配置的存储路径默认为/etc/.java/.systemPrefs，用户配置的存储路径默认为$HOME/.java/.userPrefs，参见Open JDK实现[FileSystemPreferences.java](https://github.com/openjdk/jdk/blob/jdk-17-ga/src/java.prefs/unix/classes/java/util/prefs/FileSystemPreferences.java) `setupSystemRoot()`和`setupUserRoot()`。
 
 `Preferences`存储库有一个树状结构，节点路径名类似于`/com/mycompany/myapp`。与包名一样，只要用逆序的域名作为路径开头，就可以避免命名冲突。API的设计者建议配置节点路径与程序中的包名一致。
 

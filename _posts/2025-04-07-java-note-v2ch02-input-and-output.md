@@ -1020,7 +1020,7 @@ Path relative = Path.of("myprog", "conf", "user.properties"); // "myprog/conf/us
 静态方法`Path.of()`接受一个或多个字符串，并将它们用默认文件系统的路径分隔符（UNIX是`/`，Windows是`\`）连接起来，然后解析结果，返回一个`Path`对象。如果结果不是给定文件系统中的合法路径（例如包含非法字符）则抛出`InvalidPathException`。
 
 注：
-* 对于Open JDK，在Windows上实现类为[WindowsPath](https://github.com/openjdk/jdk/blob/master/src/java.base/windows/classes/sun/nio/fs/WindowsPath.java)，在UNIX上实现类为[UnixPath](https://github.com/openjdk/jdk/blob/master/src/java.base/unix/classes/sun/nio/fs/UnixPath.java)。
+* 对于Open JDK，在Windows上实现类为[WindowsPath](https://github.com/openjdk/jdk/blob/jdk-17-ga/src/java.base/windows/classes/sun/nio/fs/WindowsPath.java)，在UNIX上实现类为[UnixPath](https://github.com/openjdk/jdk/blob/jdk-17-ga/src/java.base/unix/classes/sun/nio/fs/UnixPath.java)。
 * 在Java 8以前接口不允许有静态方法，因此只能使用`Paths.get()`方法创建`Path`对象。从Java 11起，`Path`接口提供了等价的`of()`方法，这样就不再需要`Paths`类了。
 
 `of()`方法也可以接受包含多个部件的单个字符串。例如，可以如下从配置文件中读取路径：

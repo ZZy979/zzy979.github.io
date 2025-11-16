@@ -20,7 +20,7 @@ tags: [java, hello world, jshell]
 | Amazon Corretto | [链接](https://aws.amazon.com/corretto/) |
 | IBM Semeru Runtimes | [链接](https://developer.ibm.com/languages/java/semeru-runtimes/downloads/) |
 | Alibaba Dragonwell JDK | [链接](https://dragonwell-jdk.io/) |
-| Tencent Kona | [链接](https://cloud.tencent.com/product/tkjdk) |
+| Tencent Kona | [链接](https://github.com/Tencent/TencentKona-17) |
 | SapMachine | [链接](https://sap.github.io/SapMachine/) |
 | Red Hat OpenJDK | [链接](https://developers.redhat.com/products/openjdk/overview) |
 
