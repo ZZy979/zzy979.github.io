@@ -340,6 +340,18 @@ foo:
 	$(MAKE) -C foo
 ```
 
+### 2.9 包含其他Makefile
+可以使用`include`指令[包含其他Makefile](https://www.gnu.org/software/make/manual/make.html#Include)（类似于C语言的`#include`语句）。例如：
+
+```
+include a.mk b.mk c.mk
+```
+
+Make默认在当前目录中搜索包含的文件，也可以通过`make`命令的`-I`或`--include-dir`选项指定搜索目录。
+
+### 2.10 选择Shell
+Make执行规则命令使用的Shell由`SHELL`变量指定，默认为/bin/sh。传递给Shell的参数由`.SHELLFLAGS`变量指定，默认值为`-c`。在Windows上，如果没有设置`SHELL`，则使用变量`COMSPEC`。详见[Choosing the Shell](https://www.gnu.org/software/make/manual/make.html#Choosing-the-Shell)。
+
 ## 3.示例
 官方文档[Makefiles介绍](https://www.gnu.org/software/make/manual/make.html#Introduction)一节给出了一个构建C语言项目的Makefile示例，以及如何使用变量和隐式规则简化Makefile。
 
