@@ -895,9 +895,7 @@ Small primes=2 3 5 7 11
 
 注：
 * 必须用管理员权限运行该程序，否则写入注册表会失败。
-* 为了使用MSVC编译器和头文件windows.h，需要从 <https://visualstudio.microsoft.com/downloads/> 下载Visual Studio IDE，或者在“所有下载 - 用于Visual Studio的工具”下载Visual Studio生成工具（如下图所示）。
-
-![下载Visual Studio生成工具](/assets/images/java-note-v2ch12-native-methods/下载Visual Studio生成工具.png)
+* 为了使用MSVC编译器和头文件windows.h，需要从 <https://visualstudio.microsoft.com/downloads/> 下载Visual Studio IDE，或者从 <https://visualstudio.microsoft.com/visual-cpp-build-tools/> 下载Visual Studio生成工具。
 
 安装时，勾选“使用C++的桌面开发”、“MSVC”和“Windows SDK”，如下图所示。
 

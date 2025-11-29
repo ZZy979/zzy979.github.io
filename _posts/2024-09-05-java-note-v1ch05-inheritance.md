@@ -2,7 +2,7 @@
 title: 《Java核心技术》笔记 卷I 第5章 继承
 date: 2024-09-05 22:00:23 +0800
 categories: [Java, Core Java]
-tags: [java, class, inheritance, polymorphism, type conversion, array list, variadic argument, enumeration, sealed class, reflection, exception, jar file]
+tags: [java, class, inheritance, polymorphism, type conversion, array list, variadic argument, enumeration, sealed class, reflection, exception, jar file, resource]
 ---
 本章将学习面向对象程序设计的另一个基本概念：**继承**(inheritance)。继承的基本思想是可以基于已有的类创建新的类。继承已有的类就是复用（继承）这些类的方法和字段，而且可以添加新的方法和字段，以满足新的需求。这是Java编程中的一项核心技术。
 

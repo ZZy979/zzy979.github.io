@@ -249,9 +249,7 @@ gcc -dynamiclib palindrome.o palindrome_wrap.o -o _palindrome.so -Wl,-undefined,
 
 （3）Windows
 
-在Windows中，CPython扩展库的后缀名是.pyd而不是.so，必须使用MSVC编译器构建。为此，需要下载[Visual Studio IDE](https://visualstudio.microsoft.com/downloads/)，或者在“所有下载 - 用于Visual Studio的工具”下载Visual Studio生成工具（如下图所示）。
-
-![下载Visual Studio生成工具](/assets/images/python-note-ch17-extending-python/下载Visual Studio生成工具.png)
+在Windows中，CPython扩展库的后缀名是.pyd而不是.so，必须使用MSVC编译器构建。为此，需要下载[Visual Studio IDE](https://visualstudio.microsoft.com/downloads/)或者[Visual Studio生成工具](https://visualstudio.microsoft.com/visual-cpp-build-tools/)。
 
 安装时，勾选“使用C++的桌面开发”、“MSVC”和“Windows SDK”，如下图所示。
 
