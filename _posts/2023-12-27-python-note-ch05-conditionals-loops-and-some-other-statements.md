@@ -615,17 +615,17 @@ while (x := int(input())) >= 0:
 `for`循环用于遍历序列（或其他可迭代对象）的元素：
 
 ```python
-for v in s:
+for target in expr:
     block
 ```
 
 注：`for`语句的本质是迭代器（详见第9章），上面的语句等价于
 
 ```python
-it = iter(s)
+it = iter(expr)
 while True:
     try:
-        v = next(it)
+        target = next(it)
         block
     except StopIteration:
         break

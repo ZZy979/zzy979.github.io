@@ -2,7 +2,7 @@
 title: 《Python基础教程》笔记 第9章 魔法方法、特性和迭代器
 date: 2024-02-21 21:22:21 +0800
 categories: [Python, Beginning Python]
-tags: [python, metaclass, constructor, magic method, operator overloading, property, static method, class method, iterator, generator]
+tags: [python, metaclass, constructor, magic method, operator overloading, property, decorator, static method, class method, iterator, generator, yield statement]
 ---
 在Python中，有些名称很特殊，开头和结尾都是两个下划线（如`__future__`）。这样的拼写表示名称有特殊意义，因此绝对不要在自己的程序中创建这样的名称。这样的名称大部分都是**魔法**（特殊）方法的名称。如果你的对象实现了这些方法，它们将在特定情况下被Python调用，而几乎不需要直接调用。
 
@@ -638,9 +638,11 @@ def flatten(nested):
 ### 9.7.4 生成器方法
 生成器具有以下方法：
 * `__next__()`：开始或继续执行生成器函数，将当前`yield`表达式求值为`None`，并返回下一个`yield`产生的值或引发`StopIteration`。
-* `send(value)`：继续执行生成器函数，并向其“发送”一个值，将`value`作为当前`yield`表达式的值，并返回下一个`yield`产生的值或引发`StopIteration`。
+* `send(value)`：开始或继续执行生成器函数，并向其“发送”一个值，将`value`作为当前`yield`表达式的值，并返回下一个`yield`产生的值或引发`StopIteration`。调用`send(None)`等价于`__next__()`。
 * `throw(exc)`：在暂停点引发指定的异常，并返回下一个`yield`产生的值或引发`StopIteration`。如果生成器函数没有捕获传入的异常，则传播给调用者。
 * `close()`：在暂停点引发`GeneratorExit`，用于停止生成器。如果要在生成器中执行清理代码，可以将`yield`放在`try/finally`语句中。
+
+注：实际上，只需要`__next__()`方法和`yield`语句就足以实现生成器的功能（见最初版本的生成器[PEP 255](https://peps.python.org/pep-0255/)）。另外三个方法是为了实现协程在[PEP 342](https://peps.python.org/pep-0342/)中添加的。详见[《基于协程和asyncio的并发编程》]({% post_url 2025-11-30-python-coroutine-and-asyncio %})。
 
 `yield`语句两边加上圆括号就是**yield表达式**：`(yield <expr>)`。
 
@@ -658,7 +660,7 @@ def flatten(nested):
 
 详见官方文档[Yield expressions](https://docs.python.org/3/reference/expressions.html#yield-expressions)和[Generator-iterator methods](https://docs.python.org/3/reference/expressions.html#generator-iterator-methods)。
 
-例如：
+下面的例子演示了生成器各个方法的功能：
 
 ```python
 def repeater(value):

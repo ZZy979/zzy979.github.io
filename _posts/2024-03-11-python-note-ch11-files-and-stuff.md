@@ -159,6 +159,24 @@ with expr [as target]:
     block
 ```
 
+在语义上大致等价于
+
+```python
+manager = expr
+hit_except = False
+
+try:
+    target = manager.__enter__()
+    block
+except:
+    hit_except = True
+    if not manager.__exit__(*sys.exc_info()):
+        raise
+finally:
+    if not hit_except:
+        manager.__exit__(None, None, None)
+```
+
 例如：
 
 ```python
