@@ -340,17 +340,29 @@ Coroutine main() finished and provided value: 23.
 
 注：
 * `Rock.__await__()`实际上就是一个普通的生成器函数。协程对象的`send()`、`throw()`和`close()`方法会委托给这个生成器的相应方法。
-* `__await__()`方法可以包含多个`yield`语句。可以将`await`表达式理解为调用被等待对象的`__await__()`方法获得一个生成器，每次调用协程对象的`send()`方法都会消费一个值，期间协程一直暂停在`await`。直到迭代结束，把`__await__()`方法最终的返回值作为`await`的结果返回，协程才会继续执行。
+* `__await__()`方法可以包含多个`yield`语句。`await`表达式会调用被等待对象的`__await__()`方法获得一个生成器，每次调用协程对象的`send()`方法都会消费一个值，期间协程一直暂停在`await`，直到迭代结束协程才会继续执行。
+* 自定义可等待对象的`__await__()`方法应该遵循这一规则：**当等待的条件不满足时`yield`，当条件满足时返回**。“等待的条件”取决于可等待对象的语义，示例见2.3节。
 * 虽然[文档](https://docs.python.org/3/reference/datamodel.html#awaitable-objects)中只要求`__await__()`方法返回一个迭代器，但实际上必须是生成器。如果将上面程序中的`Rock.__await__()`方法改为返回`iter([7])`，`await rock`会引发异常 "AttributeError: 'list_iterator' object has no attribute 'send'" 。
 
 ### 2.2 Future
 [Future对象](https://docs.python.org/3/library/asyncio-future.html#future-object)表示异步计算的结果（“可以在**未来**某个时间点获取的结果”）。Future对象有几个重要属性。一个是**状态**，可以是待处理(pending)、已取消(cancelled)或已完成(done)。另一个是**结果**，当状态为已完成时可以获取结果。
 
+`asyncio.Task`继承了`asyncio.Future`。1.3节中提到的任务的回调函数列表实际上继承自`Future`类。
+
 `asyncio.Future`的API类似于`concurrent.futures.Future`，但前者用于协程，而后者用于线程和进程。可以使用`set_result()`方法设置结果并将future标记为已完成，或者使用`set_exception()`方法设置异常。`result()`方法返回future的结果或引发设置的异常。`done()`和`cancelled()`检查future的状态是否是已完成或已取消。
 
 Future对象是与事件循环绑定的，默认为当前正在运行的事件循环(`asyncio.get_running_loop()`)，可以在构造函数中通过关键字参数`loop`指定事件循环。也可以通过事件循环对象的`create_future()`方法创建future对象。
 
-Future是可等待对象，协程可以等待future对象直到完成或取消。一个future可被多次等待，最终结果相同。`asyncio.Future`类的`__await__()`方法简化的定义如下（源代码见[Lib/asyncio/futures.py](https://github.com/python/cpython/blob/3.14/Lib/asyncio/futures.py#L292)）：
+Future是可等待对象，协程可以等待future对象直到完成或取消。一个future可被多次等待，最终结果相同。
+
+Future通常用于实现底层API和高层API的交互。经验法则是永远不要在面向用户的API中暴露future对象。
+
+#### 源代码解析
+前面提到过，协程、任务和future都是可等待对象。下面通过Python源代码解析各自的实现原理。
+
+（1）Future
+
+`asyncio.Future`类的`__await__()`方法简化的定义如下（源代码见[Lib/asyncio/futures.py](https://github.com/python/cpython/blob/3.14/Lib/asyncio/futures.py#L292)）：
 
 ```python
 def __await__(self):
@@ -359,16 +371,75 @@ def __await__(self):
     return self.result()
 ```
 
-可以看到，当协程等待一个future时会检查其状态。如果状态是已完成则直接返回结果，否则`yield`使协程暂停，后续恢复执行时再获取结果（事件循环通过回调函数保证只有当future完成时才会恢复那些等待它的协程）。
+可以看到，等待一个future会检查其状态：如果状态是已完成则直接返回结果，否则`yield`使协程暂停，后续恢复时再获取结果（只有当future已完成时事件循环才会恢复那些等待它的协程）。也就是说，future等待的条件是**状态变为已完成**。
 
-Future通常用于实现底层API和高层API的交互。经验法则是永远不要在面向用户的API中暴露future对象。
+（2）任务
 
-实际上，`asyncio.Task`继承了`asyncio.Future`。1.3节中提到的任务的回调函数列表实际上继承自`Future`类。
+Future通常由其他协程调用`set_result()`来转入已完成状态，而任务在其包装的协程结束时将**自己**标记为已完成。`asyncio.Task`类的核心方法是`__step()`，简化的定义如下（源代码见[Lib/asyncio/tasks.py](https://github.com/python/cpython/blob/3.14/Lib/asyncio/tasks.py#L266)）：
 
-TODO：
-协程本身的__await__，任务对象的__await__
-事件循环如何利用这些方法调度协程？
-Task和Future协作？
+```python
+class Task(Future):
+    def __init__(self, coro, loop=None):
+        super().__init__(loop=loop)
+        self.coro = coro
+        loop.call_soon(self.__step)
+
+    def __step(self):
+        try:
+            future = self.coro.send(None)
+        except StopIteration as e:
+            # coroutine finished
+            super().set_result(e.value)
+        except CancelledError:
+            super().cancel()
+        except BaseException as e:
+            super().set_exception(e)
+        else:
+            # coroutine still awaiting future
+            future.add_done_callback(self.__step)
+```
+
+`__step()`方法的核心逻辑如下：
+* 对包装的协程`self.coro`调用`send(None)`，使其开始或恢复执行。
+* 如果协程等待一个future对象，则`send()`返回这个对象（上面已经看到`Future.__await__()`方法会`yield`自身），并在`else`子句中将`self.__step`添加到其回调函数列表。
+* 如果协程等待的future已完成，会通过其回调函数再次调用`__step()`方法。
+* 如果协程执行结束，则`send()`会引发`StopIteration`，此时调用`set_result()`将自己标记为已完成。
+* 如果任务被取消，则调用`cancel()`。
+* 如果发生其他异常，则调用`set_exception()`，同样将自己标记为已完成。
+
+`Task`直接继承了`Future`类的`__await__()`方法。因此，任务等待的条件是**包装的协程执行结束**。
+
+（3）协程
+
+协程对象的`__await__()`方法是用C代码实现的（源代码见[Objects/genobject.c](https://github.com/python/cpython/blob/3.14/Objects/genobject.c#L1116)）：
+
+```c
+static PyObject *
+coro_await(PyObject *coro)
+{
+    PyCoroWrapper *cw = PyObject_GC_New(PyCoroWrapper, &_PyCoroWrapper_Type);
+    cw->cw_coroutine = (PyCoroObject*)Py_NewRef(coro);
+    return (PyObject *)cw;
+}
+```
+
+该方法创建了一个协程包装类型(`PyCoroWrapper`)的对象，这个类型也有`send()`、`throw()`和`close()`方法，分别直接调用底层协程的对应方法。例如：
+
+```c
+static PyObject *
+coro_wrapper_send(PyObject *self, PyObject *arg)
+{
+    PyCoroWrapper *cw = _PyCoroWrapper_CAST(self);
+    return gen_send((PyObject *)cw->cw_coroutine, arg);
+}
+```
+
+其中`gen_send()`就是协程对象`send()`方法的C代码。也就是说，当`await`一个协程时，调用其`__await__()`返回对象的`send()`方法等价于调用这个协程的`send()`方法。由于协程的`__await__()`方法不包含`yield`，因此不会使当前协程暂停。
+
+小结：
+* `await future`：暂停协程，等待future的状态变为已完成。
+* `await task`：暂停协程，等待任务包装的协程执行结束。
+* `await coroutine`：不暂停协程，直接调用另一个协程。
 
 ### 2.3 实现asyncio.sleep()
 本节通过一个例子来说明如何利用future自己实现异步休眠功能（类似于`asyncio.sleep()`）。
@@ -453,7 +524,7 @@ async def sleep(seconds):
     await future
 ```
 
-`loop.call_later()`方法会使事件循环在指定的秒数后调用给定的函数。这种方式比前面几种实现的优势在于避免了不必要的唤起。
+`loop.call_later()`方法会使事件循环在指定的秒数后调用给定的函数。这种方式比前面几种实现的优势在于避免了不必要的恢复。
 
 ## 3.asyncio模块
 Python标准库模块`asyncio`是用于编写异步代码的库，特别适合于I/O密集型操作以及构建高性能异步框架，例如网络请求、Web服务器、文件I/O、数据库连接、实时消息队列处理等。
@@ -771,9 +842,9 @@ finally:
 3. 适用于I/O密集型操作。对于CPU密集型操作，使用`loop.run_in_executor()`在进程池中执行（由于[GIL](https://docs.python.org/3/glossary.html#term-global-interpreter-lock)）。
 
 ## 5.实践：网络爬虫
-最后，使用`asyncio`和[aiohttp](https://docs.aiohttp.org/en/stable/)库编写一个网络爬虫程序。
+最后，使用`asyncio`和aiohttp库编写一个网络爬虫程序。
 
-aiohttp是一个异步HTTP库。与requests不同，这个库提供的API都是异步的（例如发送HTTP请求和获取响应体），可以和`asyncio`模块一起使用。使用以下命令安装：
+[aiohttp](https://docs.aiohttp.org/en/stable/)是一个异步HTTP库。与requests不同，这个库提供的API都是异步的（例如发送HTTP请求和获取响应体），可以和`asyncio`模块一起使用。使用以下命令安装：
 
 ```shell
 pip install aiohttp
