@@ -188,7 +188,7 @@ I am coro_a(). Hi!
 这个例子说明了仅使用`await coroutine`可能会独占控制权并阻滞事件循环。`asyncio.run()`可以通过关键字参数`debug=True`来检测这种情况，这将启用[调试模式](https://docs.python.org/3/library/asyncio-dev.html#asyncio-debug-mode)。
 
 ### 1.5 异步迭代器和async for语句
-[异步迭代器](https://docs.python.org/3/reference/datamodel.html#asynchronous-iterators)(asynchronous iterator)是提供了`__anext__()`方法的对象。该方法必须用`async def`定义（可以在其中调用异步代码），并返回一个可等待对象，其结果是迭代器的下一个值，当迭代结束时应该引发`StopAsyncIteration`。
+[异步迭代器](https://docs.python.org/3/reference/datamodel.html#asynchronous-iterators)(asynchronous iterator)是提供了`__anext__()`方法的对象。该方法必须用`async def`定义（可以在其中调用异步代码），并返回一个可等待对象，其结果是迭代器的下一个值，当迭代结束时应该引发`StopAsyncIteration`。内置函数`anext(ait)`等价于`ait.__anext__()`。
 
 异步可迭代对象(asynchronous iterable)是提供了`__aiter__()`方法的对象，该方法必须返回一个异步迭代器。异步迭代器也是异步可迭代对象，其`__aiter__()`方法返回自身。异步可迭代对象可以用于`async for`语句。
 
@@ -362,7 +362,7 @@ Future通常用于实现底层API和高层API的交互。经验法则是永远�
 
 （1）Future
 
-`asyncio.Future`类的`__await__()`方法简化的定义如下（源代码见[Lib/asyncio/futures.py](https://github.com/python/cpython/blob/3.14/Lib/asyncio/futures.py#L292)）：
+`asyncio.Future`类的`__await__()`方法简化的定义如下（源代码见[Lib/asyncio/futures.py#L292](https://github.com/python/cpython/blob/3.14/Lib/asyncio/futures.py#L292)）：
 
 ```python
 def __await__(self):
@@ -375,7 +375,7 @@ def __await__(self):
 
 （2）任务
 
-Future通常由其他协程调用`set_result()`来转入已完成状态，而任务在其包装的协程结束时将**自己**标记为已完成。`asyncio.Task`类的核心方法是`__step()`，简化的定义如下（源代码见[Lib/asyncio/tasks.py](https://github.com/python/cpython/blob/3.14/Lib/asyncio/tasks.py#L266)）：
+Future通常由其他协程调用`set_result()`来转入已完成状态，而任务在其包装的协程结束时将**自己**标记为已完成。`asyncio.Task`类的核心方法是`__step()`，简化的定义如下（源代码见[Lib/asyncio/tasks.py#L266](https://github.com/python/cpython/blob/3.14/Lib/asyncio/tasks.py#L266)）：
 
 ```python
 class Task(Future):
@@ -403,7 +403,7 @@ class Task(Future):
 * 对包装的协程`self.coro`调用`send(None)`，使其开始或恢复执行。
 * 如果协程等待一个future对象，则`send()`返回这个对象（上面已经看到`Future.__await__()`方法会`yield`自身），并在`else`子句中将`self.__step`添加到其回调函数列表。
 * 如果协程等待的future已完成，会通过其回调函数再次调用`__step()`方法。
-* 如果协程执行结束，则`send()`会引发`StopIteration`，此时调用`set_result()`将自己标记为已完成。
+* 如果协程执行结束，则`send()`会引发`StopIteration`，此时调用`set_result()`将结果设置为协程的返回值，并将自己标记为已完成。
 * 如果任务被取消，则调用`cancel()`。
 * 如果发生其他异常，则调用`set_exception()`，同样将自己标记为已完成。
 
@@ -411,7 +411,73 @@ class Task(Future):
 
 （3）协程
 
-协程对象的`__await__()`方法是用C代码实现的（源代码见[Objects/genobject.c](https://github.com/python/cpython/blob/3.14/Objects/genobject.c#L1116)）：
+Python的`await`关键字针对协程做了特殊优化，对应的C函数是`_PyEval_GetAwaitable()`（源代码见[Python/ceval.c#L3944](https://github.com/python/cpython/blob/main/Python/ceval.c#L3944)）：
+
+```c
+PyObject *
+_PyEval_GetAwaitable(PyObject *iterable, int oparg)
+{
+    PyObject *iter = _PyCoro_GetAwaitableIter(iterable);
+    ...
+    return iter;
+}
+```
+
+其中调用了`_PyCoro_GetAwaitableIter()`，该函数返回给定对象的“可等待迭代器”（源代码见[Objects/genobject.c#L1067](https://github.com/python/cpython/blob/3.14/Objects/genobject.c#L1067)）：
+
+```c
+/*
+ *   This helper function returns an awaitable for `o`:
+ *     - `o` if `o` is a coroutine-object;
+ *     - `type(o)->tp_as_async->am_await(o)`
+ *
+ *   Raises a TypeError if it's not possible to return
+ *   an awaitable and returns NULL.
+ */
+PyObject *
+_PyCoro_GetAwaitableIter(PyObject *o)
+{
+    unaryfunc getter = NULL;
+    PyTypeObject *ot;
+
+    if (PyCoro_CheckExact(o) || gen_is_coroutine(o)) {
+        /* 'o' is a coroutine. */
+        return Py_NewRef(o);
+    }
+
+    ot = Py_TYPE(o);
+    if (ot->tp_as_async != NULL) {
+        getter = ot->tp_as_async->am_await;
+    }
+    if (getter != NULL) {
+        PyObject *res = (*getter)(o);
+        if (res != NULL) {
+            if (PyCoro_CheckExact(res) || gen_is_coroutine(res)) {
+                /* __await__ must return an *iterator*, not
+                   a coroutine or another awaitable (see PEP 492) */
+                PyErr_SetString(PyExc_TypeError, "__await__() returned a coroutine");
+                Py_CLEAR(res);
+            } else if (!PyIter_Check(res)) {
+                PyErr_Format(PyExc_TypeError,
+                             "__await__() returned non-iterator of type '%.100s'",
+                             Py_TYPE(res)->tp_name);
+                Py_CLEAR(res);
+            }
+        }
+        return res;
+    }
+
+    PyErr_Format(PyExc_TypeError, "'%.100s' object can't be awaited", ot->tp_name);
+    return NULL;
+}
+```
+
+* 如果`o`是一个协程对象，则**直接返回它本身**。
+* 否则调用其`__await__()`方法（对应函数指针`ot->tp_as_async->am_await`），如果返回的不是一个迭代器则引发`TypeError`。
+
+也就是说，当`await`一个协程时，解释器直接把协程对象当作“迭代器”，调用其`send()`方法就是调用协程对象本身的`send()`方法。在这个过程中不存在`yield`，因此不会使当前协程暂停。
+
+PEP 492要求可等待对象的`__await__()`方法返回一个迭代器。为了保持语义兼容，协程对象也有`__await__()`方法（源代码见[Objects/genobject.c#L1116](https://github.com/python/cpython/blob/3.14/Objects/genobject.c#L1116)）：
 
 ```c
 static PyObject *
@@ -423,9 +489,16 @@ coro_await(PyObject *coro)
 }
 ```
 
-该方法创建了一个协程包装类型(`PyCoroWrapper`)的对象，这个类型也有`send()`、`throw()`和`close()`方法，分别直接调用底层协程的对应方法。例如：
+该方法返回了一个协程包装器类型(`PyCoroWrapper`)的对象。包装器对象也有`send()`、`throw()`和`close()`方法，分别直接调用底层协程的对应方法。另外，包装器对象实现了迭代器协议，其`__next__()`方法等价于`send(None)`（源代码见[Objects/genobject.c#L1282](https://github.com/python/cpython/blob/3.14/Objects/genobject.c#L1282)）：
 
 ```c
+static PyObject *
+coro_wrapper_iternext(PyObject *self)
+{
+    PyCoroWrapper *cw = _PyCoroWrapper_CAST(self);
+    return gen_iternext((PyObject *)cw->cw_coroutine);
+}
+
 static PyObject *
 coro_wrapper_send(PyObject *self, PyObject *arg)
 {
@@ -434,12 +507,28 @@ coro_wrapper_send(PyObject *self, PyObject *arg)
 }
 ```
 
-其中`gen_send()`就是协程对象`send()`方法的C代码。也就是说，当`await`一个协程时，调用其`__await__()`返回对象的`send()`方法等价于调用这个协程的`send()`方法。由于协程的`__await__()`方法不包含`yield`，因此不会使当前协程暂停。
+其中，`gen_send()`是生成器/协程对象`send()`方法的C代码，`gen_iternext()`是生成器`__next__()`方法的C代码（等价于`gen_send(obj, NULL)`）。因此，显式调用协程对象的`__await__()`并对返回的对象调用`send()`方法等价于调用协程对象本身的`send()`方法。由于协程的`__await__()`方法不包含`yield`，同样不会使当前协程暂停。
 
-小结：
-* `await future`：暂停协程，等待future的状态变为已完成。
-* `await task`：暂停协程，等待任务包装的协程执行结束。
-* `await coroutine`：不暂停协程，直接调用另一个协程。
+```python
+>>> async def hello():
+...     print('Hello')
+... 
+>>> coro = hello()
+>>> wrapper = coro.__await__()
+>>> wrapper
+<coroutine_wrapper object at 0x000001DCB4E2EF50>
+>>> wrapper.send(None)
+Hello
+Traceback (most recent call last):
+  File "<pyshell#6>", line 1, in <module>
+    wrapper.send(None)
+StopIteration
+```
+
+小结
+* `await future`：暂停当前协程，等待future的状态变为已完成，返回future的结果。
+* `await task`：暂停当前协程，等待任务包装的协程执行结束，返回该协程的返回值。
+* `await coroutine`：不暂停当前协程，直接调用另一个协程，返回该协程的返回值。
 
 ### 2.3 实现asyncio.sleep()
 本节通过一个例子来说明如何利用future自己实现异步休眠功能（类似于`asyncio.sleep()`）。
@@ -514,7 +603,7 @@ async def async_sleep(seconds):
         await YieldToEventLoop()
 ```
 
-标准库`asyncio.sleep()`是基于future实现的，简化的定义如下（源代码见[Lib/asyncio/tasks.py](https://github.com/python/cpython/blob/3.14/Lib/asyncio/tasks.py#L687)）：
+标准库`asyncio.sleep()`是基于future实现的，简化的定义如下（源代码见[Lib/asyncio/tasks.py#L687](https://github.com/python/cpython/blob/3.14/Lib/asyncio/tasks.py#L687)）：
 
 ```python
 async def sleep(seconds):
