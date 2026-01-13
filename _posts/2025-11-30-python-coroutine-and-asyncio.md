@@ -954,12 +954,16 @@ finally:
 3. `asyncio`仅适用于I/O密集型操作（由于[GIL](https://docs.python.org/3/glossary.html#term-global-interpreter-lock)）。对于CPU密集型操作，使用`loop.run_in_executor()`在进程池中执行。
 
 ## 5.实践：网络爬虫
-最后，使用`asyncio`和aiohttp库编写一个网络爬虫程序。
+最后，使用`asyncio`以及`aiohttp`和`aiofiles`库编写一个网络爬虫程序。
 
-[aiohttp](https://docs.aiohttp.org/en/stable/)是一个异步HTTP库。与requests不同，这个库提供的API都是异步的（例如发送HTTP请求和获取响应体），可以和`asyncio`模块一起使用。使用以下命令安装：
+[aiohttp](https://docs.aiohttp.org/en/stable/)是一个异步HTTP库。与requests不同，这个库提供的API都是异步的（例如发送HTTP请求和获取响应体），可以和`asyncio`模块一起使用。
+
+[aiofiles](https://github.com/Tinche/aiofiles/)是一个异步文件操作库，提供了与标准库类似的文件API，并支持`async/await`语法。
+
+使用以下命令安装这两个库：
 
 ```shell
-pip install aiohttp
+pip install aiohttp aiofiles
 ```
 
 下面的程序从 <http://quotes.toscrape.com/> 爬取名人语录并保存到文件。
@@ -971,6 +975,7 @@ import asyncio
 import re
 import time
 
+import aiofiles
 import aiohttp
 
 
@@ -984,8 +989,18 @@ def parse(text):
 
 async def fetch_url(session, url):
     async with session.get(url) as response:
-        text = await response.text()
-        return parse(text)
+        if response.status == 200:
+            text = await response.text()
+            return parse(text)
+        else:
+            raise RuntimeError(f'Failed to fetch {url}')
+
+
+async def fetch_and_save(session, url, filename):
+    results = await fetch_url(session, url)
+    async with aiofiles.open(filename, mode='w', encoding='utf-8') as f:
+        await f.writelines([f'{quote} by {author}\n' for quote, author in results])
+    print(f'Results saved to {filename}')
 
 
 async def main():
@@ -993,16 +1008,11 @@ async def main():
     start_time = time.time()
 
     async with aiohttp.ClientSession() as session:
-        tasks = [fetch_url(session, url.format(page)) for page in range(1, 6)]
-        results = await asyncio.gather(*tasks)
+        tasks = [fetch_and_save(session, url.format(p), f'quotes_page{p}.txt') for p in range(1, 11)]
+        await asyncio.gather(*tasks)
 
     end_time = time.time()
     print('Total time: {:.2f} s'.format(end_time - start_time))
-
-    with open('quotes.txt', 'w', encoding='utf-8') as f:
-        for result in results:
-            f.writelines([f'{quote} by {author}\n' for quote, author in result])
-    print(f'Results saved to {f.name}')
 
 
 if __name__ == '__main__':
