@@ -2,7 +2,7 @@
 title: 《Java核心技术》笔记 卷II 第12章 本地方法
 date: 2025-10-26 11:09:43 +0800
 categories: [Java, Core Java]
-tags: [java, native method, jni]
+tags: [java, native method, jni, ffi]
 ---
 虽然“100%纯Java”的解决方案原则上是不错的，但某些情况下你也会想要编写（或使用）其他语言的代码。这种代码通常称为**本地代码**(native code)。
 

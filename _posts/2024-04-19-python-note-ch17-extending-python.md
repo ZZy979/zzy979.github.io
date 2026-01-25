@@ -2,7 +2,7 @@
 title: 《Python基础教程》笔记 第17章 扩展Python
 date: 2024-04-19 23:10:22 +0800
 categories: [Python, Beginning Python]
-tags: [python, extension, swig]
+tags: [python, ffi, swig]
 ---
 Python可以实现任何东西。这门语言功能强大，但有时候速度又太慢。Python的目标是易于使用以及帮助提高开发速度，这种灵活性是以牺牲效率为代价的。对于大多数常见的编程任务来说，Python当然足够快。但如果真的很在意速度，C、C++、Java和Julia等语言通常要快好几个数量级。
 

@@ -167,7 +167,31 @@ BaseServer.serve_forever()
         close_request()
 ```
 
-* `TCPServer`封装了14.1.1节所述的套接字通信流程：在构造函数中使用`socket()`函数创建套接字，并调用其`bind()`和`listen()`方法；`get_request()`方法调用套接字的`accept()`方法；`close_request()`方法调用套接字的`close()`方法。
+* `TCPServer`封装了14.1.1节所述的套接字通信流程：
+
+```
+class TCPServer(BaseServer):
+
+    def __init__(self, ...):
+        super().__init__(...)
+        self.socket = socket.socket(...)
+        self.server_bind()
+        self.server_activate()
+        ...
+
+    def server_bind(self):
+        self.socket.bind(self.server_address)
+        ...
+
+    def server_activate(self):
+        self.socket.listen(self.request_queue_size)
+
+    def get_request(self):
+        return self.socket.accept()
+
+    def server_close(self):
+        self.socket.close()
+```
 
 ## 14.3 多个连接
 前面讨论的服务器解决方案都是**同步**(synchronous)的：一次只能处理一个客户端的连接请求。如果每个请求需要花费较长时间（比如完整的聊天会话），那么能够同时处理多个连接就很重要。
