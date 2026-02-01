@@ -2,7 +2,7 @@
 title: net/http包源码解读
 date: 2021-06-30 20:04:12 +0800
 categories: [Go]
-tags: [golang, http]
+tags: [go, http]
 ---
 使用`net/http`包编写一个最简单的Web服务器：
 

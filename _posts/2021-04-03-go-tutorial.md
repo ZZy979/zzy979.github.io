@@ -1,0 +1,697 @@
+---
+title: Go语言入门教程
+date: 2021-04-03 10:55 +0800
+categories: [Go]
+tags: [go, hello world, package, module, error handling, slice, map, unit test]
+render_with_liquid: false
+---
+## 1.简介
+Go语言是由Google开发的开源编程语言，以其简洁高效的语法著称。Go内置并发支持（goroutine和channel），编译速度快，特别适合构建高并发网络服务和云原生应用。
+
+* 网站：<https://go.dev/>（或 <https://golang.google.cn/> ）
+* 官方文档：<https://go.dev/doc/>
+* 官方教程：<https://go.dev/doc/tutorial/>
+* Go Playground: <https://go.dev/play/>
+
+## 2.安装
+下载地址：<https://go.dev/dl/>
+
+安装指引：<https://go.dev/doc/install>
+
+对于Windows系统，下载MSI安装包（例如go1.25.6.windows-amd64.msi）。安装程序会自动将安装目录中的bin目录添加到Path环境变量。
+
+对于Linux系统，下载.tar.gz压缩包（例如go1.25.6.linux-amd64.tar.gz）。将其解压到/usr/local目录，之后将/usr/local/go/bin添加PATH环境变量。
+
+```shell
+tar -C /usr/local -xzf go1.25.6.linux-amd64.tar.gz
+export PATH=$PATH:/usr/local/go/bin
+```
+
+验证安装成功：
+
+```shell
+$ go version
+go version go1.25.6 windows/amd64
+```
+
+Go语言源文件的扩展是.go。在任意目录下创建一个文件hello.go，内容如下：
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	fmt.Println("Hello, World!")
+}
+```
+
+使用`go`命令执行上面的代码，输出结果如下：
+
+```shell
+$ go run hello.go
+Hello, World!
+```
+
+## 3.入门
+[Tutorial: Get started with Go](https://go.dev/doc/tutorial/getting-started)
+
+本教程将简要介绍Go语言，包括：
+* 编写简单的 "Hello, world" 程序
+* 使用`go`命令运行代码
+* 调用外部模块的函数
+
+### 3.1 Hello world
+1.打开一个命令行窗口并切换到主目录。
+
+2.创建一个helloworld目录。
+
+```shell
+mkdir helloworld
+cd helloworld
+```
+
+3.开启依赖管理。
+
+代码中依赖的其他模块由项目根目录中名为go.mod的文件定义（类似于Python的requirements.txt）。
+
+运行[go mod init](https://go.dev/ref/mod#go-mod-init)命令将创建go.mod文件并开启依赖管理，需要指定模块名称。名称是模块路径（通常是仓库位置，例如`github.com/mymodule`），详见[Managing dependencies](https://go.dev/doc/modules/managing-dependencies#naming_module)。
+
+在本教程中，使用`example/hello`作为模块名称：
+
+```shell
+$ go mod init example/hello
+go: creating new go.mod: module example/hello
+```
+
+4.使用文本编辑器创建一个文件hello.go。
+
+5.将以下代码粘贴到hello.go并保存（注意缩进使用Tab而不是空格）：
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	fmt.Println("Hello, World!")
+}
+```
+
+这段Go代码
+* 声明了一个`main`包（包由同一个目录下的所有文件组成）。
+* 导入了[fmt](https://pkg.go.dev/fmt/)包，包含格式化文本和控制台打印函数。这个包是[标准库](https://pkg.go.dev/std)的一部分。
+* 实现了一个`main()`函数用于向控制台打印消息。当运行`main`包时将默认执行`main()`函数。
+
+6.运行代码。
+
+```shell
+$ go run .
+Hello, World!
+```
+
+[go run](https://pkg.go.dev/cmd/go#hdr-Compile_and_run_Go_program)命令用于编译并运行Go程序。可以使用`go help`命令查看所有命令的列表。
+
+### 3.2 调用外部包
+你的代码可以调用由其他人编写的包中的函数。
+
+1.查找外部包
+* 访问 <https://pkg.go.dev/> ，搜索 "quote" 。
+* 在搜索结果中找到`rsc.io/quote`包，并点击 "Other major versions" 中的[v1](https://pkg.go.dev/rsc.io/quote)。
+* Documentation - Index一节列出了可以调用的函数。这里使用`Go()`函数。
+* 在页面顶端可以看到`quote`包包含在`rsc.io/quote`模块中。
+
+注：
+* pkg.go.dev是一个可以搜索Go包的网站，类似于Python的pypi.org。
+* Go的“包”和“模块”的含义与Python不同。在Python中，模块=文件，包=目录；在Go中，模块=项目，包=同一个目录下的所有文件。
+
+2.在代码中导入`rsc.io/quote`包并调用其中的`Go()`函数。
+
+```go
+package main
+
+import "fmt"
+
+import "rsc.io/quote"
+
+func main() {
+	fmt.Println(quote.Go())
+}
+```
+
+3.添加模块依赖。
+
+```shell
+$ go mod tidy
+```
+
+`go mod tidy`命令会自动更新go.mod和go.sum文件（用于认证模块，详见[Authenticating modules](https://go.dev/ref/mod#authenticating)），添加缺失的依赖，删除无用的依赖，并自动下载依赖的模块。
+
+注：
+* 模块会被下载到$GOPATH/pkg/mod目录。环境变量GOPATH默认为$HOME/go，可通过`go env`命令查看。
+* `go mod tidy`命令可能会报错：
+
+```
+go: example/hello imports
+        rsc.io/quote: module rsc.io/quote: Get "https://proxy.golang.org/rsc.io/quote/@v/list": dial tcp 142.251.45.145:443: connectex: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.
+```
+
+这是因为默认的代理proxy.golang.org无法访问（由环境变量GOPROXY指定）。解决方法：使用代理服务goproxy.io，只需设置环境变量GOPROXY即可：
+
+```shell
+$ go env -w GOPROXY=https://goproxy.io,direct
+```
+
+再次尝试即可下载成功：
+
+```shell
+$ go mod tidy
+go: finding module for package rsc.io/quote
+go: downloading rsc.io/quote v1.5.2
+go: found rsc.io/quote in rsc.io/quote v1.5.2
+go: downloading rsc.io/sampler v1.3.0
+go: downloading golang.org/x/text v0.0.0-20170915032832-14c0d48ead0c
+```
+
+* 如果使用GoLand，需要开启Go模块集成：打开设置 - Go - Go Modules，勾选Enable Go modules integration。
+
+4.运行代码
+
+```shell
+$ go run .
+Don't communicate by sharing memory, share memory by communicating.
+```
+
+完整代码：[helloworld/hello.go](https://github.com/ZZy979/go-tutorials/blob/main/helloworld/hello.go)
+
+## 4.模块
+在本教程中，将创建两个模块。第一个是库，可以被其他库或应用程序导入。第二个是应用程序，将使用第一个模块。
+
+### 4.1 创建模块
+[Tutorial: Create a Go module](https://go.dev/doc/tutorial/create-module)
+
+Go的代码组织成**包**，包组织成**模块**。模块定义了运行代码所需的依赖，包括Go版本以及依赖的其他模块。
+
+1.在主目录（或其他任意目录）中创建一个`greetings`模块。
+
+```shell
+mkdir greetings
+cd greetings
+go mod init example.com/greetings
+```
+
+2.创建一个文件greetings.go，内容如下：
+
+
+```go
+package greetings
+
+import "fmt"
+
+// Hello returns a greeting for the named person.
+func Hello(name string) string {
+	// Return a greeting that embeds the name in a message.
+	message := fmt.Sprintf("Hi, %v. Welcome!", name)
+	return message
+}
+```
+
+在这段代码中
+* 声明了一个`greetings`包。
+* 定义了一个`Hello()`函数，用于返回问候语。这个函数接受一个`string`类型的参数`name`，返回一个`string`。在Go中，名字以大写字母开头的函数可以被其他包中的函数调用，这叫做**导出名字**(exported name)。
+
+![function-syntax](/assets/images/go-tutorial/function-syntax.png)
+
+* 在函数`Hello()`中声明了一个变量`message`来存放问候语。运算符`:=`是在一行内声明和初始化变量的快捷方式，等价于：
+
+```go
+var message string
+message = fmt.Sprintf("Hi, %v. Welcome!", name)
+```
+
+* 使用标准库`fmt`包的`Sprintf()`创建问候语消息（类似于C语言的`sprintf()`函数）。第一个参数是格式字符串，使用`name`的值替换`%v`（格式字符串语法参见[Printing](https://pkg.go.dev/fmt#hdr-Printing)）。
+* 返回格式化后的问候语。
+
+下一步将从另一个模块调用这个函数。
+
+### 4.2 调用模块
+[Call your code from another module](https://go.dev/doc/tutorial/call-module-code)
+
+在本节中，将编写一个可执行程序，并调用`greetings`模块中的函数。
+
+1.在`greetings`所在目录中创建另一个模块`hello`。
+
+```shell
+cd ..
+mkdir hello
+cd hello
+go mod init example.com/hello
+```
+
+目录结构如下：
+
+```
+home/
+    greetings/
+        go.mod
+        greetings.go
+    hello/
+        go.mod
+```
+
+2.在hello目录中创建一个文件hello.go，内容如下：
+
+```go
+package main
+
+import (
+	"fmt"
+
+	"example.com/greetings"
+)
+
+func main() {
+	// Get a greeting message and print it.
+	message := greetings.Hello("Gladys")
+	fmt.Println(message)
+}
+```
+
+在这段代码中
+* 声明了一个`main`包。在Go中，可执行程序的代码必须在`main`包中。
+* 导入了两个包：`fmt`和`example.com/greetings`，从而代码可以调用这些包中的函数。
+* 调用`greetings`包的`Hello()`函数获取问候语，然后调用`fmt`包的`Println()`函数将其打印到控制台。
+
+3.在本地找到`greetings`模块。
+
+上面的代码导入了`example.com/greetings`模块。默认情况下，Go会从这个URL查找并下载该模块。但目前该模块还未发布，因此需要让`hello`模块在本地文件系统找到`greetings`模块。
+
+为此，使用[go mod edit](https://go.dev/ref/mod#go-mod-edit)命令编辑`hello`模块：
+
+```shell
+go mod edit -replace example.com/greetings=../greetings
+```
+
+该命令将模块路径`example.com/greetings`重定向到本地目录../greetings。执行该命令后，hello目录中的go.mod文件将增加一个`replace`指令：
+
+```
+replace example.com/greetings => ../greetings
+```
+
+接着，执行[go mod tidy](https://go.dev/ref/mod#go-mod-tidy)命令，同步`hello`模块的依赖：
+
+```shell
+$ go mod tidy
+go: found example.com/greetings in example.com/greetings v0.0.0-00010101000000-000000000000
+```
+
+执行该命令后，`hello`模块的go.mod文件将再增加一个`require`指令：
+
+```
+require example.com/greetings v0.0.0-00010101000000-000000000000
+```
+
+模块路径后面的数字是伪版本号。为了引用已发布的模块，go.mod文件应该省略`replace`指令并使用带有真实版本号的`require`指令，例如
+
+```
+require example.com/greetings v1.1.0
+```
+
+关于版本号详见[Module version numbering](https://go.dev/doc/modules/version-numbers)。
+
+4.运行代码，在hello目录中执行
+
+```shell
+$ go run .
+Hi, Gladys. Welcome!
+```
+
+完整代码：
+* [greetings/greetings.go](https://github.com/ZZy979/go-tutorials/blob/54d54709a1e1e29d09dbe51430d2d1f35cc16bab/greetings/greetings.go)
+* [hello/hello.go](https://github.com/ZZy979/go-tutorials/blob/54d54709a1e1e29d09dbe51430d2d1f35cc16bab/hello/hello.go)
+
+### 4.3 错误处理
+[Return and handle an error](https://go.dev/doc/tutorial/handle-errors)
+
+处理错误是可靠代码的一个基本特征。在本节中，将在`greetings`模块中添加返回错误的代码，并在调用代码中处理错误。
+
+1.修改greetings/greetings.go，如果`name`为空则返回错误：
+
+```go
+package greetings
+
+import (
+	"errors"
+	"fmt"
+)
+
+// Hello returns a greeting for the named person.
+func Hello(name string) (string, error) {
+	// If no name was given, return an error with a message.
+	if name == "" {
+		return "", errors.New("empty name")
+	}
+
+	// If a name was received, return a value that embeds the name in a greeting message.
+	message := fmt.Sprintf("Hi, %v. Welcome!", name)
+	return message, nil
+}
+```
+
+在这段代码中
+* 修改了函数使其返回两个值：一个`string`和一个`error`。调用者会检查第二个值以查看是否发生了错误。
+* 导入了标准库`errors`包，以便使用`errors.New()`函数。
+* 添加了一个`if`语句以检查参数，如果参数无效（`name`为空字符串）则返回一个错误。`errors.New()`函数返回一个具有给定错误消息的`error`。
+* 成功返回时第二个值为`nil`（表示没有错误），这样调用者就能知道函数成功了。
+
+2.修改hello/hello.go，处理`Hello()`函数返回的错误：
+
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+
+	"example.com/greetings"
+)
+
+func main() {
+	// Set properties of the predefined Logger, including
+	// the log entry prefix and a flag to disable printing
+	// the time, source file, and line number.
+	log.SetPrefix("greetings: ")
+	log.SetFlags(0)
+
+	// Request a greeting message.
+	message, err := greetings.Hello("")
+	// If an error was returned, print it to the console and exit the program.
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// If no error was returned, print the returned message to the console.
+	fmt.Println(message)
+}
+```
+
+在这段代码中
+* 配置了`log`模块打印日志消息的前缀(`"greetings: "`)。
+* 将`Hello()`的两个返回值分别赋给变量。
+* 将调用`Hello()`的参数改为空字符串，以便测试错误处理代码。
+* 如果错误不是`nil`，使用标准库`log`包的`Fatal()`函数打印错误信息并终止程序。
+
+3.在hello目录中运行代码：
+
+```shell
+$ go run .
+greetings: empty name
+exit status 1
+```
+
+这就是Go中常见的错误处理方式：**将错误作为返回值，由调用者检查**（Go没有异常和`try`语句）。
+
+完整代码：
+* [greetings/greetings.go](https://github.com/ZZy979/go-tutorials/blob/c95cb8184d3923d3e12f9728a12fd7669cab127b/greetings/greetings.go)
+* [hello/hello.go](https://github.com/ZZy979/go-tutorials/blob/c95cb8184d3923d3e12f9728a12fd7669cab127b/hello/hello.go)
+
+### 4.4 返回随机问候语——使用切片
+[Return a random greeting](https://go.dev/doc/tutorial/random-greeting)
+
+在本节中将修改代码，返回几个预定义问候语中的随机一个，而不是每次返回固定的问候语。为此，要使用Go的**切片**(slice)。
+
+切片类似于数组，但大小会随着添加和删除元素动态变化。关于切片详见[Go slices](https://go.dev/blog/slices-intro)。（注：Go的切片相当于Python的`list`，与Python的切片不是一回事）
+
+1.修改greetings/greetings.go，添加一个包含三条问候语消息的切片，然后随机返回其中一条。
+
+```go
+package greetings
+
+import (
+	"errors"
+	"fmt"
+	"math/rand"
+)
+
+// Hello returns a greeting for the named person.
+func Hello(name string) (string, error) {
+	// If no name was given, return an error with a message.
+	if name == "" {
+		return "", errors.New("empty name")
+	}
+
+	// Create a message using a random format.
+	message := fmt.Sprintf(randomFormat(), name)
+	return message, nil
+}
+
+// randomFormat returns one of a set of greeting messages. The returned
+// message is selected at random.
+func randomFormat() string {
+	// A slice of message formats.
+	formats := []string{
+		"Hi, %v. Welcome!",
+		"Great to see you, %v!",
+		"Hail, %v! Well met!",
+	}
+
+	// Return a randomly selected message format by specifying
+	// a random index for the slice of formats.
+	return formats[rand.Intn(len(formats))]
+}
+```
+
+在这段代码中
+* 添加了一个`randomFormat()`函数，返回随机选择的问候语格式字符串。注意，以小写字母开头的函数只能在同一个包中访问（即非导出的）。
+* 在`randomFormat()`中，声明了一个切片`formats`，包含三个格式字符串。在声明切片时，省略方括号中的大小，例如`[]string`。这意味着底层数组的大小可以动态改变。
+* 使用[math/rand](https://pkg.go.dev/math/rand)包中的`Intn()`函数生成一个[0, 3)之间的随机数，用于从切片中选择一项。
+* 在`Hello()`中，将固定问候语改为调用`randomFormat()`。
+
+2.将hello/hello.go中调用`Hello()`函数的参数恢复为非空值。
+
+```go
+message, err := greetings.Hello("Gladys")
+```
+
+3.在hello目录中运行代码。多次运行，注意到问候语会变化。
+
+```shell
+$ go run .
+Great to see you, Gladys!
+
+$ go run .
+Hi, Gladys. Welcome!
+
+$ go run .
+Hail, Gladys! Well met!
+```
+
+完整代码：
+* [greetings/greetings.go](https://github.com/ZZy979/go-tutorials/blob/f93e5028e17b0a4762ba808867a27f8e7e11287b/greetings/greetings.go)
+* [hello/hello.go](https://github.com/ZZy979/go-tutorials/blob/f93e5028e17b0a4762ba808867a27f8e7e11287b/hello/hello.go)
+
+### 4.5 为多个人返回问候语——使用映射
+[Return greetings for multiple people](https://go.dev/doc/tutorial/greetings-multiple-people)
+
+在本节中，将支持为多个人分别返回问候语。换句话说，向函数传递一组名字（使用切片），返回每个人对应的问候语。为此，需要使用**映射**(map)。
+
+但是，直接修改函数`Hello()`的参数类型会改变函数的签名。如果你已经发布了`example.com/greetings`模块并且其他人已经编写了调用`Hello()`的代码，这种改变将破坏他们的程序。在这种情况下，更好的选择是编写一个具有不同名称的新函数，以保持旧函数[向后兼容](https://go.dev/blog/module-compatibility)。
+
+1.修改greetings/greetings.go，添加一个函数`Hellos()`。
+
+```go
+// Hellos returns a map that associates each of the named people with a greeting message.
+func Hellos(names []string) (map[string]string, error) {
+	// A map to associate names with messages.
+	messages := make(map[string]string)
+	// Loop through the received slice of names, calling
+	// the Hello function to get a message for each name.
+	for _, name := range names {
+		message, err := Hello(name)
+		if err != nil {
+			return nil, err
+		}
+		// In the map, associate the retrieved message with the name.
+		messages[name] = message
+	}
+	return messages, nil
+}
+```
+
+在这段代码中
+* 添加了一个`Hellos()`函数，其参数是一个切片而不是单个`string`，返回类型从`string`改为`map[string]string`，从而可以返回名字到问候语的映射。
+* 让新的`Hellos()`函数调用已有的`Hello()`函数，这有助于减少重复。
+* 创建了一个映射`messages`，将每个名字（作为键）关联到生成的问候语（作为值）。在Go中，使用语法`make(map[KeyType]ValueType)`初始化一个映射。关于映射详见[Go maps in action](https://go.dev/blog/maps)。
+* 遍历函数接收的`names`切片，检查每一个都非空，然后将每个名字关联一条消息。在这个`for`循环中，`range`返回两个值：当前项的索引和值的拷贝。这里不需要索引，因此使用[空白标识符](https://go.dev/doc/effective_go#blank)(`_`)忽略它。（注：Go的关键字`range`类似于Python的`enumerate()`函数）
+
+2.在hello/hello.go中调用`Hellos()`函数，传递一个名字的切片，然后打印返回的映射。
+
+```go
+// A slice of names.
+names := []string{"Gladys", "Samantha", "Darrin"}
+
+// Request greeting messages for the names.
+messages, err := greetings.Hellos(names)
+// If an error was returned, print it to the console and exit the program.
+if err != nil {
+	log.Fatal(err)
+}
+
+// If no error was returned, print the returned map of messages to the console.
+fmt.Println(messages)
+```
+
+3.运行代码，将输出名字/消息映射的字符串表示。
+
+```shell
+$ go run .
+map[Darrin:Hail, Darrin! Well met! Gladys:Hi, Gladys. Welcome! Samantha:Hail, Samantha! Well met!]
+```
+
+完整代码：
+* [greetings/greetings.go](https://github.com/ZZy979/go-tutorials/blob/f602aaa9cbb79df9db5b89867d84228837b1e9f6/greetings/greetings.go)
+* [hello/hello.go](https://github.com/ZZy979/go-tutorials/blob/f602aaa9cbb79df9db5b89867d84228837b1e9f6/hello/hello.go)
+
+### 4.6 单元测试
+[Add a test](https://go.dev/doc/tutorial/add-a-test)
+
+本节将为`Hello()`函数添加测试。Go提供了对单元测试的内置支持：使用命名约定、[testing](https://pkg.go.dev/testing)包和[go test](https://pkg.go.dev/cmd/go#hdr-Test_packages)命令可以快速编写和执行测试。
+
+1.在greetings目录中，创建一个名为greetings_test.go的文件。以 **_test.go** 结尾的文件名告诉`go test`命令这个文件包含测试函数。
+
+2.文件greetings_test.go的内容如下：
+
+```go
+package greetings
+
+import (
+	"regexp"
+	"testing"
+)
+
+// TestHelloName calls greetings.Hello with a name, checking for a valid return value.
+func TestHelloName(t *testing.T) {
+	name := "Gladys"
+	want := regexp.MustCompile(`\b` + name + `\b`)
+	msg, err := Hello(name)
+	if !want.MatchString(msg) || err != nil {
+		t.Errorf(`Hello("Gladys") = %q, %v, want match for %#q, nil`, msg, err, want)
+	}
+}
+
+// TestHelloEmpty calls greetings.Hello with an empty string, checking for an error.
+func TestHelloEmpty(t *testing.T) {
+	msg, err := Hello("")
+	if msg != "" || err == nil {
+		t.Errorf(`Hello("") = %q, %v, want "", error`, msg, err)
+	}
+}
+```
+
+在这段代码中
+* 创建了两个测试函数来测试`greetings.Hello()`，与被测函数在同一个包中。
+  * `TestHelloName()`使用一个名字调用`Hello()`，应该返回合法的消息。如果函数返回了一个错误或者不符合预期的消息（不包含传入的名字），则测试失败。
+  * `TestHelloEmpty()`用一个空字符串调用`Hello()`，应该返回错误。如果函数返回了非空字符串或者未返回错误，则测试失败。
+* 测试函数名的形式为`TestName`，其中`Name`表示特定测试的信息（如被测函数、测试点）。测试函数接受一个指向[testing.T](https://pkg.go.dev/testing#T)类型的指针参数，可以使用这个参数的方法报告错误和输出日志。
+
+3.在greetings目录中，使用`go test`命令执行测试。可以添加`-v`标志获得详细输出，这将列出所有测试及其结果。
+
+```shell
+$ go test 
+PASS
+ok      example.com/greetings   0.038s
+
+$ go test -v
+=== RUN   TestHelloName
+--- PASS: TestHelloName (0.00s)
+=== RUN   TestHelloEmpty
+--- PASS: TestHelloEmpty (0.00s)
+PASS
+ok      example.com/greetings   0.036s
+```
+
+4.使测试失败。
+
+测试函数`TestHelloName()`检查`Hello()`的返回值包含参数指定的名字。为了查看失败的测试结果，修改`Hello()`函数（假设出现了错误）：
+
+```go
+// message := fmt.Sprintf(randomFormat(), name)
+message := fmt.Sprint(randomFormat())
+```
+
+5.再次运行测试，`TestHelloName()`应该会失败。
+
+```shell
+$ go test   
+--- FAIL: TestHelloName (0.00s)
+    greetings_test.go:14: Hello("Gladys") = "Hail, %v! Well met!", <nil>, want match for `\bGladys\b`, nil
+FAIL
+exit status 1
+FAIL    example.com/greetings   0.035s
+```
+
+完整代码：[greetings/greetings_test.go](https://github.com/ZZy979/go-tutorials/blob/bfefe2b35aac7bd8ffa19352b421ecbec1cba929/greetings/greetings_test.go)
+
+### 4.7 编译和安装应用
+[Compile and install the application](https://go.dev/doc/tutorial/compile-install)
+
+`go run`命令是编译和运行程序的快捷方式，但它不会保留可执行文件（生成在临时目录中，运行后自动删除）。本节将介绍另外两个命令：
+* [go build](https://pkg.go.dev/cmd/go#hdr-Compile_packages_and_dependencies)命令编译包及其依赖。
+* [go install](https://go.dev/ref/mod#go-install)命令编译包及其依赖并安装。
+
+1.打开命令行，在hello目录中执行`go build`命令，将代码编译成可执行文件。
+
+2.运行生成的可执行文件hello（或hello.exe）。
+
+在Linux或Mac上：
+
+```shell
+$ ./hello
+map[Darrin:Great to see you, Darrin! Gladys:Hail, Gladys! Well met! Samantha:Hail, Samantha! Well met!]
+```
+
+在Windows上：
+
+```shell
+$ hello.exe
+map[Darrin:Great to see you, Darrin! Gladys:Hail, Gladys! Well met! Samantha:Hail, Samantha! Well met!]
+```
+
+现在已经把应用程序编译为可执行文件，但是命令行需要位于可执行文件所在目录，或者指定完整路径才能运行它。接下来将安装可执行文件，以便不指定路径（即在任意目录中直接输入`hello`）即可运行。
+
+3.使用[go list](https://pkg.go.dev/cmd/go#hdr-List_packages_or_modules)命令查看安装路径。
+
+```shell
+go list -f '{{.Target}}'
+```
+
+例如，该命令可能输出 /home/gopher/go/bin/hello ，表示安装路径为 /home/gopher/go/bin 。
+
+注：安装路径由环境变量GOBIN指定，默认为$GOPATH/bin。
+
+4.将安装路径添加到PATH环境变量，这样无需指定文件位置即可运行程序。
+
+在Linux或Mac上：
+
+```shell
+export PATH=$PATH:/home/gopher/go/bin
+```
+
+在Windows上：
+
+```shell
+set PATH=%PATH%;C:\Users\gopher\go\bin
+```
+
+5.运行`go install`命令编译并安装`hello`包。
+
+```shell
+go install
+```
+
+6.打开一个新的命令行窗口，在其他目录中直接输入`hello`即可运行程序。
+
+```shell
+$ hello
+map[Darrin:Hail, Darrin! Well met! Gladys:Great to see you, Gladys! Samantha:Hail, Samantha! Well met!]
+```

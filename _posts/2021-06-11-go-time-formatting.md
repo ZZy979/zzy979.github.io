@@ -1,8 +1,8 @@
 ---
-title: Go智障的时间格式化
+title: Go日期时间格式化
 date: 2021-06-11 15:40:52 +0800
 categories: [Go]
-tags: [golang, date and time, formatting]
+tags: [go, date and time, formatting]
 ---
 `time.Time`类型的`Format()`方法将时间格式化为字符串，但该方法的参数必须用一个固定的参考时间`"2006-01-02 15:04:05"`
 
