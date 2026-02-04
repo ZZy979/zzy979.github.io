@@ -2,7 +2,7 @@
 title: Go语言入门教程
 date: 2021-04-03 10:55 +0800
 categories: [Go]
-tags: [go, hello world, package, module, error handling, slice, map, unit test]
+tags: [go, hello world, package, module, error handling, slice, map, unit test, generic programming]
 render_with_liquid: false
 ---
 ## 1.简介
@@ -695,3 +695,195 @@ go install
 $ hello
 map[Darrin:Hail, Darrin! Well met! Gladys:Great to see you, Gladys! Samantha:Hail, Samantha! Well met!]
 ```
+
+## 5.泛型
+[Tutorial: Getting started with generics](https://go.dev/doc/tutorial/generics)
+
+本教程将介绍Go中**泛型**(generics)的基础知识。使用泛型可以编写能够用于多种类型的函数或类型。
+
+注：泛型是[Go 1.18](https://go.dev/doc/go1.18)中引入的。
+
+### 5.1 创建目录
+在主目录中创建一个`generics`模块。
+
+```shell
+mkdir generics
+cd generics
+go mod init example/generics
+```
+
+### 5.2 添加非泛型函数
+1.创建一个文件main.go，内容如下：
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	// Initialize a map for the integer values
+	ints := map[string]int64{
+		"first":  34,
+		"second": 12,
+	}
+
+	// Initialize a map for the float values
+	floats := map[string]float64{
+		"first":  35.98,
+		"second": 26.99,
+	}
+
+	fmt.Printf("Non-Generic Sums: %v and %v\n", SumInts(ints), SumFloats(floats))
+}
+
+// SumInts adds together the values of m.
+func SumInts(m map[string]int64) int64 {
+	var s int64
+	for _, v := range m {
+		s += v
+	}
+	return s
+}
+
+// SumFloats adds together the values of m.
+func SumFloats(m map[string]float64) float64 {
+	var s float64
+	for _, v := range m {
+		s += v
+	}
+	return s
+}
+```
+
+在这段代码中
+* 声明了两个函数`SumInts()`和`SumFloats()`，用于计算映射中所有值的和，值类型分别为`int64`和`float64`。
+* 在`main()`函数中初始化了一个`int64`值的映射和一个`float64`值的映射，调用上述两个函数计算值的和，并打印结果。
+
+2.在generics目录中运行代码。
+
+```shell
+$ go run .
+Non-Generic Sums: 46 and 62.97
+```
+
+### 5.3 添加泛型函数来处理多种类型
+可以看到，`SumInts()`和`SumFloats()`这两个函数除了值类型外完全相同。在本节中，将编写一个泛型函数，能够处理包含整型**或**浮点型值的映射，从而用一个函数代替之前的两个函数。
+
+泛型函数除了普通参数外还需要声明**类型参数**(type parameter)，使其能够处理不同的类型。调用泛型函数时需要指定**类型实参**(type argument)。
+
+每个类型参数都有一个**类型约束**(type constraint)，用于指定允许使用的类型实参。类型约束通常表示一组类型（例如“`int64`和`float64`”），但在编译时类型参数仅代表单个类型，即调用代码提供的类型实参（例如“`int64`或`float64`之一”）。如果类型实参不满足类型约束，代码将无法编译。
+
+类型参数必须支持泛型代码对其执行的所有操作。例如，如果函数试图对约束包含数值类型的类型参数执行字符串操作，代码将无法编译。
+
+1.在main.go末尾添加以下代码：
+
+```go
+// SumIntsOrFloats sums the values of map m.
+// It supports both int64 and float64 as map values.
+func SumIntsOrFloats[K comparable, V int64 | float64](m map[K]V) V {
+	var s V
+	for _, v := range m {
+		s += v
+	}
+	return s
+}
+```
+
+在这段代码中
+* 声明了一个泛型函数`SumIntsOrFloats()`，具有两个类型参数（在方括号中）`K`和`V`，参数类型为`map[K]V`，返回类型为`V`。
+* 类型参数`K`的约束为`comparable`，它允许任意支持比较运算符`==`和`!=`的类型。Go要求映射的键是可比较的。
+* 类型参数`V`的约束为两种类型的并集：`int64`和`float64`。使用`|`指定两种类型的并集，这意味着约束允许二者中任何一种类型。
+* 参数`m`的类型为`map[K]V`，这里使用了类型参数。
+
+2.在`main()`函数末尾添加以下代码：
+
+```go
+fmt.Printf("Generic Sums: %v and %v\n",
+	SumIntsOrFloats[string, int64](ints),
+	SumIntsOrFloats[string, float64](floats))
+```
+
+在这段代码中
+* 分别使用两个映射调用了泛型函数`SumIntsOrFloats()`。
+* 在方括号中指定了类型实参，编译器会将类型参数替换为类型实参（例如`K=string, V=int64`）。
+
+3.运行代码。
+
+```shell
+$ go run .
+Non-Generic Sums: 46 and 62.97
+Generic Sums: 46 and 62.97
+```
+
+### 5.4 调用泛型函数时省略类型实参
+在大多数情况下，可以省略泛型函数调用中的类型实参，编译器能够根据函数参数自动推断。注意，这并不总是可行的。例如，如果需要调用一个无参数的泛型函数，就需要显式指定类型实参。
+
+在`main()`函数末尾添加以下代码：
+
+```go
+fmt.Printf("Generic Sums, type parameters inferred: %v and %v\n",
+	SumIntsOrFloats(ints),
+	SumIntsOrFloats(floats))
+```
+
+运行代码：
+
+```shell
+$ go run .
+Non-Generic Sums: 46 and 62.97
+Generic Sums: 46 and 62.97
+Generic Sums, type parameters inferred: 46 and 62.97
+```
+
+### 5.5 声明类型约束
+在本节中，将把之前定义的类型约束移到接口中，以便在其他地方复用。
+
+可以将类型约束声明为接口，该约束将允许任何实现了该接口的类型。例如，如果声明一个包含三个方法的类型约束接口，然后将其用于泛型函数的类型参数，那么用于调用该函数的类型实参必须实现这三个方法。（直接使用接口类型的函数参数也能实现同样的效果？）
+
+类型约束接口也可以引用特定的类型，如下所示。
+
+1.在`main()`方法上方添加以下代码：
+
+```go
+type Number interface {
+	int64 | float64
+}
+```
+
+这段代码声明了用作类型约束的接口类型`Number`，定义为`int64`和`float64`的并集。
+
+2.在main.go末尾添加以下代码：
+
+```go
+// SumNumbers sums the values of map m.
+// It supports both int64 and float64 as map values.
+func SumNumbers[K comparable, V Number](m map[K]V) V {
+	var s V
+	for _, v := range m {
+		s += v
+	}
+	return s
+}
+```
+
+这段代码声明了一个泛型函数`SumNumbers()`，逻辑与之前的`SumIntsOrFloats()`相同，但使用了接口而不是类型并集作为类型约束。
+
+3.在`main()`函数末尾添加以下代码：
+
+```go
+fmt.Printf("Generic Sums with Constraint: %v and %v\n",
+	SumNumbers(ints),
+	SumNumbers(floats))
+```
+
+4.运行代码。
+
+```shell
+$ go run .
+Non-Generic Sums: 46 and 62.97
+Generic Sums: 46 and 62.97
+Generic Sums, type parameters inferred: 46 and 62.97
+Generic Sums with Constraint: 46 and 62.97
+```
+
+完整代码：[generics/main.go](https://github.com/ZZy979/go-tutorials/blob/main/generics/main.go)
