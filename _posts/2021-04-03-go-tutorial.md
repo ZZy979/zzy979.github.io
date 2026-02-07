@@ -2,7 +2,7 @@
 title: Go语言入门教程
 date: 2021-04-03 10:55 +0800
 categories: [Go]
-tags: [go, hello world, package, module, error handling, slice, map, unit test, generic programming]
+tags: [go, hello world, package, module, error handling, slice, map, unit test, generic programming, database, mysql]
 render_with_liquid: false
 ---
 ## 1.简介
@@ -75,7 +75,7 @@ cd helloworld
 
 代码中依赖的其他模块由项目根目录中名为go.mod的文件定义（类似于Python的requirements.txt）。
 
-运行[go mod init](https://go.dev/ref/mod#go-mod-init)命令将创建go.mod文件并开启依赖管理，需要指定模块名称。名称是模块路径（通常是仓库位置，例如`github.com/mymodule`），详见[Managing dependencies](https://go.dev/doc/modules/managing-dependencies#naming_module)。
+运行[go mod init](https://go.dev/ref/mod#go-mod-init)命令将创建go.mod文件并开启依赖管理，需要指定模块名称。名称是模块路径（通常是仓库位置，例如`github.com/myname/mymodule`），详见[Managing dependencies](https://go.dev/doc/modules/managing-dependencies#naming_module)。
 
 在本教程中，使用`example/hello`作为模块名称：
 
@@ -842,7 +842,7 @@ Generic Sums, type parameters inferred: 46 and 62.97
 
 类型约束接口也可以引用特定的类型，如下所示。
 
-1.在`main()`方法上方添加以下代码：
+1.在`main()`函数上方添加以下代码：
 
 ```go
 type Number interface {
@@ -887,3 +887,350 @@ Generic Sums with Constraint: 46 and 62.97
 ```
 
 完整代码：[generics/main.go](https://github.com/ZZy979/go-tutorials/blob/main/generics/main.go)
+
+## 6.访问数据库
+[Tutorial: Accessing a relational database](https://go.dev/doc/tutorial/database-access)
+
+本教程将介绍如何使用Go访问关系型数据库。在本教程中，将创建一个复古爵士乐唱片的数据库，然后编写访问该数据库的代码。
+
+标准库的[database/sql](https://pkg.go.dev/database/sql)包包含用于连接数据库、执行查询等操作的类型和函数。详见[Accessing relational databases](https://go.dev/doc/database/)。
+
+### 6.1 前置条件
+安装[MySQL](https://www.mysql.com/)数据库。
+
+### 6.2 创建目录
+在主目录中创建一个`data-access`模块。
+
+```shell
+mkdir data-access
+cd data-access
+go mod init example/data-access
+```
+
+### 6.3 创建数据库
+使用[MySQL命令行客户端](https://dev.mysql.com/doc/refman/8.4/en/mysql.html)创建一个复古爵士乐唱片数据库。
+
+1.打开一个命令行窗口，登录到MySQL。
+
+```shell
+$ mysql -u root -p
+Enter password: 
+
+mysql>
+```
+
+2.在mysql命令行中创建一个数据库`recordings`，并切换到该数据库。
+
+```shell
+mysql> create database recordings;
+Query OK, 1 row affected (0.02 sec)
+
+mysql> use recordings;
+Database changed
+```
+
+3.在data-access目录中创建一个文件create-tables.sql，内容如下：
+
+```sql
+DROP TABLE IF EXISTS album;
+CREATE TABLE album (
+  id         INT AUTO_INCREMENT NOT NULL,
+  title      VARCHAR(128) NOT NULL,
+  artist     VARCHAR(255) NOT NULL,
+  price      DECIMAL(5,2) NOT NULL,
+  PRIMARY KEY (`id`)
+);
+
+INSERT INTO album
+  (title, artist, price)
+VALUES
+  ('Blue Train', 'John Coltrane', 56.99),
+  ('Giant Steps', 'John Coltrane', 63.99),
+  ('Jeru', 'Gerry Mulligan', 17.99),
+  ('Sarah Vaughan', 'Sarah Vaughan', 34.98);
+```
+
+在这段SQL代码中
+* 删除名为`album`的表，以便可以重复运行这个脚本。
+* 创建了一张表`album`，包含4列：`id`、`title`、`artist`和`price`。其中`id`是自动递增的。
+* 向`album`表插入了4行记录。
+
+4.在mysql命令行中使用`source`命令运行这个SQL脚本：
+
+```shell
+mysql> source data-access/create-tables.sql
+```
+
+注意：在Windows中，文件路径要使用正斜杠而不是反斜杠，例如 C:/Users/yourname/data-access/create-tables.sql
+
+5.使用`SELECT`语句验证成功创建了表和数据。
+
+```shell
+mysql> select * from album;
++----+---------------+----------------+-------+
+| id | title         | artist         | price |
++----+---------------+----------------+-------+
+|  1 | Blue Train    | John Coltrane  | 56.99 |
+|  2 | Giant Steps   | John Coltrane  | 63.99 |
+|  3 | Jeru          | Gerry Mulligan | 17.99 |
+|  4 | Sarah Vaughan | Sarah Vaughan  | 34.98 |
++----+---------------+----------------+-------+
+4 rows in set (0.00 sec)
+```
+
+### 6.4 查找数据库驱动
+接下来，需要寻找一个能够将`database/sql`包中的函数调用转换为数据库可理解的请求的数据库驱动。
+
+1.在浏览器打开[SQL Database Drivers](https://go.dev/wiki/SQLDrivers)。
+
+2.在本教程中，使用[github.com/go-sql-driver/mysql](https://github.com/go-sql-driver/mysql/)来访问MySQL（注意，仓库的URL就是模块名）。
+
+3.在data-access目录中创建一个文件main.go并添加以下代码：
+
+```go
+package main
+
+import "github.com/go-sql-driver/mysql"
+```
+
+4.使用[go get](https://pkg.go.dev/cmd/go#hdr-Add_dependencies_to_current_module_and_install_them)命令将`github.com/go-sql-driver/mysql`模块作为依赖添加到go.mod文件，并下载该依赖。
+
+```shell
+$ go get .
+go: added filippo.io/edwards25519 v1.1.0
+go: added github.com/go-sql-driver/mysql v1.9.3
+```
+
+其中`.`表示“为当前目录中的代码获取依赖”。详见[Adding a dependency](https://go.dev/doc/modules/managing-dependencies#adding_dependency)。
+
+注：也可以先使用`go get github.com/go-sql-driver/mysql`命令下载依赖，然后在代码中导入，最后执行`go mod tidy`。
+
+### 6.5 连接数据库
+导入驱动后，就可以开始编写访问数据库的代码了。
+
+1.在main.go中添加以下代码：
+
+```go
+var db *sql.DB
+
+func main() {
+	// Capture connection properties.
+	cfg := mysql.NewConfig()
+	cfg.User = os.Getenv("DBUSER")
+	cfg.Passwd = os.Getenv("DBPASS")
+	cfg.Net = "tcp"
+	cfg.Addr = "127.0.0.1:3306"
+	cfg.DBName = "recordings"
+
+	// Get a database handle.
+	var err error
+	db, err = sql.Open("mysql", cfg.FormatDSN())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	pingErr := db.Ping()
+	if pingErr != nil {
+		log.Fatal(pingErr)
+	}
+	fmt.Println("Connected!")
+}
+```
+
+在这段代码中
+* 声明了一个`*sql.DB`类型的全局变量`db`。[sql.DB](https://pkg.go.dev/database/sql#DB)类型表示数据库**句柄**(handle)，可用于访问数据库。在实际代码中，应该避免全局变量，而是通过函数参数传递。
+* 使用MySQL驱动的[Config](https://pkg.go.dev/github.com/go-sql-driver/mysql#Config)类型收集连接参数，并使用`FormatDSN()`方法将其格式化为DSN (data source name)字符串。
+* 调用`sql.Open()`打开数据库连接，如果失败则打印错误消息。
+* 调用`DB.Ping()`确认连接成功并打印消息 "Connected!" 。
+
+2.在命令行中设置程序使用的环境变量`DBUSER`和`DBPASS`，指定数据库用户名和密码。
+
+在Linux或Mac上：
+
+```shell
+export DBUSER=username
+export DBPASS=password
+```
+
+在Windows上：
+
+```shell
+set DBUSER=username
+set DBPASS=password
+```
+
+3.在data-access目录中运行代码。
+
+```shell
+$ go run .
+Connected!
+```
+
+### 6.6 查询多行
+接下来将使用Go执行一个SQL查询。对于可能返回多行的SQL语句，使用`DB.Query()`方法执行查询，并遍历它返回的行。
+
+1.在`main()`函数上方添加`Album`结构体的定义，用于保存查询返回的行数据。结构体字段名和类型与数据库表`album`的列名和类型对应。
+
+```go
+type Album struct {
+	ID     int64
+	Title  string
+	Artist string
+	Price  float32
+}
+```
+
+2.在`main()`函数下方添加`albumsByArtist()`函数，用于根据艺术家名字查询专辑。
+
+```go
+// albumsByArtist queries for albums that have the specified artist name.
+func albumsByArtist(name string) ([]Album, error) {
+	// An albums slice to hold data from returned rows.
+	var albums []Album
+
+	rows, err := db.Query("SELECT * FROM album WHERE artist = ?", name)
+	if err != nil {
+		return nil, fmt.Errorf("albumsByArtist %q: %v", name, err)
+	}
+	defer rows.Close()
+	// Loop through rows, using Scan to assign column data to struct fields.
+	for rows.Next() {
+		var alb Album
+		if err := rows.Scan(&alb.ID, &alb.Title, &alb.Artist, &alb.Price); err != nil {
+			return nil, fmt.Errorf("albumsByArtist %q: %v", name, err)
+		}
+		albums = append(albums, alb)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("albumsByArtist %q: %v", name, err)
+	}
+	return albums, nil
+}
+```
+
+在这段代码中
+* 声明了一个`Album`类型的切片`albums`，用于保存查询结果。
+* 使用`DB.Query()`执行`SELECT`语句来查询具有指定艺术家名字的专辑。第一个参数是SQL语句，之后可以传递零个或多个任意类型的参数，用于提供SQL语句中占位符(`?`)的值。与直接拼接字符串相比，这种方式可以避免SQL注入风险。
+* 使用`defer`语句关闭`rows`，以便在函数退出时释放它持有的资源。
+* 使用`for`语句遍历返回的行，使用`Rows.Scan()`将每行各个列的值赋给`Album`的字段。
+  * `Scan()`接受一个指针列表，用于写入列的值。这里使用`&`运算符获取`alb`变量各字段的指针。
+  * 在Go中，只有条件部分的`for`循环相当于Java中的`while`循环。`Rows.Next()`返回一个布尔值，表示是否还有下一行。
+* 在循环内部，将新的`alb`添加到`albums`切片。
+* 循环结束后，使用`Rows.Err()`检查整个查询是否有错误。注意，如果查询本身失败了，在这里检查错误是发现结果不完整的唯一方式。
+
+3.在`main()`函数末尾调用`albumsByArtist()`函数并打印结果。
+
+```go
+albums, err := albumsByArtist("John Coltrane")
+if err != nil {
+	log.Fatal(err)
+}
+fmt.Printf("Albums found: %v\n", albums)
+```
+
+4.运行代码。
+
+```shell
+$ go run .
+Connected!
+Albums found: [{1 Blue Train John Coltrane 56.99} {2 Giant Steps John Coltrane 63.99}]
+```
+
+### 6.7 查询一行
+对于至多会返回一行的SQL语句，可以使用`QueryRow()`，这比`Query()`循环更简单。
+
+1.在`albumsByArtist()`函数下方添加`albumByID()`函数，用于根据ID查询专辑。
+
+```go
+// albumByID queries for the album with the specified ID.
+func albumByID(id int64) (Album, error) {
+	// An album to hold data from the returned row.
+	var alb Album
+
+	row := db.QueryRow("SELECT * FROM album WHERE id = ?", id)
+	if err := row.Scan(&alb.ID, &alb.Title, &alb.Artist, &alb.Price); err != nil {
+		if err == sql.ErrNoRows {
+			return alb, fmt.Errorf("albumsById %d: no such album", id)
+		}
+		return alb, fmt.Errorf("albumsById %d: %v", id, err)
+	}
+	return alb, nil
+}
+```
+
+在这段代码中
+* 使用`DB.QueryRow()`执行`SELECT`语句来查询具有指定ID的专辑（ID是唯一的，因此至多会返回一行），返回一个`sql.Row`。为了简化调用代码，该方法不返回错误，而是之后在`Rows.Scan()`中返回查询错误（例如`sql.ErrNoRows`）。
+* 使用`Rows.Scan()`将列值拷贝到结构体字段，并检查错误。特殊错误`sql.ErrNoRows`表示查询未返回任何行。
+* 在Go中，结构体类型的值不能为`nil`，因此在发生错误时仍然需要返回`alb`（此时所有字段都是零值）。
+
+2.在`main()`函数末尾调用`albumByID()`函数并打印结果。
+
+```go
+// Hard-code ID 2 here to test the query.
+alb, err := albumByID(2)
+if err != nil {
+	log.Fatal(err)
+}
+fmt.Printf("Album found: %v\n", alb)
+```
+
+3.运行代码。
+
+```shell
+$ go run .
+Connected!
+Albums found: [{1 Blue Train John Coltrane 56.99} {2 Giant Steps John Coltrane 63.99}]
+Album found: {2 Giant Steps John Coltrane 63.99}
+```
+
+### 6.8 插入数据
+在本节中，将使用Go执行`INSERT`语句来向数据库添加新行。为了执行不返回结果的SQL语句，需要使用`DB.Exec()`。
+
+1.在`albumByID()`函数下方添加`addAlbum()`函数，用于在数据库中插入一个新的专辑。
+
+```go
+// addAlbum adds the specified album to the database,
+// returning the album ID of the new entry
+func addAlbum(alb Album) (int64, error) {
+	result, err := db.Exec("INSERT INTO album (title, artist, price) VALUES (?, ?, ?)",
+		alb.Title, alb.Artist, alb.Price)
+	if err != nil {
+		return 0, fmt.Errorf("addAlbum: %v", err)
+	}
+	id, err := result.LastInsertId()
+	if err != nil {
+		return 0, fmt.Errorf("addAlbum: %v", err)
+	}
+	return id, nil
+}
+```
+
+在这段代码中
+* 使用`DB.Exec()`执行了`INSERT`语句。与`Query()`类似，`Exec()`也接受一个SQL语句和若干个参数值。
+* 该方法返回一个`sql.Result`，使用其`LastInsertId()`方法获取插入到数据库的行ID。
+
+2.在`main()`函数末尾调用`addAlbum()`函数并打印结果。
+
+```go
+albID, err := addAlbum(Album{
+	Title:  "The Modern Sound of Betty Carter",
+	Artist: "Betty Carter",
+	Price:  49.99,
+})
+if err != nil {
+	log.Fatal(err)
+}
+fmt.Printf("ID of added album: %v\n", albID)
+```
+
+3.运行代码。
+
+```shell
+$ go run .
+Connected!
+Albums found: [{1 Blue Train John Coltrane 56.99} {2 Giant Steps John Coltrane 63.99}]
+Album found: {2 Giant Steps John Coltrane 63.99}
+ID of added album: 5
+```
+
+完整代码：[data-access/main.go](https://github.com/ZZy979/go-tutorials/blob/main/data-access/main.go)
