@@ -267,7 +267,7 @@ my_fct(mp,c);  // the Open_polyline argument refers to a Marked_polyline
 
 ## 14.3 基类和派生类
 下面从一个更加技术性的视角来讨论基类和派生类。当设计图形接口库时，我们依赖三个关键的语言机制：
-* **派生**(derivation)：从一个类构造另一个类，使得新类可以代替原来的类。其中新类叫做**派生类**(derived class)或**子类**(subclass)，原来的类叫做**基类**(base class)或**父类/超类**(superclass)。这通常称为**继承**(inheritance)，因为派生类除了自己的成员外，还获得（“继承”）了基类的所有成员。例如，`Circle`派生（继承）自`Shape`，换句话说，“`Circle`是一种`Shape`”或者“`Shape`是`Circle`的基类”。
+* **派生**(derivation)：从一个类构造另一个类，使得新类可以代替原来的类。其中新类叫做**派生类**(derived class)或**子类**(subclass)，原来的类叫做**基类**(base class)或**父类/超类**(superclass)。这通常称为**继承**(inheritance)，因为派生类除了自己的成员外，还获得（“继承”）了基类的所有成员。例如，`Circle`派生（继承）自`Shape`，换句话说，“`Circle`是一种(is a)`Shape`”或者“`Shape`是`Circle`的基类”。
 * **虚函数**(virtual function)：在基类中定义一个函数、在派生类中有一个名称和类型相同的函数，**当用户（通过基类指针或引用）调用基类函数时，调用的实际上是派生类的函数**。这通常称为**运行时多态**(run-time polymorphism)、**动态分派**(dynamic dispatch)或**覆盖**(overriding)，因为调用哪个函数是在运行时根据实际使用的对象类型来确定的。例如，当`Window`（通过`Shape*`或`Shape&`）对一个实际是`Circle`的`Shape`调用`draw_lines()`函数时，实际调用的是`Circle`的`draw_lines()`，而不是`Shape`本身的`draw_lines()`。
 * **私有和保护成员**(private and protected members)：保持类的实现细节（数据成员）为私有的，保护它们不被直接使用而使得维护复杂化。这通常称为**封装**(encapsulation)。
 
@@ -275,7 +275,7 @@ my_fct(mp,c);  // the Open_polyline argument refers to a Marked_polyline
 
 12.4节给出了图形接口类的继承关系图，箭头从派生类指向基类。
 
-注：**派生类的指针或引用可以直接赋给基类的指针或引用**；反之则必须使用`dynamic_cast`，如果转换失败则返回空指针或抛出`std::bad_cast`。例如：
+注：**派生类的指针或引用可以直接赋给基类的指针或引用**（但是受继承方式的影响，见14.3.4节）；反之则必须使用`dynamic_cast`，如果转换失败则返回空指针或抛出`std::bad_cast`。例如：
 
 ```cpp
 Circle c(Point(100, 100), 50);
@@ -466,6 +466,41 @@ struct Derived : Base {
 注：
 * 这些定义忽略了友元(friend)的概念和一些次要的细节，这不在本书的范围之内。
 * **类默认私有继承，结构体默认公有继承。**
+* 如果类`D`继承自`B`， "D is a B" 这一关系（即`D*`可赋给`B*`以及`D&`可赋给`B&`）的作用域与继承方式有关：公有继承对所有函数可见，受保护继承对`D`及其派生类可见，私有继承仅对`D`可见。例如：
+
+```cpp
+struct B {};
+
+struct D1 : public B {
+    void f() { D1 d1; B* p = &d1; }  // OK
+};
+
+struct D11 : public D1 {
+    void g() { D1 d1; B* p = &d1; }  // OK
+};
+
+struct D2 : protected B {
+    void f() { D2 d2; B* p = &d2; }  // OK
+};
+
+struct D21 : public D2 {
+    void g() { D2 d2; B* p = &d2; }  // OK
+};
+
+struct D3 : private B {
+    void f() { D3 d3; B* p = &d3; }  // OK
+};
+
+struct D31 : public D3 {
+    void g() { D3 d3; B* p = &d3; }  // error: B is an inaccessible base of D3
+};
+
+void f() {
+    D1 d1; B* p1 = &d1;  // OK
+    D2 d2; B* p2 = &d2;  // error: B is an inaccessible base of D2
+    D3 d3; B* p3 = &d3;  // error: B is an inaccessible base of D3
+}
+```
 
 ### 14.3.5 纯虚函数
 **抽象类**(abstract class)是只能作为基类的类。我们使用抽象类来表示抽象的概念。抽象概念的思想是极其有用的，例如形状/矩形，动物/狗，水果/苹果。在程序中，抽象类通常定义了一组相关的类（**类层次结构**(class hierarchy)）的接口。

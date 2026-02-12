@@ -2,7 +2,7 @@
 title: 【C++】参数包与折叠表达式
 date: 2025-04-21 22:25:35 +0800
 categories: [C/C++]
-tags: [cpp, template, parameter pack, fold expression, tuple]
+tags: [cpp, template, parameter pack, fold expression, tuple, template metaprogramming]
 ---
 ## 1.参数包
 **参数包**(parameter pack)是C++11引入的模板特性，允许模板接受可变数量的参数，用语法`...`表示。参数包有两种形式：

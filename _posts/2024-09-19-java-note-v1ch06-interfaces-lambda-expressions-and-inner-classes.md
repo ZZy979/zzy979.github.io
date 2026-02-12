@@ -39,7 +39,7 @@ public interface Comparable<T> {
 ```java
 class Employee implements Comparable<Employee> {
     @Override
-    public int compareTo(Object other) {
+    public int compareTo(Employee other) {
         return Double.compare(salary, other.salary);
     }
     ...
