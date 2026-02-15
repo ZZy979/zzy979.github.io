@@ -467,7 +467,7 @@ project the pair::second: one two three
 
 大多数视图都有一个对应的函数，定义在命名空间`std::ranges::views`中，用于创建这种视图。例如，`ranges::views::iota(m, n)`等价于`ranges::iota_view(m, n)`，`ranges::views::iota(n)`等价于`ranges::iota_view(n)`。
 
-例如：
+下面的程序展示了这个视图的用法：
 
 ```cpp
 #include <algorithm>
@@ -546,7 +546,7 @@ r | e  // r | (c | d)
 
 **范围适配器对象**(range adaptor object)是接受一个范围作为第一个参数（可能还有额外参数）、返回一个视图的函数对象（详见具名要求[RangeAdaptorObject](https://en.cppreference.com/w/cpp/named_req/RangeAdaptorObject)）。
 * 如果一个范围适配器对象只接受一个参数，则它也是一个范围适配器闭包对象。
-* 如果一个范围适配器对象接受多个参数，则它也支持[部分应用](https://en.wikipedia.org/wiki/Partial_application)(partial application)。假设`a`是一个范围适配器对象，`r`是一个范围，`args...`是额外参数，则表达式`a(args...)`是一个范围适配器闭包对象，以下表达式等价：
+* 如果一个范围适配器对象接受多个参数，则它也支持[部分应用](https://en.wikipedia.org/wiki/Partial_application)(partial application)。假设`a`是一个范围适配器对象，`r`是一个范围，`args...`是额外参数，则表达式`a(r, args...)`是一个视图，`a(args...)`是一个范围适配器闭包对象。以下表达式等价：
 
 ```cpp
 a(r, args...)
@@ -819,7 +819,7 @@ auto range(int start, int stop, int step = 1) {
 error: inconsistent deduction for auto return type: 'std::ranges::stride_view<std::ranges::take_while_view<std::ranges::iota_view<int, std::unreachable_sentinel_t>, range(int, int, int)::<lambda(int)> > >' and then 'std::ranges::stride_view<std::ranges::reverse_view<std::ranges::take_while_view<std::ranges::iota_view<int, std::unreachable_sentinel_t>, range(int, int, int)::<lambda(int)> > > >'
 ```
 
-简单来说就是`if`语句两个分支的返回类型不同（虽然都是`ranges::stride_view`，但模板参数不同，因此编译器认为是不同的类型）。一个函数具有多种返回类型在C++中是不合法的。
+简单来说就是`if`语句两个分支的返回类型不同（虽然都是`ranges::stride_view`，但模板参数不同，因此编译器认为是不同的类型）。在C++中一个函数具有多种返回类型是不合法的。
 
 为了解决这一困难，考虑换一种思路——使用等差数列通项公式：
 
@@ -869,7 +869,7 @@ print(range(12, 2, -3));
 [ 12 9 6 3 ]
 ```
 
-注：这里的实现参考了CPython的[rangeobject.c](https://github.com/python/cpython/blob/main/Objects/rangeobject.c)。
+注：这里的实现参考了CPython的源代码[rangeobject.c](https://github.com/python/cpython/blob/main/Objects/rangeobject.c)。
 
 #### 3.5.2 视图概念
 自定义视图可能比较复杂，难以通过组合标准视图得到。在这种情况下，就需要实现一个视图类。

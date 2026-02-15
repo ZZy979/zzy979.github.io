@@ -80,9 +80,9 @@ public class Item implements Comparable<Item> {
 但由于Java对泛型类的处理方式与C++模板不同，因此无法实现编译期多态。
 
 #### deducing this
-使用C++23的[deducing this](https://en.cppreference.com/w/cpp/language/member_functions.html#Explicit_object_member_functions)特性可以简化CRTP的写法。
+使用C++23的[deducing this](https://en.cppreference.com/w/cpp/language/member_functions#Explicit_object_member_functions)特性可以简化CRTP的写法。
 
-如果基类函数`num_wheels()`使用了[显式对象参数](https://en.cppreference.com/w/cpp/language/function.html#Explicit_object_parameter)(explicit object parameter)，基类`Vehicle`就不必是模板，因为`self`参数可以自动推导为正确的派生类型，而无需使用`static_cast`。
+如果基类函数`num_wheels()`使用了[显式对象参数](https://en.cppreference.com/w/cpp/language/function#Explicit_object_parameter)(explicit object parameter)，基类`Vehicle`就不必是模板，因为`self`参数可以自动推导为正确的派生类型，而无需使用`static_cast`。
 
 注：GCC 14以上版本才支持该特性。
 
@@ -224,8 +224,46 @@ Y: 20 objects created, 15 alive
 
 每次创建类`X`的对象时，`Counter<X>`的构造函数会将创建计数和存活计数各加1；每次销毁类`X`的对象时，`Counter<X>`的析构函数会将存活计数减1。`Counter<X>`和`Counter<Y>`是两个独立的类，因此能分别对`X`和`Y`进行计数。在这个例子中，这种类的区别是模板参数`T`的唯一用途，这也是不能使用非模板基类的原因。
 
-### 2.4 std::enable_shared_from_this
-标准库中使用CRTP的一个例子是头文件\<memory\>中的类模板`std::enable_shared_from_this`。继承`std::enable_shared_from_this<T>`会为类`T`提供成员函数`shared_from_this()`，该函数返回一个新的`std::shared_ptr<T>`，能够正确地与已有的管理当前对象的智能指针共享所有权。
+### 2.4 std::ranges::view_interface
+标准库中使用CRTP的一个例子是头文件\<ranges\>中的类模板[std::ranges::view_interface](https://en.cppreference.com/w/cpp/ranges/view_interface)，用于辅助自定义视图类（关于“视图”的概念详见[《C++20范围库》]({% post_url 2024-12-15-cpp20-ranges-library %})）。
+
+视图类只需使用CRTP继承`std::ranges::view_interface`，并提供返回开始和结束迭代器的成员函数`begin()`和`end()`即可。该模板会根据迭代器类别提供其他成员函数，如`size()`、`empty()`、`operator[]`等。例如：
+
+```cpp
+class my_view : public std::ranges::view_interface<my_view> {
+public:
+    auto begin() const { /*...*/ }
+    auto end() const { /*...*/ }
+    // size() is provided if begin() returns a forward iterator and end() returns a sentinel for it.
+};
+```
+
+其他成员函数均基于`begin()`和`end()`实现，这也是向派生类添加功能的一个例子。例如，成员函数`size()`定义为`end() - begin()`。
+
+```cpp
+template<class D>
+    requires is_class_v<D> && same_as<D, std::remove_cv_t<D>>
+class view_interface {
+    constexpr D& derived() { return static_cast<D&>(*this); }
+
+public:
+    constexpr auto size()
+        requires forward_range<D> && sized_sentinel_for<sentinel_t<D>, iterator_t<D>>
+    { return ranges::end(derived()) - ranges::begin(derived()); }
+
+    // ...
+};
+```
+
+其中`ranges::begin(t)`会调用`t.begin()`，`ranges::end(t)`会调用`t.end()`。
+
+完整实现参见主流编译器的标准库源码：
+* GCC: [libstdc++/ranges_util.h](https://github.com/gcc-mirror/gcc/blob/master/libstdc%2B%2B-v3/include/bits/ranges_util.h)
+* Clang: [libc++/view_interface.h](https://github.com/llvm/llvm-project/blob/main/libcxx/include/__ranges/view_interface.h)
+* MSVC: [STL/xutility](https://github.com/microsoft/STL/blob/main/stl/inc/xutility)
+
+### 2.5 std::enable_shared_from_this
+标准库中另一个CRTP的例子是头文件\<memory\>中的类模板`std::enable_shared_from_this`。继承`std::enable_shared_from_this<T>`会为类`T`提供成员函数`shared_from_this()`，该函数返回一个新的`std::shared_ptr<T>`，能够正确地与已有的管理当前对象的智能指针共享所有权。
 
 智能指针`std::shared_ptr`能够共享一个对象的所有权，并在引用计数降为0时自动销毁对象。这一机制能正确工作的前提是管理同一个对象的所有`std::shared_ptr`必须**共享引用计数**，否则会导致对象被多次销毁（未定义行为，可能导致程序崩溃）。
 
@@ -392,9 +430,9 @@ public:
 
 注意，实际的标准库实现可能使用指针转换（即`T*`能否转换为`std::enable_shared_from_this<T>*`）来判断继承关系，这种方式只能识别`public`继承（见[《C++程序设计原理与实践》笔记 第14章]({% post_url 2023-03-06-ppp-note-ch14-graphics-class-design %}) 14.3.4节）。因此在继承`std::enable_shared_from_this`时必须使用`public`继承，否则可能会导致`weak_this`无法被正确赋值。
 
-主流编译器的标准库源码：
-* gcc: [libstdc++/shared_ptr_base.h](https://github.com/gcc-mirror/gcc/blob/master/libstdc%2B%2B-v3/include/bits/shared_ptr_base.h) `std::__shared_ptr::_M_enable_shared_from_this_with()`
-* clang: [libc++/shared_ptr.h](https://github.com/llvm/llvm-project/blob/main/libcxx/include/__memory/shared_ptr.h) `std::shared_ptr::__enable_weak_this()`
+参见主流编译器的标准库源码：
+* GCC: [libstdc++/shared_ptr_base.h](https://github.com/gcc-mirror/gcc/blob/master/libstdc%2B%2B-v3/include/bits/shared_ptr_base.h) `std::__shared_ptr::_M_enable_shared_from_this_with()`
+* Clang: [libc++/shared_ptr.h](https://github.com/llvm/llvm-project/blob/main/libcxx/include/__memory/shared_ptr.h) `std::shared_ptr::__enable_weak_this()`
 * MSVC: [STL/memory](https://github.com/microsoft/STL/blob/main/stl/inc/memory) `std::shared_ptr::Set_ptr_rep_and_enable_shared()`
 
 ## 3.陷阱
@@ -438,7 +476,7 @@ public:
 ```
 
 ## 参考
-* <https://en.cppreference.com/w/cpp/language/crtp.html>
+* <https://en.cppreference.com/w/cpp/language/crtp>
 * <https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern>
 * <https://www.fluentcpp.com/2017/05/12/curiously-recurring-template-pattern/>
 * <https://www.sandordargo.com/blog/2019/03/13/the-curiously-recurring-templatep-pattern-CRTP>
