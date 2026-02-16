@@ -1,7 +1,7 @@
 ---
 title: 【C++】奇异递归模板模式(CRTP)
 date: 2026-02-07 23:22:29 +0800
-categories: [C++]
+categories: [C/C++]
 tags: [cpp, crtp, template, template metaprogramming, deducing this]
 ---
 ## 1.引言
@@ -62,9 +62,11 @@ Cars have 4 wheels
 
 在基类函数`Vehicle::num_wheels()`中，通过`static_cast`将`this`转换为模板参数`T`（同时也是派生类）的指针，并调用派生类函数`num_wheels_impl()`。这样**实现了类似多态的效果，同时避免了虚函数调用的开销**，因为所有调用都在编译期确定（性能对比参见[The cost of dynamic (virtual calls) vs. static (CRTP) dispatch in C++](https://eli.thegreenplace.net/2013/12/05/the-cost-of-dynamic-virtual-calls-vs-static-crtp-dispatch-in-c)）。这种模式广泛用于Windows的ATL和WTL等库中。
 
-注：
-* 这段代码之所以能通过编译，是因为类模板的成员函数体**只有在实际使用时才会被实例化**。当编译器遇到`Bicycle`类的定义时，会实例化`Vehicle<Bicycle>`，但并不会立即实例化`num_wheels()`的函数体，因为此时`Bicycle`还不是完整类型，无法获得`num_wheels_impl()`函数的地址。而在调用`b.num_wheels()`时，`Bicycle`已经是完整类型，`Vehicle<Bicycle>::num_wheels()`函数体被实例化为`return static_cast<Bicycle*>(this)->num_wheels_impl()`，即调用`Bicycle::num_wheels_impl()`，此时该函数的定义是已知的。
-* Java中也有类似的用法，例如
+注： 这段代码之所以能通过编译，是因为类模板的成员函数体**只有在实际使用时才会被实例化**。
+* 当编译器遇到`Bicycle`类的定义时，会实例化`Vehicle<Bicycle>`，但并不会立即实例化`num_wheels()`的函数体，因为此时`Bicycle`还不是完整类型，无法获得`num_wheels_impl()`函数的地址。
+* 在调用`b.num_wheels()`时，`Bicycle`已经是完整类型，`Vehicle<Bicycle>::num_wheels()`函数体被实例化为`return static_cast<Bicycle*>(this)->num_wheels_impl()`，即调用`Bicycle::num_wheels_impl()`，此时该函数的定义是已知的。
+
+Java中也有类似的用法，例如
 
 ```java
 public class Item implements Comparable<Item> {
@@ -112,7 +114,7 @@ public:
 <https://godbolt.org/z/vaYhaKra9>
 
 ### 2.2 添加功能
-CRTP的另一个用途是向派生类添加功能。在上一节的例子中可以看到，基类可以利用模板参数和对`this`类型转换来访问派生类的函数。利用这一点，基类可以提供一些通用功能，可以被多个派生类复用（注：这类似于Python的混入类）。
+CRTP的另一个用途是向派生类添加功能。在上一节的例子中可以看到，基类可以利用模板参数和对`this`类型转换来访问派生类的函数。利用这一点，基类可以提供一些通用功能，可以被多个派生类复用（这类似于Python的混入类）。
 
 在下面的例子中，利用CRTP向派生类添加数值计算函数（来自[Jonathan Boccara](https://www.fluentcpp.com/2017/05/16/what-the-crtp-brings-to-code/)）。假设`Sensitivity`有一个值：
 
@@ -156,7 +158,7 @@ class Sensitivity : public NumericalFunctions<Sensitivity> {
 };
 ```
 
-`NumericalFunctions`使用了派生类的`value()`和`set_value()`完成数值计算。任何定义了这两个函数的类`X`都可以通过继承`NumericalFunctions<X>`获得这些数值计算函数。如果不使用CRTP，则需要将`value()`和`set_value()`放在基类中，并声明为纯虚函数，由派生类覆盖这两个函数。
+`NumericalFunctions`使用了派生类的`value()`和`set_value()`函数完成数值计算。任何定义了这两个函数的类`X`都可以通过继承`NumericalFunctions<X>`获得这些数值计算函数。如果不使用CRTP，则需要将`value()`和`set_value()`放在基类中，并声明为纯虚函数，由派生类覆盖这两个函数。
 
 在这个CRTP例子中，“继承”的含义与其他情况不同。通常，
 * 派生类“是一个”基类。
@@ -407,10 +409,9 @@ private:
 
 可以看到，`std::enable_shared_from_this`类本身非常简单：
 * 在构造函数中，将`weak_this`默认初始化为空指针。
-* 在首次创建管理当前对象的`std::shared_ptr`时，将其赋给该对象的`weak_this`成员。
 * 函数`shared_from_this()`直接返回由`weak_this`构造的`std::shared_ptr`。如果`weak_this`仍是空指针，则抛出异常`std::bad_weak_ptr`。
 
-主要的难点在于`std::shared_ptr`的构造函数需要判断被管理的对象是否继承了`std::enable_shared_from_this`以及它的`weak_this`成员是否为空指针，如果是则使用自身对其赋值。一种简化的实现如下：
+成员`weak_this`在类内并没有被赋过值，而是应该在首次创建管理当前对象的`std::shared_ptr`时，将其赋给该对象的`weak_this`成员。为了实现这一点，需要在`std::shared_ptr`的构造函数中判断被管理的对象是否继承了`std::enable_shared_from_this`以及它的`weak_this`成员是否为空指针，如果是则使用自身对其赋值（这也是`std::enable_shared_from_this`将`std::shared_ptr`声明为友元的原因）。一种简化的实现如下：
 
 ```cpp
 template<class T>
@@ -438,11 +439,13 @@ public:
 ## 3.陷阱
 在使用CRTP时可能会遇到一些陷阱。
 
-1.继承CRTP基类时模板参数错误，可能导致未定义行为。
+（1）继承CRTP基类时模板参数错误，可能导致未定义行为。例如：
 
 ```cpp
 template<class T> class Base { ... };
+
 class Derived1 : public Base<Derived1> { ... };
+
 class Derived2 : public Base<Derived1> { ... };  // wrong template argument
 ```
 
@@ -460,20 +463,139 @@ private:
 
 派生类的构造函数一定会调用基类的构造函数。`Base`的构造函数是私有的，只有友元类可以访问，而唯一的友元类是模板参数`T`。如果派生类和模板参数不同，代码将编译失败。
 
-2.由于CRTP基类的函数不是虚函数，派生类中的函数会**隐藏**基类中的同名函数。
+（2）由于CRTP基类的函数不是虚函数，派生类中的函数会**隐藏**基类中的同名函数。不过，可以利用这一特性实现编译期多态的“覆盖”。例如：
 
 ```cpp
 template<class T>
 class Base {
 public:
-    void do_something();
+    void fun();
 };
 
 class Derived : public Base<Derived> {
 public:
-    void do_something();  // this hides Base::do_something() !
+    void fun();  // this hides Base::fun() !
 };
 ```
+
+（3）避免在CRTP基类实例化时检测派生类成员。
+
+考虑下面的例子。`Base`类的成员函数`fun()`有两个重载，如果派生类定义了`fun_impl()`则使用派生类的实现，否则使用基类的默认实现。
+
+```cpp
+#include <iostream>
+#include <type_traits>
+
+template<class T, class = void>
+struct has_fun_impl : public std::false_type {};
+
+template<class T>
+struct has_fun_impl<T, std::void_t<decltype(std::declval<T>().fun_impl())>> : public std::true_type {};
+
+template<class D>
+class Base {
+public:
+    void test_fun_impl() { std::cout << std::boolalpha << has_fun_impl<D>::value << '\n'; }
+
+    // (1)
+    template<class T = void, std::enable_if_t<!has_fun_impl<D>::value, T>* = nullptr>
+    void fun() { std::cout << "Base::fun()\n"; }
+
+    // (2)
+    template<class T = void, std::enable_if_t<has_fun_impl<D>::value, T>* = nullptr>
+    void fun() { static_cast<D*>(this)->fun_impl(); }
+};
+
+class Derived1 : public Base<Derived1> {
+public:
+    void fun_impl() { std::cout << "Derived1::fun_impl()\n"; }
+};
+
+class Derived2 : public Base<Derived2> {};
+
+int main() {
+    Derived1 d1;
+    d1.test_fun_impl();
+    d1.fun();
+
+    Derived2 d2;
+    d2.test_fun_impl();
+    d2.fun();
+    return 0;
+}
+```
+
+期望`d1.fun()`会调用`Derived1::fun_impl()`，`d2.fun()`会调用`Base::fun()`的重载(1)。但实际上，二者都调用了`Base::fun()`的重载(1)。
+
+<https://godbolt.org/z/vj3c1KEd1>
+
+```
+false
+Base::fun()
+false
+Base::fun()
+```
+
+更奇怪的是，如果将基类中的两个`fun()`删除，`test_fun_impl()`函数就能输出正确的结果。
+
+<https://godbolt.org/z/s5Wdavf9n>
+
+```
+true
+false
+```
+
+导致这一问题的原因仍然与2.1节中解释的模板实例化机制有关。
+* 当编译器遇到`Derived1`类时，会实例化`Base<Derived1>`，而此时`Derived1`还不是完整类型。
+* 编译器遇到函数`Base::fun()`，虽然不会实例化函数体，但会检查模板参数中的类型，因此需要实例化`has_fun_impl<Derived1>`。
+* 此时编译器并不知道`Derived1`类有成员函数`fun_impl()`，因此`has_fun_impl<Derived1>::value`为`false`，导致重载(2)的模板参数非良构。
+* 由于SFINAE规则，调用`d1.fun()`会选择重载(1)。
+* 如果删除了两个`fun()`，则直到调用`d1.test_fun_impl()`时才会实例化`has_fun_impl<Derived1>`。此时`Derived1`已经是完整类型，编译器知道它有`fun_impl()`函数，因此`has_fun_impl<Derived1>::value`为`true`。
+
+解决该问题的一种方式是在派生类中隐藏基类的同名函数，如前面的（2）所述。
+
+```cpp
+template<class D>
+class Base {
+public:
+    void fun() { std::cout << "Base::fun()\n"; }
+};
+
+class Derived1 : public Base<Derived1> {
+public:
+    void fun() { std::cout << "Derived1::fun()\n"; }
+};
+```
+
+<https://godbolt.org/z/Tj7TWo7E1>
+
+第二种方式是修改`fun()`的模板参数，让`std::enable_if_t`检测`has_fun_impl<T>`而不是`has_fun_impl<D>`，从而将检测逻辑推迟到调用`fun()`时。（另见[《C++20之概念》]({% post_url 2024-03-24-cpp20-concept %}) 3.3节）
+
+```cpp
+// (1)
+template<class T = D, std::enable_if_t<!has_fun_impl<T>::value, T>* = nullptr>
+void fun() { std::cout << "Base::fun()\n"; }
+
+// (2)
+template<class T = D, std::enable_if_t<has_fun_impl<T>::value, T>* = nullptr>
+void fun() { static_cast<D*>(this)->fun_impl(); }
+```
+
+<https://godbolt.org/z/Yvsjc9nhh>
+
+第三种方式是使用`constexpr if`语句，将检测代码放在成员函数内部（本质上仍然是推迟检测逻辑）。
+
+```cpp
+void fun() {
+    if constexpr (has_fun_impl<D>::value) {
+        static_cast<D*>(this)->fun_impl();
+    } else {
+        std::cout << "Base::fun()\n";
+    }
+}
+```
+
+<https://godbolt.org/z/7nj1GzMnG>
 
 ## 参考
 * <https://en.cppreference.com/w/cpp/language/crtp>
