@@ -2,7 +2,7 @@
 title: 《Python基础教程》笔记 第14章 网络编程
 date: 2024-03-24 11:31:29 +0800
 categories: [Python, Beginning Python]
-tags: [python, computer network, socket, twisted]
+tags: [python, computer network, socket, asynchronous, twisted]
 ---
 本章将通过示例展示如何使用Python来编写使用网络的程序。Python提供了强大的网络编程支持，有很多库实现了常见的网络协议以及基于这些协议的抽象层，让你能够专注于程序的逻辑，而无需关心通过线路来传输比特的问题。
 
