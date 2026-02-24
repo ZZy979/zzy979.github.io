@@ -892,7 +892,7 @@ Go语言没有提供set类型，但可以通过只使用映射的键实现。
 
 注：标准库[strings](https://pkg.go.dev/strings)和[strconv](https://pkg.go.dev/strconv)包提供了字符串操作。
 
-#### 2.3.7 函数类型的值
+#### 2.3.7 函数字面值
 在Go中函数也是值，可以用作函数参数和返回值。
 
 例如：
@@ -912,6 +912,8 @@ func main() {
 ```
 
 [moretypes/function-values.go](https://github.com/ZZy979/go-tutorials/blob/main/tour/moretypes/function-values.go)
+
+其中`func(x, y float64) float64 {...}`是**函数字面值**(function literal)，定义了一个匿名函数（相当于C++和Java的Lambda表达式）。参见Go语言规范[Function literals](https://go.dev/ref/spec#Function_literals)。
 
 #### 2.3.8 函数闭包
 **闭包**(closure)是引用了函数体外部变量的函数。该函数可以访问和赋值所引用的变量，此时称函数“绑定”到该变量。

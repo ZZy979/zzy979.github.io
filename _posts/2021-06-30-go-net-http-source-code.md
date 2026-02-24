@@ -1,9 +1,10 @@
 ---
-title: net/http包源码解读
+title: 【Go】net/http包源码解读
 date: 2021-06-30 20:04:12 +0800
 categories: [Go]
 tags: [go, http]
 ---
+## 1.Web服务器
 使用`net/http`包编写一个最简单的Web服务器：
 
 ```go
@@ -58,7 +59,7 @@ type Server struct {
 }
 ```
 
-## Handler接口
+## 2.Handler接口
 `http.ListenAndServe()`的第二个参数和`Server`的第二个字段都是`Handler`类型
 
 `Handler`是一个接口，只有一个`ServeHTTP()`方法：
@@ -87,7 +88,7 @@ func (f HandlerFunc) ServeHTTP(w ResponseWriter, r *Request) {
 
 `http.HandleFunc()`函数就利用了这种转换，`http.HandleFunc("/", index)`等价于`http.Handle("/", http.HandlerFunc(index))`
 
-## 多路器ServeMux
+## 3.多路器ServeMux
 `ServeMux`结构体定义如下：
 
 ```go
@@ -121,7 +122,7 @@ var defaultServeMux ServeMux
 
 `ServeMux`的两大功能是路由注册和路由查找
 
-### 路由注册
+### 3.1 路由注册
 路由注册由`Handle()`和`HandleFunc()`方法实现：
 
 ```go
@@ -160,7 +161,7 @@ log.Fatal(http.ListenAndServe("localhost:8000", mux))
 
 `http.ListenAndServe()`的第二个参数是用于处理**所有**请求的handler，如果是`nil`则使用`DefaultServeMux`
 
-### 路由查找
+### 3.2 路由查找
 上面最后一行代码将`mux`作为`http.ListenAndServe()`的第二个参数，因为`ServeMux`也实现了`Handler`接口
 
 ```go
@@ -175,7 +176,7 @@ func (mux *ServeMux) ServeHTTP(w ResponseWriter, r *Request) {
 
 上面提到，`Handler`接口描述的是“给定请求能够返回响应的对象”，`ServeMux`实现这一功能的方式就是**根据请求的URL在映射中找到handler并调用该handler**，这也是`ServeMux`的路由查找功能
 
-## 处理客户端请求
+## 4.处理客户端请求
 注册好路由后还需要启动服务器监听端口
 
 `http.ListenAndServe()`创建了一个`Server`实例并调用其同名方法

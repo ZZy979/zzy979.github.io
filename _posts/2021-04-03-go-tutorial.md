@@ -1521,3 +1521,536 @@ $ curl http://localhost:8080/albums/2
 ```
 
 完整代码：[web-service-gin/main.go](https://github.com/ZZy979/go-tutorials/blob/main/web-service-gin/main.go)
+
+## 8.编写Web应用
+[Writing Web Applications](https://go.dev/doc/articles/wiki/)
+
+本教程将实现一个用于编辑Wiki页面的Web应用。包括：
+* 创建一个具有加载和保存方法的数据结构。
+* 使用`net/http`包构建Web应用。
+* 使用`html/template`包处理HTML模板。
+* 使用`regexp`包验证用户输入。
+* 使用闭包。
+
+### 8.1 创建目录
+创建一个gowiki目录。
+
+```shell
+mkdir gowiki
+cd gowiki
+```
+
+在其中创建一个名为wiki.go的文件，内容如下：
+
+```go
+package main
+
+import (
+	"fmt"
+	"os"
+)
+```
+
+### 8.2 数据结构
+首先从定义数据结构开始。Wiki由一系列相互链接的页面组成，每个页面都有标题和正文（页面内容）。
+
+定义结构体`Page`，具有标题和正文两个字段：
+
+```go
+type Page struct {
+	Title string
+	Body  []byte
+}
+```
+
+`Body`字段的类型为`[]byte`而不是`string`，因为这是我们要使用的`io`包所期望的类型。
+
+`Page`结构体描述了页面数据如何存储在内存中。为了持久化，我们为`Page`定义一个`save()`方法：
+
+```go
+func (p *Page) save() error {
+	filename := p.Title + ".txt"
+	return os.WriteFile(filename, p.Body, 0600)
+}
+```
+
+该方法将页面保存到文本文件，使用标题作为文件名。
+
+`save()`方法返回一个`error`值，这是`WriteFile()`函数的返回值。如果写文件时发生错误，`save()`方法就会返回这个错误值以便应用程序处理。如果保存成功，该方法将返回`nil`（指针、接口等类型的零值）。
+
+`WriteFile()`的第3个参数八进制整数`0600`表示文件仅对当前用户具有读写权限（即`rw-------`）。
+
+除了保存页面，还需要加载页面：
+
+```go
+func loadPage(title string) (*Page, error) {
+	filename := title + ".txt"
+	body, err := os.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+	return &Page{Title: title, Body: body}, nil
+}
+```
+
+`loadPage()`函数根据`title`参数构造文件名，将文件内容读取到`body`变量。如果读取失败（例如文件不存在），则返回错误值；否则使用`title`和`body`构造一个`Page`并返回指向它的指针。
+
+现在已经有了一个简单的数据结构，以及保存到文件和从文件加载的方法。下面编写一个`main()`函数来测试这些功能。
+
+```go
+func main() {
+	p1 := &Page{Title: "TestPage", Body: []byte("This is a sample Page.")}
+	p1.save()
+	p2, _ := loadPage("TestPage")
+	fmt.Println(string(p2.Body))
+}
+```
+
+编译并运行这段代码，将会创建一个名为TestPage.txt的文件，其内容为 "This is a sample Page." ，然后读取其内容并打印到屏幕。
+
+在gowiki目录中执行以下命令：
+
+```shell
+$ go build wiki.go
+$ ./wiki
+This is a sample Page.
+```
+
+（在Windows上不添加`./`）
+
+到目前为止的代码：[gowiki/wiki.go (part1)](https://github.com/ZZy979/go-tutorials/blob/c5cd7438071e7b8e1a508b561b0fe580e96225dc/gowiki/wiki.go)
+
+### 8.3 插曲：net/http包简介
+下面是一个简单Web服务器的完整示例：
+
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+	"net/http"
+)
+
+func handler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "Hi there, I love %s!", r.URL.Path[1:])
+}
+
+func main() {
+	http.HandleFunc("/", handler)
+	log.Fatal(http.ListenAndServe(":8080", nil))
+}
+```
+
+`main()`函数首先调用`http.HandleFunc()`，告诉`http`包用函数`handler()`处理所有以`"/"`开头的请求。
+
+之后调用`http.ListenAndServe()`，并指定监听8080端口（暂时忽略第二个参数）。该函数将会阻塞直到程序被终止。
+
+`ListenAndServe()`总是会返回一个`error`，因为它只有在发生意外错误时才会返回。使用`log.Fatal()`函数将错误输出到日志。
+
+函数`handler()`是`HandlerFunc`类型，即接受一个`http.ResponseWriter`和一个`http.Request`指针参数的函数：
+
+```go
+type HandlerFunc func(ResponseWriter, *Request)
+```
+
+`http.ResponseWriter`用于生成HTTP服务器的响应，通过向它写入数据即可将数据发送到HTTP客户端。
+
+`http.Request`是表示HTTP客户端请求的数据结构。`r.URL.Path`是请求的URL字符串，`[1:]`表示忽略开头的 "/" 。
+
+运行该程序并访问URL <http://localhost:8080/monkeys> ，响应页面将包含
+
+```
+Hi there, I love monkeys!
+```
+
+注：另见[【Go】net/http包源码解读](/posts/go-net-http-source-code/)。
+
+### 8.4 使用net/http包提供wiki页面服务
+为了使用`net/http`包，必须导入它：
+
+```go
+import "net/http"
+```
+
+创建一个函数`viewHandler()`，允许用户查看一个wiki页面。它处理以`"/view/"`开头的URL。
+
+```go
+func viewHandler(w http.ResponseWriter, r *http.Request) {
+	title := r.URL.Path[len("/view/"):]
+	p, _ := loadPage(title)
+	fmt.Fprintf(w, "<h1>%s</h1><div>%s</div>", p.Title, p.Body)
+}
+```
+
+首先，该函数从URL路径`r.URL.Path`中提取页面标题，并删除开头的`"/view/"`。
+
+然后加载页面数据，用一个简单的HTML字符串格式化页面，并将其写入`http.ResponseWriter`。为了简单起见，这里使用`_`忽略了`loadPage()`返回的错误。这是不好的做法，稍后会处理这个问题。
+
+为了使用这个handler，修改`main()`函数，使用`viewHandler()`来处理以`"/view/"`开头的URL。
+
+```go
+func main() {
+	http.HandleFunc("/view/", viewHandler)
+	log.Fatal(http.ListenAndServe(":8080", nil))
+}
+```
+
+下面手动创建一个页面文件，并尝试查看wiki页面。创建一个文件test.txt，内容为 "Hello world" 。然后编译代码并启动服务器：
+
+```shell
+$ go build wiki.go
+$ ./wiki
+```
+
+在浏览器中访问 <http://localhost:8080/view/test> ，将会显示以下页面。
+
+![查看页面](/assets/images/go-tutorial/查看页面.png)
+
+到目前为止的代码：[gowiki/wiki.go (part2)](https://github.com/ZZy979/go-tutorials/blob/035873487500c039ef1ef5aecd6d96e35b55c158/gowiki/wiki.go)
+
+### 8.5 编辑页面
+没有编辑页面能力的wiki不叫wiki。下面创建两个新的handler：
+* `editHandler()`用于显示“编辑页面”表单。
+* `saveHandler()`用于保存通过表单输入的数据。
+
+首先将其添加到`main()`函数：
+
+```go
+func main() {
+	http.HandleFunc("/view/", viewHandler)
+	http.HandleFunc("/edit/", editHandler)
+	http.HandleFunc("/save/", saveHandler)
+	log.Fatal(http.ListenAndServe(":8080", nil))
+}
+```
+
+`editHandler()`函数加载对应的页面（如果不存在则创建一个空的`Page`结构体），并显示一个HTML表单。
+
+```go
+func editHandler(w http.ResponseWriter, r *http.Request) {
+	title := r.URL.Path[len("/edit/"):]
+	p, err := loadPage(title)
+	if err != nil {
+		p = &Page{Title: title}
+	}
+	fmt.Fprintf(w, "<h1>Editing %s</h1>"+
+		"<form action=\"/save/%s\" method=\"POST\">"+
+		"<textarea name=\"body\">%s</textarea><br>"+
+		"<input type=\"submit\" value=\"Save\">"+
+		"</form>",
+		p.Title, p.Title, p.Body)
+}
+```
+
+在浏览器中访问 <http://localhost:8080/edit/test> ，将显示以下编辑表单页面。
+
+![编辑页面](/assets/images/go-tutorial/编辑页面.png)
+
+这个函数可以正常工作，但硬编码的HTML很丑陋。更好的方式是使用模板。
+
+### 8.6 html/template包
+[html/template](https://pkg.go.dev/html/template)包是Go标准库的一部分。使用它可以将HTML模板保存在单独的文件中，从而在不修改底层Go代码的情况下更改HTML页面的布局。
+
+首先要导入`html/template`包：
+
+```go
+import "html/template"
+```
+
+创建一个包含HTML表单的模板文件edit.html文件，内容如下：
+
+```html
+<h1>Editing {{.Title}}</h1>
+
+<form action="/save/{{.Title}}" method="POST">
+    <div><textarea name="body" rows="20" cols="80">{{printf "%s" .Body}}</textarea></div>
+    <div><input type="submit" value="Save"></div>
+</form>
+```
+
+修改`editHandler()`函数，使其使用该模板而不是硬编码的HTML：
+
+```go
+func editHandler(w http.ResponseWriter, r *http.Request) {
+	title := r.URL.Path[len("/edit/"):]
+	p, err := loadPage(title)
+	if err != nil {
+		p = &Page{Title: title}
+	}
+	t, _ := template.ParseFiles("edit.html")
+	t.Execute(w, p)
+}
+```
+
+函数`template.ParseFiles()`会读取edit.html的内容并返回一个`*template.Template`。
+
+`t.Execute()`方法执行（渲染）模板，并将生成的HTML写入`http.ResponseWriter`。模板中的`.Title`和`.Body`分别引用`p.Title`和`p.Body`。
+
+**模板指令**(template directive)用两个花括号括起来。指令`printf "%s" .Body`是一个函数调用，用于将`.Body`输出为字符串（等同于`fmt.Printf()`）。`html/template`包会保证生成正确的HTML。例如，它会自动转义`>`字符，将其替换为`&gt;`。
+
+接下来，为`viewHandler()`也创建模板view.html：
+
+```html
+<h1>{{.Title}}</h1>
+
+<p>[<a href="/edit/{{.Title}}">edit</a>]</p>
+
+<div>{{printf "%s" .Body}}</div>
+```
+
+相应地修改`viewHandler()`：
+
+```go
+func viewHandler(w http.ResponseWriter, r *http.Request) {
+	title := r.URL.Path[len("/view/"):]
+	p, _ := loadPage(title)
+	t, _ := template.ParseFiles("view.html")
+	t.Execute(w, p)
+}
+```
+
+注意，在这两个handler函数中使用了几乎完全相同的模板代码。可以将模板代码抽取成单独的函数来消除重复：
+
+```go
+func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
+	t, _ := template.ParseFiles(tmpl + ".html")
+	t.Execute(w, p)
+}
+
+func viewHandler(w http.ResponseWriter, r *http.Request) {
+	title := r.URL.Path[len("/view/"):]
+	p, _ := loadPage(title)
+	renderTemplate(w, "view", p)
+}
+
+func editHandler(w http.ResponseWriter, r *http.Request) {
+	title := r.URL.Path[len("/edit/"):]
+	p, err := loadPage(title)
+	if err != nil {
+		p = &Page{Title: title}
+	}
+	renderTemplate(w, "edit", p)
+}
+```
+
+到目前为止的代码：[gowiki/wiki.go (part3)](https://github.com/ZZy979/go-tutorials/blob/77226a473eccfcd730894daf06a213330f1e0542/gowiki/wiki.go)
+
+### 8.7 处理不存在的页面
+如果访问不存在的页面（例如 <http://localhost:8080/view/APageThatDoesntExist> ），将会看到一个空白页。这是因为`viewHandler()`忽略了`loadPage()`的错误返回值，并继续尝试渲染没有数据的模板。
+
+如果请求的页面不存在，应该将客户端重定向到编辑页面，以便创建内容：
+
+```go
+func viewHandler(w http.ResponseWriter, r *http.Request) {
+	title := r.URL.Path[len("/view/"):]
+	p, err := loadPage(title)
+	if err != nil {
+		http.Redirect(w, r, "/edit/"+title, http.StatusFound)
+		return
+	}
+	renderTemplate(w, "view", p)
+}
+```
+
+`http.Redirect()`函数会向HTTP响应添加状态码`http.StatusFound` (302)和`Location`标头（重定向位置）。
+
+### 8.8 保存页面
+`saveHandler()`函数用于处理编辑页面提交的表单：
+
+```go
+func saveHandler(w http.ResponseWriter, r *http.Request) {
+	title := r.URL.Path[len("/save/"):]
+	body := r.FormValue("body")
+	p := &Page{Title: title, Body: []byte(body)}
+	p.save()
+	http.Redirect(w, r, "/view/"+title, http.StatusFound)
+}
+```
+
+该函数创建了一个新的`Page`，`Title`由URL提供，`Body`来自表单唯一的字段`body`。然后调用`save()`方法将数据写入文件，并将客户端重定向到`/view/`页面。
+
+`FormValue()`的返回值是`string`类型，需要使用`[]byte(body)`将其转换为`[]byte`类型。
+
+### 8.9 错误处理
+目前的程序中有几个地方忽略了错误。这是种不好的做法，因为当确实发生错误时，程序会有意外的行为。更好的做法是处理错误并向用户返回错误消息。
+
+首先处理`renderTemplate()`中的错误：
+
+```go
+func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
+	t, err := template.ParseFiles(tmpl + ".html")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	err = t.Execute(w, p)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+```
+
+`http.Error()`函数发送指定的HTTP状态码（这里是 "500 Internal Server Error" ）和错误消息。
+
+接下来修正`saveHandler()`：
+
+```go
+func saveHandler(w http.ResponseWriter, r *http.Request) {
+	title := r.URL.Path[len("/save/"):]
+	body := r.FormValue("body")
+	p := &Page{Title: title, Body: []byte(body)}
+	err := p.save()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/view/"+title, http.StatusFound)
+}
+```
+
+### 8.10 模板缓存
+目前的代码有一个效率低的地方：`renderTemplate()`在每次渲染页面时都会调用`ParseFiles()`。一种更好的方式是在程序初始化时调用一次`ParseFiles()`，将所有模板解析为**单个** `*Template`。然后可以使用`ExecuteTemplate()`方法渲染特定的模板。
+
+首先创建一个名为`templates`的全局变量，并使用`ParseFiles()`对其进行初始化。
+
+```go
+var templates = template.Must(template.ParseFiles("edit.html", "view.html"))
+```
+
+`template.Must()`是一个辅助函数，当传递非`nil`错误值时会导致panic，否则直接返回传入的`*Template`。在这里panic是合适的：如果无法加载模板，唯一合理的做法就是退出程序（相当于`exit(1)`）。
+
+`ParseFiles()`函数接受任意数量的字符串参数（模板文件名），将这些文件解析为以文件名命名的模板。
+
+之后修改`renderTemplate()`函数，使用特定的模板名称调用`templates.ExecuteTemplate()`方法：
+
+```go
+func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
+	err := templates.ExecuteTemplate(w, tmpl+".html", p)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+```
+
+### 8.11 验证
+这个程序有一个严重的安全缺陷：用户可以提供任意路径在服务器上进行读/写（例如，访问`/view//usr/local/foo`就能够读取文件 /usr/local/foo.txt）。为了解决这一问题，可以编写一个函数，用正则表达式来验证标题。
+
+首先，导入`regexp`包。然后创建一个全局变量来存储验证表达式：
+
+```go
+var validPath = regexp.MustCompile("^/(edit|save|view)/([a-zA-Z0-9]+)$")
+```
+
+函数`regexp.MustCompile()`会解析并编译正则表达式，返回一个`regexp.Regexp`。`MustCompile()`与`Compile()`的区别是：如果表达式编译失败，前者会导致panic，而后者会返回一个`error`。
+
+接下来编写一个函数，使用`validPath`来验证URL并提取页面标题：
+
+```go
+func getTitle(w http.ResponseWriter, r *http.Request) (string, error) {
+	m := validPath.FindStringSubmatch(r.URL.Path)
+	if m == nil {
+		http.NotFound(w, r)
+		return "", errors.New("invalid page title")
+	}
+	return m[2], nil // The title is the second subexpression.
+}
+```
+
+如果标题合法，则返回标题和`nil`错误值。如果标题不合法，则向HTTP连接写入 "404 Not Found" 错误，并返回一个错误值。
+
+在每个handler函数中调用`getTitle()`：
+
+```go
+func viewHandler(w http.ResponseWriter, r *http.Request) {
+	title, err := getTitle(w, r)
+	if err != nil {
+		return
+	}
+	...
+}
+
+func editHandler(w http.ResponseWriter, r *http.Request) {
+	title, err := getTitle(w, r)
+	if err != nil {
+		return
+	}
+	...
+}
+
+func saveHandler(w http.ResponseWriter, r *http.Request) {
+	title, err := getTitle(w, r)
+	if err != nil {
+		return
+	}
+	...
+}
+```
+
+### 8.12 函数字面值和闭包简介
+在每个handler中处理错误又会引入大量重复代码。可以利用Go的**函数字面值**(function literal)将每个handler包装在一个函数中，由这个函数执行验证和错误检查。
+
+首先，为每个handler函数增加一个`title`参数：
+
+```go
+func viewHandler(w http.ResponseWriter, r *http.Request, title string)
+func editHandler(w http.ResponseWriter, r *http.Request, title string)
+func saveHandler(w http.ResponseWriter, r *http.Request, title string)
+```
+
+然后定义一个包装函数`makeHandler()`，接受**以上类型的函数**参数，返回一个`http.HandlerFunc`类型的函数（可以传递给`http.HandleFunc()`函数）：
+
+```go
+func makeHandler(fn func(http.ResponseWriter, *http.Request, string)) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		m := validPath.FindStringSubmatch(r.URL.Path)
+		if m == nil {
+			http.NotFound(w, r)
+			return
+		}
+		fn(w, r, m[2])
+	}
+}
+```
+
+返回的函数称为**闭包**(closure)，因为它引用（包围，enclose）了在其外部定义的值`fn`。参数`fn`将会是view、edit或save三个handler之一。
+
+`makeHandler()`返回的闭包是一个接受`http.ResponseWriter`和`*http.Request`的函数（即`http.HandlerFunc`）。其功能与之前的`getTitle()`函数基本相同：从请求URL中提取标题并验证，如果不合法则返回404错误，否则调用handler函数`fn`。
+
+接下来，在`main()`中使用`makeHandler()`包装handler函数：
+
+```go
+func main() {
+	http.HandleFunc("/view/", makeHandler(viewHandler))
+	http.HandleFunc("/edit/", makeHandler(editHandler))
+	http.HandleFunc("/save/", makeHandler(saveHandler))
+
+	log.Fatal(http.ListenAndServe(":8080", nil))
+}
+```
+
+最后从handler函数中删除`getTitle()`调用。
+
+### 8.13 试试看
+最终代码：[gowiki/wiki.go (final)](https://github.com/ZZy979/go-tutorials/blob/c26f6c84f8fec8e0086c4b0baa56787130a372f3/gowiki/wiki.go)
+
+重新编译代码并运行程序：
+
+```shell
+$ go build wiki.go
+$ ./wiki
+```
+
+访问一个不存在的页面 <http://localhost:8080/view/ANewPage> ，将会显示页面编辑表单。
+
+![编辑新页面](/assets/images/go-tutorial/编辑新页面.png)
+
+输入内容并点击Save按钮，将会重定向到新创建的页面。
+
+![查看新页面](/assets/images/go-tutorial/查看新页面.png)
+
+进一步改进：
+* 将模板存储在tmpl目录中，将页面数据存储在data目录中。
+* 添加一个handler，将`/`重定向到`/view/FrontPage`。
+* 优化页面模板，使其成为完整有效的HTML并添加一些CSS规则。
+* 实现页面间链接，将正文中的`[PageName]`转换为`<a href="/view/PageName">PageName</a>`。（提示：可以使用`regexp.ReplaceAllFunc()`来实现）
