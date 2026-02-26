@@ -13,7 +13,7 @@ tags: [c]
 - [x] [C++程序设计原理与实践]({% post_url 2022-07-21-ppp-note-index %})(2022.7.31~2023.11.4)
 - [x] [Java核心技术]({% post_url 2024-07-09-java-note-index %})(2024.7.9~2026.1.25)
 - [x] [Python基础教程]({% post_url 2023-11-05-python-note-index %})(2023.11.5~2024.7.7)
-- [ ] Go程序设计语言（笔记在OneNote上）
+- [ ] [Go程序设计语言]({% post_url 2026-02-26-gopl-note-index %})(2026.2.26~)
 
 ## 目标
 * 方便随时查阅
