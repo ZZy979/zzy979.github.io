@@ -255,9 +255,50 @@ public class Person {
 
 DataStream API调用构成一个数据流附加到执行环境，当调用`env.execute()`时，数据流将被打包并发送到**作业管理器**(JobManager)，JobManager将作业并行化切片并分发到**任务管理器**(TaskManager)执行。作业的每个并行切片将在一个**任务槽**(task slot)中执行。
 
-注意：调用`execute()`时应用才真正开始运行。
-
 ![分布式运行环境](/assets/images/flink-tutorial/distributed-runtime.svg)
+
+注意：调用`env.execute()`时应用才真正开始运行。当作业启动时，JobManager会将所有算子的函数对象（包括所有非`transient`字段和引用的外部对象）序列化，打包成任务并分发到各个TaskManager。如果对象包含不可序列化的字段，作业就会启动失败。例如：
+
+```java
+public class MyMapper implements MapFunction<String, String> {
+    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    ...
+}
+```
+
+由于`DateTimeFormatter`类不可序列化，这会导致报错：
+
+```
+org.apache.flink.api.common.InvalidProgramException: [Ljava.time.format.DateTimeFormatterBuilder$DateTimePrinterParser;@d5b810e is not serializable. The object probably contains or references non serializable fields.
+```
+
+另外，可序列化但非常大的对象会增加网络传输开销。
+
+解决这个问题的最佳实践是**transient+延迟初始化**：将字段用关键字`transient`标记使其跳过序列化，实现rich变体的函数接口（见3.3.3.1节）并在`open()`方法中初始化该字段。
+
+```java
+public class MyMapper extends RichMapFunction<String, String> {
+    private transient DateTimeFormatter formatter;
+
+    @Override
+    public void open(Configuration parameters) {
+        formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    }
+
+    ...
+}
+```
+
+这样，当JobManager序列化算子时会跳过`formatter`字段。在TaskManager上反序列化后`formatter`字段仍然为`null`，之后`open()`方法被调用，初始化`formatter`字段。（注：虽然不加`transient`也能工作，因为在序列化时`formatter`为`null`，但用`transient`可以明确表达“该字段不需要序列化”的意图，并且可以减少一点序列化开销）
+
+在Scala中可以使用`lazy val`实现延迟初始化，同时又绕过了序列化问题，非常适合在Flink算子中使用。
+
+```scala
+class MyMapper extends MapFunction[String, String] {
+  @transient private lazy val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+  ...
+}
+```
 
 #### 3.2.4 基本算子
 source算子（`StreamExecutionEnvironment`类的方法）
