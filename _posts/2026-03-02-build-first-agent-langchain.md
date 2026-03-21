@@ -494,3 +494,5 @@ The top 5 genres with the longest average track lengths are:
 本文介绍了如何搭建能够调用本地工具的简单Agent，后续将介绍如何利用RAG和MCP使Agent的功能更加强大。
 
 [《使用LangChain构建RAG Agent》]({% post_url 2026-03-08-build-rag-agent-with-langchain %})
+
+[《Agent+MCP实践》]({% post_url 2026-03-21-agent-mcp %})
