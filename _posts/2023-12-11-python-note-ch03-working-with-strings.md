@@ -2,7 +2,7 @@
 title: 《Python基础教程》笔记 第3章 使用字符串
 date: 2023-12-11 21:51:08 +0800
 categories: [Python, Beginning Python]
-tags: [python, string, formatting]
+tags: [python, string, formatting, string interpolation]
 render_with_liquid: false
 ---
 本章将介绍如何使用字符串来格式化其他的值（比如用于打印），并大致了解字符串方法，例如分割、连接、搜索等。

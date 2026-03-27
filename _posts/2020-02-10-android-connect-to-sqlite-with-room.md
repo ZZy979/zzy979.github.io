@@ -22,6 +22,8 @@ annotationProcessor 'androidx.room:room-compiler:2.7.1'
 
 2.定义实体类
 
+<https://developer.android.google.cn/training/data-storage/room/defining-data>
+
 ```java
 @Entity
 public class User {
@@ -37,6 +39,8 @@ public class User {
 ```
 
 3.定义DAO（即Repository）
+
+<https://developer.android.google.cn/training/data-storage/room/accessing-data>
 
 ```java
 @Dao
@@ -84,3 +88,7 @@ public abstract class AppDatabase extends RoomDatabase {
 
 }
 ```
+
+5.测试
+
+<https://developer.android.google.cn/training/data-storage/room/testing-db>

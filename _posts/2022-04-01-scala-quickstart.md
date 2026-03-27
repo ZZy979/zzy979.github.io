@@ -1,5 +1,5 @@
 ---
-title: Scala基础教程
+title: Scala快速入门教程
 date: 2022-04-01 11:35:00 +0800
 categories: [Scala]
 tags: [scala, hello world, variable, if statement, for statement, while statement, do-while statement, match expression, try statement, class, method, interface, collection, tuple]
@@ -19,35 +19,38 @@ Scala代码被编译成.class文件，运行在Java虚拟机(JVM)上，可以调
 官方教程：
 * [Tour of Scala](https://docs.scala-lang.org/tour/tour-of-scala.html)
 * [Scala Book](https://docs.scala-lang.org/overviews/scala-book/introduction.html)
+* [Scala 3 Book](https://docs.scala-lang.org/scala3/book/introduction.html)
 * [Guides and Overviews](https://docs.scala-lang.org/overviews/index.html)
 
 在线运行环境：
 * [Scastie](https://scastie.scala-lang.org/)
 * [Scala在线工具](https://c.runoob.com/compile/15/)
 
-sbt构建工具：<https://www.scala-sbt.org/index.html>
+sbt构建工具：<https://www.scala-sbt.org/>
 
 ## 2.安装
-第1步：安装Java
+### 第1步：安装Java
 
 由于Scala运行在JVM上，因此首先要安装JDK并配置JAVA_HOME环境变量。可从[Oracle Java](https://www.oracle.com/java/technologies/downloads/)或[AdoptOpenJDK](https://adoptopenjdk.net/)下载。
 
-第2步：安装Scala
+Scala与JDK版本兼容性参见[JDK Compatibility](https://docs.scala-lang.org/overviews/jdk-compatibility/overview.html)。
+
+### 第2步：安装Scala
 
 下载地址：<https://www.scala-lang.org/download/all.html>
 
 要使用IDE编辑Scala，可安装IntelliJ IDEA的Scala插件或VSCode的Metals插件
 
-第3步：配置环境变量
+### 第3步：配置环境变量
 
-将SCALA_HOME环境变量设置为Scala安装/解压目录，并将$SCALA_HOME/bin目录添加到PATH环境变量。例如，在~/.bashrc文件末尾增加：
+将SCALA_HOME环境变量设置为Scala安装目录，并将$SCALA_HOME/bin目录添加到PATH环境变量。例如，在~/.bashrc文件末尾增加：
 
 ```bash
 export SCALA_HOME=/usr/local/scala-2.13.8
 export PATH=$PATH:$SCALA_HOME/bin
 ```
 
-之后执行`source ~/.bashrc`或重启终端，即可使用scala和scalac命令：
+之后执行`source ~/.bashrc`或重启终端，即可使用`scala`和`scalac`命令：
 
 ```bash
 $ scala -version
@@ -57,6 +60,8 @@ Scala compiler version 2.13.8 -- Copyright 2002-2021, LAMP/EPFL and Lightbend, I
 ```
 
 ## 3.基础
+参考：[Prelude꞉ A Taste of Scala](https://docs.scala-lang.org/overviews/scala-book/prelude-taste-of-scala.html)
+
 ### 3.1 Hello, world
 Scala的 "Hello, world" 程序如下：
 
@@ -76,13 +81,13 @@ object Hello extends App {
 }
 ```
 
-将代码保存到Hello.scala文件，使用scalac命令编译：
+将代码保存到Hello.scala文件，使用`scalac`命令编译：
 
 ```bash
 $ scalac Hello.scala
 ```
 
-该命令将生成两个文件：Hello.class和Hello$.class。这些和使用javac创建的字节码文件相同，可以在JVM上运行。使用scala命令运行Hello程序：
+该命令将生成两个文件：Hello.class和Hello$.class。这些和使用`javac`创建的字节码文件相同，可以在JVM上运行。使用`scala`命令运行Hello程序：
 
 ```bash
 $ scala Hello
@@ -92,7 +97,7 @@ Hello, world!
 ### 3.2 Scala REPL
 Scala REPL ("Read-Evaluate-Print-Loop")是一个命令行解释器，可以将其用作playground来测试Scala代码（相当于Python的IDLE）。
 
-在命令行输入scala即可启动REPL会话：
+在命令行输入`scala`即可启动REPL会话：
 
 ```bash
 $ scala
@@ -144,10 +149,6 @@ val x: Int = 1
 val s: String = "a string"
 val p: Person = new Person("Regina")
 ```
-
-内置类型
-字符串插值
-命令行IO
 
 ## 4.控制结构
 ### 4.1 if/else
@@ -426,7 +427,7 @@ val res19: Int = 3628800
 第一个例子求`nums`中所有数字的和，第二个例子求`nums`中所有数字的积。
 
 ## 9.元组
-元组可以将不同类型的元素放在一个小容器中。一个元组可以包含2~22个值，并且所有值都可以具有不同的类型。例如，下面是一个包含`Int`、`Double`和`String`三种类型的元组：
+元组可以将不同类型的元素放在一个容器中。一个元组可以包含2~22个值，并且所有值都可以具有不同的类型。例如，下面是一个包含`Int`、`Double`和`String`三种类型的元组：
 
 ```scala
 (11, 11.0, "Eleven")
