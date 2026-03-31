@@ -1,5 +1,5 @@
 ---
-title: Scala基础教程
+title: Scala基础教程 第1节 基础
 date: 2026-03-22 11:44:59 +0800
 categories: [Scala]
 tags: [scala, hello world, command-line argument, variable, declaration, data type, type conversion, string, string interpolation, formatting, raw string, tuple, io]
@@ -10,12 +10,11 @@ tags: [scala, hello world, command-line argument, variable, declaration, data ty
 * [Scala Book](https://docs.scala-lang.org/overviews/scala-book/introduction.html)
 * [Tour of Scala](https://docs.scala-lang.org/tour/tour-of-scala.html)
 
-## 1.基础
 <https://docs.scala-lang.org/overviews/scala-book/preliminaries.html>
 
 Scala的安装和环境配置参见[《Scala快速入门教程》]({% post_url 2022-04-01-scala-quickstart %})。本文使用的Scala版本是2.13。
 
-### 1.1 Hello, World
+## 1.1 Hello, World
 <https://docs.scala-lang.org/overviews/scala-book/hello-world-1.html>
 
 下面是Scala "Hello, world" 示例的源代码：
@@ -60,7 +59,7 @@ public final class Hello {
 
 可以看到，Scala创建的.class文件就像是从Java源代码创建的一样。Scala代码可以在JVM上运行，也可以使用现有的Java库，这对Scala程序员来说都是极大的优势。
 
-### 1.2 Hello, World - 版本2
+## 1.2 Hello, World - 版本2
 <https://docs.scala-lang.org/overviews/scala-book/hello-world-2.html>
 
 Scala提供了一种更方便地编写应用程序的方式。可以让`object`扩展`App`特质（特质类似于Java的接口，将在第4节详细介绍），而不是定义`main()`方法，如下所示：
@@ -73,7 +72,7 @@ object Hello extends App {
 
 运行结果与上一节的程序相同。`App`特质有自己的`main()`方法，该方法执行子类的初始化代码（即类体中的代码，在这里是`println()`调用）。
 
-#### 命令行参数
+### 命令行参数
 可以通过`main()`方法的`args`参数访问命令行参数。如果扩展`App`，也可以直接访问`args`变量。
 
 ```scala
@@ -99,7 +98,7 @@ Hello, Al
 
 `args`是一个数组，可以通过`args.size`（或`args.length`）获得元素个数，通过`args(i)`（不是`[]`）访问元素。（注：与Java一样，在Scala中命令行参数不包括程序名）
 
-### 1.3 Scala REPL
+## 1.3 Scala REPL
 <https://docs.scala-lang.org/overviews/scala-book/scala-repl.html>
 
 Scala REPL ("Read-Evaluate-Print-Loop")是一个命令行解释器，可以用作playground来测试Scala代码。在命令行输入`scala`即可启动REPL会话：
@@ -146,7 +145,7 @@ tail         tails        take(        takeRight(   takeWhile(   tapEach(
 
 详见[Scala REPL overview](https://docs.scala-lang.org/overviews/repl/overview.html)。
 
-### 1.4 两种类型的变量
+## 1.4 两种类型的变量
 <https://docs.scala-lang.org/overviews/scala-book/two-types-variables.html>
 
 Scala有两种类型的变量：
@@ -204,10 +203,10 @@ scala> val age = 19
 val age: Int = 19
 ```
 
-### 1.5 内置类型
+## 1.5 内置类型
 <https://docs.scala-lang.org/overviews/scala-book/built-in-types.html>
 
-#### 1.5.1 数值类型
+### 1.5.1 数值类型
 Scala具有标准数值类型。与Java不同，在Scala中这些数据类型都是对象（不是基本类型），例如整数类型是`scala.Int`。
 
 像这样声明数值类型的变量：
@@ -243,9 +242,11 @@ val y = 1.0f  // Float
 | `Double` | 64位IEEE 754双精度浮点数 | 4.94065645841246544×10<sup>-324</sup> ~ 1.79769313486231570×10<sup>308</sup> |
 | `Char` | 16位无符号Unicode字符 | 0~65535 (0~2<sup>16</sup>-1) |
 
+每种类型的常量`MinValue`和`MaxValue`表示最小值和最大值。
+
 数值类型可以按以下方式转换：
 
-![type-casting-diagram](/assets/images/scala-tutorial/type-casting-diagram.svg)
+![type-casting-diagram](/assets/images/scala-tutorial-1-preliminaries/type-casting-diagram.svg)
 
 例如：
 
@@ -292,7 +293,7 @@ scala> 1.to(5).toList
 val res0: List[Int] = List(1, 2, 3, 4, 5)
 ```
 
-#### 1.5.2 BigInt和BigDecimal
+### 1.5.2 BigInt和BigDecimal
 对于大数字，Scala提供了`BigInt`和`BigDecimal`，分别表示任意大的整数和任意精度的浮点数（注：底层分别使用`java.math`包中的`BigInteger`和`BigDecimal`实现）。
 
 ```scala
@@ -320,7 +321,7 @@ scala> b * b
 val res1: scala.math.BigInt = 152415789666209420210333789971041
 ```
 
-#### 1.5.3 String和Char
+### 1.5.3 String和Char
 Scala也有`String`和`Char`类型，字面值分别用双引号和单引号括起来：
 
 ```scala
@@ -328,20 +329,26 @@ val name = "Bill"
 val c = 'a'
 ```
 
-### 1.6 字符串
+## 1.6 字符串
 <https://docs.scala-lang.org/overviews/scala-book/two-notes-about-strings.html>
 
-Scala的字符串类就是`java.lang.String`，因此可以调用所有Java字符串方法。另外，在Scala中字符串可以隐式转换为`StringOps`，因此还可以对字符串调用Scala序列方法。例如：
+Scala的字符串类就是`java.lang.String`，可以直接调用所有Java字符串方法。另外，Scala字符串可以隐式转换为`StringOps`，这个类提供了许多额外的辅助方法。例如：
 
 ```scala
 scala> "hello, world".substring(7) // Java string method
 val res0: String = world
 
-scala> "hello, world".map(_.toUpper) // Scala sequence method
+scala> "hello, world".map(_.toUpper) // StringOps method
 val res1: String = HELLO, WORLD
+
+scala> "42".toInt // StringOps method
+val res2: Int = 42
+
+scala> "hello" * 3 // StringOps method
+val res3: String = hellohellohello
 ```
 
-#### 1.6.1 字符串插值
+### 1.6.1 字符串插值
 Scala字符串有一种很好的特性，叫做**字符串插值**(string interpolation)。
 
 字符串插值提供了一种在字符串中使用变量的方式。只需在字符串前添加前缀`s`，并在变量名前添加`$`。例如：
@@ -383,7 +390,7 @@ a\n42
 
 另外，还可以自定义插值符，以及在模式匹配中使用字符串插值。详见文档[String Interpolation](https://docs.scala-lang.org/scala3/book/string-interpolation.html)。
 
-#### 1.6.2 多行字符串
+### 1.6.2 多行字符串
 可以通过使用三个双引号来创建多行字符串：
 
 ```scala
@@ -418,12 +425,12 @@ seven years ago
 our fathers ...
 ```
 
-### 1.7 Scala类型层次结构
+## 1.7 Scala类型层次结构
 <https://docs.scala-lang.org/tour/unified-types.html>
 
 在Scala中，所有值都有类型，包括数值和函数。下图展示了类型层次结构的一个子集。
 
-![Scala Type Hierarchy](/assets/images/scala-tutorial/unified-types-diagram.svg)
+![Scala Type Hierarchy](/assets/images/scala-tutorial-1-preliminaries/unified-types-diagram.svg)
 
 * `Any`是所有类型的超类型，也称为顶级类型(top type)。它定义了一些通用方法，例如`equals()`、`hashCode()`和`toString()`。`Any`有两个直接子类：`AnyVal`和`AnyRef`。
 * `AnyVal`表示值类型(value type)。有9种预定义的值类型，不可为null：`Boolean`, `Byte`, `Short`, `Int`, `Long`, `Float`, `Double`, `Char`和`Unit`。`Unit`是不包含有意义信息的值类型，只有单一实例，用字面值`()`表示。`Unit`可以用作无返回值的函数的返回类型（类似于Java的`void`和Python的`None`）。
@@ -431,7 +438,7 @@ our fathers ...
 * `Nothing`是所有类型的子类型，也称为底部类型(bottom type)。没有类型为`Nothing`的值。通常用于“永远不会返回正常结果”的场景。例如，空列表的类型为`List[Nothing]`；如果一个函数会抛出异常或进入无限循环，其返回类型可以定义为`Nothing`。 
 * `Null`是所有引用类型的子类型。它只有一个值，用关键字`null`表示。`Null`主要是为了与其他JVM语言互操作，不应该在Scala代码中使用。
 
-### 1.8 元组
+## 1.8 元组
 <https://docs.scala-lang.org/overviews/scala-book/tuples.html>
 
 <https://docs.scala-lang.org/tour/tuples.html>
@@ -450,8 +457,8 @@ val ingredient = ("Sugar", 25)
 
 ```scala
 def getStockInfo: (String, Double, Double) = {
-    // other code here ...
-    ("NFLX", 100.00, 101.00)  // this is a Tuple3
+  // other code here ...
+  ("NFLX", 100.00, 101.00)  // this is a Tuple3
 }
 ```
 
@@ -490,10 +497,10 @@ for ((a, b) <- numPairs) {
 }
 ```
 
-### 1.9 命令行I/O
+## 1.9 命令行I/O
 <https://docs.scala-lang.org/overviews/scala-book/command-line-io.html>
 
-#### 1.9.1 写输出
+### 1.9.1 写输出
 可以使用`println()`写到标准输出(stdout)，并在末尾添加换行符：
 
 ```scala
@@ -518,7 +525,7 @@ printf("%s is %2.2f meters tall", "James", 1.9)
 System.err.println("yikes, an error happened")
 ```
 
-#### 1.9.2 读取输入
+### 1.9.2 读取输入
 读取命令行输入最简单的方式是使用`scala.io.StdIn`类的`readLine()`方法。该方法从标准输入(stdin)读取一整行，并删除末尾的换行符，如果到达输入结尾则返回`null`。
 
 下面是一个简单的例子：
@@ -540,166 +547,8 @@ object HelloInteractive {
 ```
 
 ```shell
-$ scala HelloInteractive      
+$ scala HelloInteractive  
 Enter your first name: Alvin
 Enter your last name: Alexander
 Your name is Alvin Alexander
 ```
-
-## 2.控制结构
-<https://docs.scala-lang.org/overviews/scala-book/control-structures.html>
-
-### 2.1 if/else
-<https://docs.scala-lang.org/overviews/scala-book/if-then-else-construct.html>
-
-### 2.2 for循环
-<https://docs.scala-lang.org/overviews/scala-book/for-loops.html>
-
-### 2.3 for表达式
-<https://docs.scala-lang.org/overviews/scala-book/for-expressions.html>
-
-### 2.4 match表达式
-<https://docs.scala-lang.org/overviews/scala-book/match-expressions.html>
-
-模式匹配
-<https://docs.scala-lang.org/tour/pattern-matching.html>
-
-正则表达式
-<https://docs.scala-lang.org/tour/regular-expression-patterns.html>
-
-extractor
-<https://docs.scala-lang.org/tour/extractor-objects.html>
-
-### 2.5 try/catch
-<https://docs.scala-lang.org/overviews/scala-book/try-catch-finally.html>
-
-## 3.类和方法
-<https://docs.scala-lang.org/overviews/scala-book/classes.html>
-<https://docs.scala-lang.org/tour/classes.html>
-
-### 3.1 辅助构造器
-<https://docs.scala-lang.org/overviews/scala-book/classes-aux-constructors.html>
-
-包和导入（类对应文件名、包对应目录：不强制）
-<https://docs.scala-lang.org/tour/packages-and-imports.html>
-
-### 3.2 方法
-<https://docs.scala-lang.org/overviews/scala-book/methods-first-look.html>
-
-默认参数
-<https://docs.scala-lang.org/tour/default-parameter-values.html>
-
-可变参数、: _*
-
-命名参数
-<https://docs.scala-lang.org/tour/named-arguments.html>
-
-运算符
-<https://docs.scala-lang.org/tour/operators.html>
-
-高阶函数
-<https://docs.scala-lang.org/tour/higher-order-functions.html>
-
-嵌套方法
-<https://docs.scala-lang.org/tour/nested-functions.html>
-
-多个参数列表
-<https://docs.scala-lang.org/tour/multiple-parameter-lists.html>
-柯里化
-
-隐式参数
-<https://docs.scala-lang.org/tour/implicit-parameters.html>
-
-隐式转换
-<https://docs.scala-lang.org/tour/implicit-conversions.html>
-为什么Array能用序列方法
-
-传名参数
-<https://docs.scala-lang.org/tour/by-name-parameters.html>
-
-### 3.3 枚举
-<https://docs.scala-lang.org/overviews/scala-book/enumerations-pizza-class.html>
-
-### 3.4 单例object
-<https://docs.scala-lang.org/tour/singleton-objects.html>
-
-伴生对象
-<https://docs.scala-lang.org/overviews/scala-book/companion-objects.html>
-
-### 3.5 内部类
-<https://docs.scala-lang.org/tour/inner-classes.html>
-
-### 3.6 注解
-<https://docs.scala-lang.org/tour/annotations.html>
-
-## 4.特质和抽象类
-<https://docs.scala-lang.org/overviews/scala-book/traits-intro.html>
-
-### 4.1 特质用作接口
-<https://docs.scala-lang.org/overviews/scala-book/traits-interfaces.html>
-
-### 4.2 特质用作抽象类
-<https://docs.scala-lang.org/overviews/scala-book/traits-abstract-mixins.html>
-
-### 4.3 抽象类
-<https://docs.scala-lang.org/overviews/scala-book/abstract-classes.html>
-
-### 4.4 抽象类型成员
-<https://docs.scala-lang.org/tour/abstract-type-members.html>
-
-### 4.5 self类型
-<https://docs.scala-lang.org/tour/self-types.html>
-
-## 5.泛型
-### 5.1 泛型类
-<https://docs.scala-lang.org/tour/generic-classes.html>
-
-### 5.2 泛型方法
-<https://docs.scala-lang.org/tour/polymorphic-methods.html>
-
-### 5.3 协变和逆变
-<https://docs.scala-lang.org/tour/variances.html>
-
-### 5.4 类型边界
-<https://docs.scala-lang.org/tour/upper-type-bounds.html>
-<https://docs.scala-lang.org/tour/lower-type-bounds.html>
-
-## 6.集合类
-<https://docs.scala-lang.org/overviews/scala-book/collections-101.html>
-
-[Mutable and Immutable Collections (2.13)](https://docs.scala-lang.org/overviews/collections-2.13/overview.html)或[Mutable and Immutable Collections (2.8-2.12)](https://docs.scala-lang.org/overviews/collections/introduction.html)
-
-scala.Seq, scala.collections.Seq, scala.collections.mutable.Seq, scala.collections.immutable.Seq
-
-.view, .par
-
-### 6.1 匿名函数
-<https://docs.scala-lang.org/overviews/scala-book/anonymous-functions.html>
-
-### 6.2 常用序列方法
-<https://docs.scala-lang.org/overviews/scala-book/collections-methods.html>
-
-### 6.3 常用映射方法
-<https://docs.scala-lang.org/overviews/scala-book/collections-maps.html>
-
-## 7.函数式编程
-<https://docs.scala-lang.org/overviews/scala-book/functional-programming.html>
-
-## 8.Case类
-<https://docs.scala-lang.org/overviews/scala-book/case-classes.html>
-<https://docs.scala-lang.org/tour/case-classes.html>
-
-### 8.1 Case object
-<https://docs.scala-lang.org/overviews/scala-book/case-objects.html>
-
-### 8.2 函数式错误处理
-<https://docs.scala-lang.org/overviews/scala-book/functional-error-handling.html>
-Option/Some/None
-Try/Success/Failure
-Either/Left/Right
-
-## 9.并发
-<https://docs.scala-lang.org/overviews/scala-book/concurrency-signpost.html>
-
-### 9.1 Future
-<https://docs.scala-lang.org/overviews/scala-book/futures.html>

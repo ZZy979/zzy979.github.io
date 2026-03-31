@@ -2,7 +2,7 @@
 title: Scala快速入门教程
 date: 2022-04-01 11:35:00 +0800
 categories: [Scala]
-tags: [scala, hello world, variable, if statement, for statement, while statement, do-while statement, match expression, try statement, class, method, interface, collection, tuple]
+tags: [scala, hello world, variable, if statement, for statement, while statement, do-while statement, match expression, pattern matching, try statement, class, method, interface, collection, tuple]
 ---
 ## 1.简介
 Scala是一种结合了面向对象和函数式编程的、静态类型的高级编程语言。
@@ -257,7 +257,7 @@ def getClassAsString(x: Any): String = x match {
 }
 ```
 
-（这里是判断x的类型而不是具体值，相当于Java 14的`instanceof`模式匹配和Java 17的`switch`模式匹配）
+（这里是判断x的类型而不是具体值，相当于Java 16的`instanceof`模式匹配和Java 17的`switch`模式匹配）
 
 ### 4.5 try/catch
 Scala的`try/catch`控制结构用于捕获异常，类似于Java，但其语法与`match`表达式一致：

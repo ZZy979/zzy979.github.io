@@ -730,10 +730,10 @@ UnicodeEncodeError: 'ascii' codec can't encode character '\xe6' in position 1: o
 
 ```python
 >>> b = b'\xba\xf1\xa6\xe2\xa5\x76\xb5\xdc\xa9\x69'
->>> b.decode('big5')
-'綠色史萊姆'
->>> b.decode('gbk', errors='replace')
-'厚︹�v弟﹊'
+>>> print(b.decode('big5'))
+綠色史萊姆
+>>> print(b.decode('mbcs'))
+厚︹弟﹊
 ```
 
 如果想更详细地了解Python中的Unicode，可参考官方文档Unicode HOWTO: <https://docs.python.org/3/howto/unicode.html> 。
