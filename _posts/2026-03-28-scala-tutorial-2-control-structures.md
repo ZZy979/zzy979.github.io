@@ -2,7 +2,7 @@
 title: Scala基础教程 第2节 控制结构
 date: 2026-03-28 09:46:59 +0800
 categories: [Scala]
-tags: [scala, if statement, for statement, yield statement, match expression, pattern matching, sealed class, regular expression, try statement]
+tags: [scala, if statement, for statement, yield statement, match expression, pattern matching, sealed class, regular expression, try statement, error handling]
 ---
 <https://docs.scala-lang.org/overviews/scala-book/control-structures.html>
 
@@ -413,7 +413,7 @@ val res2: String = List
 注意：由于类型擦除，`match`表达式无法匹配泛型类的类型参数。即使将第4个case写为`case l: List[Int]`，传递一个`List[String]`仍然会匹配这个case。
 
 ### 2.4.6 匹配case类
-Case类对于模式匹配特别有用（将在第8节详细介绍）。
+Case类对于模式匹配特别有用（将在第3节详细介绍）。
 
 ```scala
 sealed trait Notification

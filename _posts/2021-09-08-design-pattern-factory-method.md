@@ -2,7 +2,7 @@
 title: 【设计模式】3.工厂方法
 date: 2021-09-08 15:06:41 +0800
 categories: [Design Pattern]
-tags: [design pattern]
+tags: [design pattern, factory method]
 ---
 ## 定义
 工厂方法(factory method)模式在父工厂类中定义了一个创建对象的接口，由子工厂类决定实例化哪个类

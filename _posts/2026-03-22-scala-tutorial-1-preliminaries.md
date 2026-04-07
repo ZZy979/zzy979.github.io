@@ -203,6 +203,52 @@ scala> val age = 19
 val age: Int = 19
 ```
 
+### 惰性求值
+在Scala中，`lazy val`是一种**延迟初始化**的变量，其值在**第一次被访问时**才会计算，后续直接使用缓存的结果。
+
+```scala
+lazy val delayed = {
+  println("lazy val computed")
+  42
+}
+
+println(delayed)  // prints "lazy val computed" and "42"
+println(delayed)  // prints "42"
+```
+
+`lazy val`可用于推迟昂贵的初始化操作（例如创建数据库连接）：
+
+```scala
+object Database {
+  lazy val connection: Connection = getConnection
+
+  def getConnection: Connection = DriverManager.getConnection("jdbc:mysql://localhost/db")
+
+  def query(sql: String): ResultSet = connection.createStatement().executeQuery(sql)
+
+  def update(sql: String): Int = connection.createStatement().executeUpdate(sql)
+}
+```
+
+这比下面的代码更加简洁：
+
+```scala
+object Database {
+  var connection: Connection = _
+
+  def getConnection: Connection = {
+    if (connection == null) {
+      connection = DriverManager.getConnection("jdbc:mysql://localhost/db")
+    }
+    connection
+  }
+
+  def query(sql: String): ResultSet = getConnection.createStatement().executeQuery(sql)
+
+  def update(sql: String): Int = getConnection.createStatement().executeUpdate(sql)
+}
+```
+
 ## 1.5 内置类型
 <https://docs.scala-lang.org/overviews/scala-book/built-in-types.html>
 
@@ -495,6 +541,30 @@ val numPairs = List((2, 5), (3, -7), (20, 56))
 for ((a, b) <- numPairs) {
   println(a * b)
 }
+```
+
+相同长度的元组支持相等比较：
+
+```scala
+scala> (1, "a") == (1, "a")
+val res0: Boolean = true
+```
+
+元组也可以按字典序比较，但需要导入`scala.math.Ordering.Implicits._`：
+
+```scala
+scala> import scala.math.Ordering.Implicits._
+import scala.math.Ordering.Implicits._
+
+scala> (1, "b") < (2, "a")
+val res1: Boolean = true
+```
+
+集合的`sorted`方法接受一个`Ordering`隐式参数（详见3.3.9节），因此不需要额外导入：
+
+```scala
+scala> List((2, "a"), (1, "b"), (2, "b")).sorted
+val res2: List[(Int, String)] = List((1,b), (2,a), (2,b))
 ```
 
 ## 1.9 命令行I/O

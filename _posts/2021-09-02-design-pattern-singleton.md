@@ -2,7 +2,7 @@
 title: 【设计模式】1.单例模式
 date: 2021-09-02 10:28:13 +0800
 categories: [Design Pattern]
-tags: [design pattern]
+tags: [design pattern, singleton]
 ---
 ## 定义
 单例模式(singleton pattern)确保一个类只有一个实例，并提供该实例的全局访问点

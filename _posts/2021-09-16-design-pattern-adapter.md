@@ -2,7 +2,7 @@
 title: 【设计模式】8.适配器
 date: 2021-09-16 14:15:42 +0800
 categories: [Design Pattern]
-tags: [design pattern]
+tags: [design pattern, adapter]
 ---
 ## 定义
 适配器(adapter)模式通过一个包装类将一个接口转换成客户端期望的另一个接口（可类比为转接线）
