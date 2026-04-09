@@ -43,7 +43,7 @@ cpr = sum(cost) / sum(req_cnt)
 
 其中3、2、1桶的请求量分别为100、105、90。
 
-真实的数据量非常大，每个分区大小约2.1 TB，包含1380亿行、21亿个用户id，设定桶数n = 10。因此使用Spark框架进行计算。
+真实的数据量非常大，每个分区大小约2.1 TB，包含1380亿行、21亿个用户id，因此使用Spark框架进行计算。设定桶数n = 10。
 
 ## 方法1：全局排序
 首先尝试最直接的全局排序方法：
@@ -133,7 +133,7 @@ calcUserBucket finished, cost 15582.80 seconds
 
 但是任务共耗时6.1 h，不可接受，需要进行优化。从Spark UI可以看到各个阶段的耗时情况：
 
-![Spark UI-全局排序](/assets/images/user-bucket-spark-task-performance-tuning/Spark UI-全局排序.png)
+![Spark UI-全局排序](/assets/images/user-bucket-spark-task-performance-tuning/SparkUI-全局排序.png)
 
 | 阶段 | 动作 | 并行度 | 耗时 |
 | --- | --- | --- | --- |
@@ -154,7 +154,7 @@ CASE WHEN cpr > 1409.54 THEN 10
 WHEN cpr > 808.29 THEN 9
 ...
 WHEN cpr > 39.30 THEN 2
-ELSE 1 AS bucket_id
+ELSE 1 END AS bucket_id
 ```
 
 这样可以避免对全量数据进行排序，以牺牲一定的准确率为代价节省计算时间。修改后的代码如下（采样率取1/10000）：
@@ -194,7 +194,7 @@ def calcUserBucket(userPosInfo: DataFrame, bucketNum: Int): DataFrame = {
 
 耗时缩短到27 min（计算22 min + 输出5.4 min）。
 
-![Spark UI-采样](/assets/images/user-bucket-spark-task-performance-tuning/Spark UI-采样.png)
+![Spark UI-采样](/assets/images/user-bucket-spark-task-performance-tuning/SparkUI-采样.png)
 
 计算结果中各个桶的cpr顺序正确，请求量大致相等。
 
@@ -216,16 +216,16 @@ calcUserBucket finished, cost 1221.96 seconds
 +---------+---------+------------+-----------+-----------+
 ```
 
-通过与方法1的精确结果进行比较，可以计算出用户分桶的准确率为2017323519/2112604384=95.5%。这个准确率与采样率有关，采样率越高准确率也越高，但计算越慢。
+通过与方法1的精确结果进行比较，可以计算出用户分桶的准确率为2017323519/2112604384=95.5%。这个准确率与采样率有关，采样率越高准确率越高，但计算越慢。
 
 ## 方法3：分区排序
 方法1之所以那么慢，是因为排序阶段由单个task完成。可以考虑采用快速排序的思想，将数据集划分为多个分区，分区间有序，然后在各分区内排序，以便利用Spark的并行计算能力。
 
 Spark的键值对`RDD`支持`repartitionAndSortWithinPartitions()`操作，能够根据给定的分区器对`RDD`进行重新分区，并在每个分区内按key进行排序。这种方法比先调用`repartition()`再在每个分区内排序更高效，因为它可以将排序操作下推到shuffle机制中。
 
-[RangePartitioner](https://spark.apache.org/docs/latest/api/scala/org/apache/spark/RangePartitioner.html)能够将`RDD`按照key的范围划分为大致相等的区间。参考 <https://zhuanlan.zhihu.com/p/665111208> 。
+[RangePartitioner](https://spark.apache.org/docs/latest/api/scala/org/apache/spark/RangePartitioner.html)能够将`RDD`按照key的范围划分为大致相等的区间。参见 <https://zhuanlan.zhihu.com/p/665111208> 。
 
-为了使用分区排序，必须将`DataFrame`转换为`RDD[Row]`，并以-cpr作为key以便降序排序。`repartitionAndSortWithinPartitions()`操作生成的`RDD`是分区间、分区内都排好序的，之后依次计算每个分区的累积请求量（相当于手动实现窗口函数），最后转换回`DataFrame`并计算桶id。完整代码如下：
+为了使用分区排序，必须将`DataFrame`转换为`RDD[Row]`，并以-cpr作为key以便降序排序。`repartitionAndSortWithinPartitions()`操作生成的`RDD`是分区间、分区内都有序的。之后依次计算每个分区的累积请求量（相当于手动实现窗口函数），最后转换回`DataFrame`并计算桶id。完整代码如下：
 
 ```scala
 def calcUserBucket(spark: SparkSession, userPosInfo: DataFrame, bucketNum: Int): DataFrame = {
@@ -284,15 +284,15 @@ calcUserBucket finished, cost 13951.86 seconds
 +---------+---------+------------+-----------+-----------+
 ```
 
-奇怪的是，这次任务花费了7.8 h（计算7.6 h + 输出12 min），反而比全局排序更慢。从Spark UI可以看到，瓶颈在Stage 4和Stage 10：
+奇怪的是，这次任务花费了7.8 h（计算7.6 h + 输出12 min），反而比全局排序更慢。从Spark UI可以看到，瓶颈在Stage 4和Stage 10，分别耗时3.4 h和3.8 h：
 
-![Spark UI-分区排序](/assets/images/user-bucket-spark-task-performance-tuning/Spark UI-分区排序.png)
+![Spark UI-分区排序](/assets/images/user-bucket-spark-task-performance-tuning/SparkUI-分区排序.png)
 
 查看这两个阶段内任务的耗时情况，发现红框中任务处理的数据量和耗时远大于其他任务，这是典型的**数据倾斜**现象。
 
-![数据倾斜](/assets/images/user-bucket-spark-task-performance-tuning/数据倾斜.png)
+![Stage 4任务耗时](/assets/images/user-bucket-spark-task-performance-tuning/Stage4任务耗时.png)
 
-![数据倾斜2](/assets/images/user-bucket-spark-task-performance-tuning/数据倾斜2.png)
+![Stage 10任务耗时](/assets/images/user-bucket-spark-task-performance-tuning/Stage10任务耗时.png)
 
 有时还会导致任务反复失败以及executor心跳超时。
 
@@ -311,7 +311,7 @@ calcUserBucket finished, cost 13951.86 seconds
 
 可以看到，cpr=0的用户占了1/3。`RangePartitioner`会确保key相等的数据一定在同一个分区，当某个key值的数据量极大时，就会产生严重的数据倾斜。
 
-解决这个问题的常用方法是加盐，即给key添加随机扰动，避免分区数据倾斜。
+解决这个问题的常用方法是加盐，即给key添加随机扰动，避免大量数据被划分到同一个分区。
 
 ```scala
 val rddWithKey = userAgg.rdd.map { row =>
@@ -324,7 +324,7 @@ val rddWithKey = userAgg.rdd.map { row =>
 
 重新运行任务，耗时降至26 min（计算25 min + 输出52 s）。
 
-![Spark UI-分区排序2](/assets/images/user-bucket-spark-task-performance-tuning/Spark UI-分区排序2.png)
+![Spark UI-分区排序2](/assets/images/user-bucket-spark-task-performance-tuning/SparkUI-分区排序2.png)
 
 分桶结果与之前完全相同。
 
@@ -353,6 +353,6 @@ calcUserBucket finished, cost 1275.07 seconds
 
 | 方法 | 耗时 | 准确率 | 优点 | 缺点 | 适用场景 |
 | --- | --- | --- | --- | --- | --- |
-| 全局排序 | 6.1 h | 100% | 绝对准确 | 速度太慢 | 数据量小或准确性要求高 |
+| 全局排序 | 6.1 h | 100% | 实现简单，绝对准确 | 速度太慢 | 数据量小或对准确性要求高 |
 | 采样+近似分界点 | 27 min | 95.5% | 速度快 | 准确率较低，与采样率有关 | 对准确性不敏感，追求速度 |
-| 分区排序 | 26 min | 99.999% | 速度快、准确率高 | 代码实现复杂 | 平衡速度和准确性 |
+| 分区排序 | 26 min | 99.999% | 速度快，准确率高 | 代码实现较复杂 | 平衡速度和准确性 |
