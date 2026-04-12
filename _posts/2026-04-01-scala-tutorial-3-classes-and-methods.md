@@ -2,7 +2,7 @@
 title: Scala基础教程 第3节 类和方法
 date: 2026-04-01 20:55:26 +0800
 categories: [Scala]
-tags: [scala, class, constructor, instance field, method, block, default argument, keyword argument, operator overloading, variadic argument, implicit parameter, package, import statement, singleton, companion, case class, error handling, enumeration, inner class, annotation]
+tags: [scala, class, constructor, instance field, method, function, block, default argument, keyword argument, operator overloading, variadic argument, implicit parameter, package, import statement, singleton, companion, case class, error handling, enumeration, inner class, annotation]
 ---
 <https://docs.scala-lang.org/overviews/scala-book/classes.html>
 
@@ -229,7 +229,31 @@ val x = double {
 }
 ```
 
-接受函数参数的方法也有两种调用方式：
+#### 匿名函数
+**匿名函数**(anonymous function)即没有名字的方法（类似于Java的Lambda表达式），使用`=>`分隔参数列表和函数体。例如：
+
+```scala
+val plusOne = (x: Int) => x + 1
+val less = (x: Int, y: Int) => x < y
+val greet = () => println("Hello!")
+```
+
+可以像方法一样调用函数，例如`plusOne(42)`, `less(3, 4)`, `greet()`。
+
+在Scala中，函数是对象。可以将其赋给变量、传递给方法或从方法中返回。上面三个函数的类型分别是`Int => Int`、`(Int, Int) => Boolean`和`() => Unit`。
+
+注：Scala标准库定义了函数类型`Function0`~`Function22`。`(A1, A2, ..., AN) => R`是`FunctionN[A1, A2, ..., AN, R]`的简写形式。
+
+把函数传递给方法时，如果编译器可以推断出参数类型，就可以将其省略。例如：
+
+```scala
+val nums = Seq(1, 2, 3, 4, 5)
+val doubledNums = nums.map(x => x * 2)
+```
+
+`nums`的元素类型为`Int`，其`map()`方法的参数是函数类型`Int => B`（`B`是`map()`的类型参数），因此`x`的类型为`Int`。在这种情况下，函数可以进一步简写为`_ * 2`。
+
+注：接受函数参数的方法也有`()`和`{}`两种调用方式：
 
 ```scala
 val a = nums.map(x => (x + 1) * 2)

@@ -2,7 +2,7 @@
 title: 《Python基础教程》笔记 第7章 再谈抽象
 date: 2024-01-24 22:49:50 +0800
 categories: [Python, Beginning Python]
-tags: [python, object-oriented programming, polymorphism, inheritance, class, attribute, method, multi-inheritance, mro]
+tags: [python, object-oriented programming, polymorphism, inheritance, class, attribute, method, multi-inheritance, mro, abstract class]
 ---
 创建自己的对象（和类）是Python非常核心的概念，以至于Python被称为**面向对象**的语言。在本章中，你将学习如何创建对象，以及多态、封装、方法、属性、超类和继承。
 

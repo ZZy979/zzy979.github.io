@@ -2,7 +2,7 @@
 title: 《Python基础教程》笔记 第22章 项目3：万能的XML
 date: 2024-06-03 21:46:05 +0800
 categories: [Python, Beginning Python]
-tags: [python, xml, sax]
+tags: [python, xml, sax, mix-in]
 ---
 这个项目的目标是根据描述各种网页和目录的单个XML文件生成完整的网站。
 
