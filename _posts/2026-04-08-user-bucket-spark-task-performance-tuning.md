@@ -135,7 +135,7 @@ calcUserBucket finished, cost 15582.80 seconds
 
 ![Spark UI-全局排序](/assets/images/user-bucket-spark-task-performance-tuning/SparkUI-全局排序.png)
 
-| 阶段 | 动作 | 并行度 | 耗时 |
+| 阶段 | 动作 | 任务数量 | 耗时 |
 | --- | --- | --- | --- |
 | 0 | 读表，按用户id聚合，计算cpr | 24488 | 8.8 min |
 | 1 | 窗口函数部分计算 | 2000 | 36 min |
@@ -320,7 +320,7 @@ val rddWithKey = userAgg.rdd.map { row =>
 }
 ```
 
-这里选择`1e-6`是因为相对于cpr值足够小（1桶的cpr上界是39.30），不会影响排序结果，但能够将cpr=0的数据分散到不同分区。
+这里选择`1e-6`是因为相对于cpr值足够小（1桶的cpr上界是39.30），不会影响分桶结果，但能够将cpr=0的数据分散到不同分区。
 
 重新运行任务，耗时降至26 min（计算25 min + 输出52 s）。
 

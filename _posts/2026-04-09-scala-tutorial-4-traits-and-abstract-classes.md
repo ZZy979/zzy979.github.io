@@ -344,7 +344,7 @@ println("length = " + buf.length)
 println("content = " + buf.element)
 ```
 
-注意，在这里使用了协变类型(`+T <: Seq[U]`)来隐藏方法`newIntSeqBuf()`返回的对象的具体类型。
+注意，在这里使用了协变类型(`+T <: Seq[U]`)来隐藏方法`newIntSeqBuf()`返回的对象的具体类型（协变类型详见5.3节）。
 
 ## 4.5 self类型
 <https://docs.scala-lang.org/tour/self-types.html>
