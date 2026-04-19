@@ -156,10 +156,10 @@ go: example/hello imports
         rsc.io/quote: module rsc.io/quote: Get "https://proxy.golang.org/rsc.io/quote/@v/list": dial tcp 142.251.45.145:443: connectex: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.
 ```
 
-这是因为默认的代理proxy.golang.org无法访问（由环境变量GOPROXY指定）。解决方法：使用代理服务goproxy.io，只需设置环境变量GOPROXY即可：
+这是因为默认的代理proxy.golang.org无法访问（由环境变量GOPROXY指定）。解决方法：使用代理服务goproxy.io或goproxy.cn，只需设置环境变量GOPROXY：
 
 ```shell
-$ go env -w GOPROXY=https://goproxy.io,direct
+$ go env -w GOPROXY=https://goproxy.cn
 ```
 
 再次尝试即可下载成功：

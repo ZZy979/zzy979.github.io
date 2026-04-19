@@ -11,7 +11,7 @@ tags: [go]
 * 源代码：<https://github.com/adonovan/gopl.io/>
 
 ## 目录
-* 第1章 入门
+* [第1章 入门]({% post_url 2026-02-26-gopl-note-ch01-tutorial %})
 * 第2章 程序结构
 * 第3章 基本数据类型
 * 第4章 复合类型

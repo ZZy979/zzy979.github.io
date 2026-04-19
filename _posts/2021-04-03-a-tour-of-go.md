@@ -2,7 +2,7 @@
 title: A Tour of Go
 date: 2021-04-03 23:25 +0800
 categories: [Go]
-tags: [go, hello world, package, import statement, function, variable, initialization, data type, complex number, type conversion, constant, for statement, if statement, switch statement, defer statement, pointer, struct, array, slice, map, method, interface, error handling, io, generic programming, concurrency, goroutine, channel, select statement, lock]
+tags: [go, hello world, package, import statement, function, variable, declaration, initialization, assignment, data type, complex number, type conversion, constant, for statement, if statement, switch statement, defer statement, pointer, struct, array, slice, map, method, interface, error handling, io, generic programming, concurrency, goroutine, channel, select statement, lock]
 ---
 本教程覆盖了Go语言最重要的特性，包括：
 * 基础知识：变量和函数、流控制语句、内置类型
@@ -778,7 +778,7 @@ for i, v := range pow {
 
 [moretypes/range.go](https://github.com/ZZy979/go-tutorials/blob/main/tour/moretypes/range.go)
 
-如果不需要索引或值，可以将对应的变量名改为`_`：
+如果不需要索引或值，可以将对应的变量名改为空白标识符`_`：
 
 ```go
 for i, _ := range s
