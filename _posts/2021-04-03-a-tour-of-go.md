@@ -106,6 +106,8 @@ func swap(x, y string) (string, string) {
 
 注意：和Java一样，Go的函数是**传值调用**（包括数组和结构体类型），因此无法通过形参修改实参。但切片和映射等都是引用类型，形参和实参是指向同一对象的两个“指针”，因此可以通过形参修改实参指向的值。
 
+注：Go不支持函数重载和默认参数。详见[FAQ - Why does Go not support overloading of methods and operators?](https://go.dev/doc/faq#overloading)
+
 #### 2.1.5 命名的返回值
 Go的函数返回值可以被命名，可以将其当作在函数顶部定义的变量。这些名字应当标明返回值的含义。
 
@@ -589,7 +591,7 @@ v3 := Vertex{}      // X:0 and Y:0
 
 [moretypes/struct-literals.go](https://github.com/ZZy979/go-tutorials/blob/main/tour/moretypes/struct-literals.go)
 
-注意：Go允许获取结构体字面值的指针，这在C++中是不合法的（右值不能取地址，除非是右值引用）。但Go不允许获取数字常量的指针。
+注意：Go允许获取结构体字面值的指针，这在C++中是不合法的。但Go不允许获取数字常量的指针。
 
 ```go
 p := &Vertex{1, 2} // OK
