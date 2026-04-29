@@ -13,7 +13,7 @@ Scala代码被编译成.class文件，运行在Java虚拟机(JVM)上，可以调
 
 官方文档：<https://docs.scala-lang.org/>
 * [Scala语言规范](https://www.scala-lang.org/files/archive/spec/2.13/)
-* [Scala标准库](https://www.scala-lang.org/api/2.13.16/)
+* [Scala标准库](https://www.scala-lang.org/api/2.13.18/)
 * [代码风格指南](https://docs.scala-lang.org/style/index.html)
 
 官方教程：
@@ -355,7 +355,7 @@ class Cat extends Speaker with TailWagger with Runner {
 
 详细介绍见：
 * [Scala Book - Scala Collections](https://docs.scala-lang.org/overviews/scala-book/collections-101.html)
-* [Mutable and Immutable Collections (2.13)](https://docs.scala-lang.org/overviews/collections-2.13/overview.html)或[Mutable and Immutable Collections (2.8-2.12)](https://docs.scala-lang.org/overviews/collections/introduction.html)
+* [Mutable and Immutable Collections (2.13)](https://docs.scala-lang.org/overviews/collections-2.13/overview.html)或[Mutable and Immutable Collections (2.8-2.12)](https://docs.scala-lang.org/overviews/collections/overview.html)
 
 ### 8.1 创建列表
 Scala提供了很多创建列表的方法，例如：

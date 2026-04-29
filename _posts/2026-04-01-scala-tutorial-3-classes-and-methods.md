@@ -864,6 +864,7 @@ class Test {
 * 上面的`import`语句相当于Java的静态导入。
 * 也可以导入`logging.Logger`然后调用`Logger.info()`。
 * 如果一个对象不是顶级的，而是嵌套在另一个类中，那么该对象就“依赖于”外层类的实例。例如，假设`class A`具有成员`object B`，那么对于类`A`的两个实例`a1`和`a2`，`a1.B`和`a2.B`不是同一个对象。
+* `object`不能被继承，但`object`可以继承`class`。
 
 ### 3.5.2 伴生对象
 <https://docs.scala-lang.org/overviews/scala-book/companion-objects.html>

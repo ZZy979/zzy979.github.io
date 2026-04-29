@@ -102,6 +102,8 @@ class Bar[-A] // A contravariant class
 class Baz[A]  // An invariant class
 ```
 
+注：Java的泛型类都是不变的。Java的通配符类型可以实现类似于Scala变型的功能。详见[《Java核心技术》笔记 卷I 第8章]({% post_url 2024-10-29-java-note-v1ch08-generic-programming %}) 8.7和8.8节。
+
 ### 5.3.1 不变
 默认情况下，Scala的类型参数是**不变的**(invariant)：类型参数之间的继承关系不会反映在泛型类中。考虑下面的泛型类`Box`：
 
@@ -147,8 +149,6 @@ val myCat: Cat = myCatBox.content // myCat would be a Dog!
 ```
 
 由此可以得出结论：即使`Cat`是`Animal`的子类型，`Box[Cat]`和`Box[Animal]`也不能有子类型关系。
-
-注：Java的泛型类都是不变的，详见[《Java核心技术》笔记 卷I 第8章]({% post_url 2024-10-29-java-note-v1ch08-generic-programming %}) 8.7节。
 
 ### 5.3.2 协变
 上面遇到的问题是：因为可以把`Dog`放入`Box[Animal]`，所以`Box[Cat]`不能是`Box[Animal]`的子类型。
