@@ -2,7 +2,7 @@
 title: 《Java核心技术》笔记 卷I 第8章 泛型编程
 date: 2024-10-29 21:58:25 +0800
 categories: [Java, Core Java]
-tags: [java, generic programming, type erasure, bridge method, wildcard type, type bound, reflection]
+tags: [java, generic programming, type erasure, bridge method, generic array, wildcard type, type bound, reflection]
 ---
 泛型类和泛型方法有类型参数，这使得它们可以准确地描述用特定类型实例化时会发生什么。在有泛型类之前，程序员必须使用`Object`编写适用于多种类型的代码，这既繁琐又不安全。
 

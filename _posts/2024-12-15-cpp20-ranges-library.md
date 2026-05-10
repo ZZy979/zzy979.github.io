@@ -2,7 +2,7 @@
 title: C++20范围库
 date: 2024-12-15 10:32:43 +0800
 categories: [C/C++]
-tags: [cpp, ranges library, functional programming]
+tags: [cpp, ranges library, functional programming, view]
 math: true
 ---
 ## 1.引言

@@ -480,7 +480,7 @@ our fathers ...
 
 * `Any`是所有类型的超类型，也称为顶级类型(top type)。它定义了一些通用方法，例如`equals()`、`hashCode()`和`toString()`。`Any`有两个直接子类：`AnyVal`和`AnyRef`。
 * `AnyVal`表示值类型(value type)。有9种预定义的值类型，不可为null：`Boolean`, `Byte`, `Short`, `Int`, `Long`, `Float`, `Double`, `Char`和`Unit`。`Unit`是不包含有意义信息的值类型，只有单一实例，用字面值`()`表示。`Unit`可以用作无返回值的函数的返回类型（类似于Java的`void`和Python的`None`）。
-* `AnyRef`表示引用类型(reference type)。所有非值类型都被定义为引用类型。Scala中所有用户定义类型都是`AnyRef`的子类型。在Java运行时环境的上下文中，`AnyRef`对应于`Java.lang.Object`。
+* `AnyRef`表示引用类型(reference type)。所有非值类型都被定义为引用类型。Scala中所有用户定义类型都是`AnyRef`的子类型。在Java运行时环境的上下文中，`AnyRef`对应于`java.lang.Object`。
 * `Nothing`是所有类型的子类型，也称为底部类型(bottom type)。没有类型为`Nothing`的值。通常用于“永远不会返回正常结果”的场景。例如，空列表的类型为`List[Nothing]`；如果一个函数会抛出异常或进入无限循环，其返回类型可以定义为`Nothing`。 
 * `Null`是所有引用类型的子类型。它只有一个值，用关键字`null`表示。`Null`主要是为了与其他JVM语言互操作，不应该在Scala代码中使用。
 
@@ -560,7 +560,7 @@ scala> (1, "b") < (2, "a")
 val res1: Boolean = true
 ```
 
-集合的`sorted`方法接受一个`Ordering`隐式参数（详见3.3.9节），因此不需要额外导入：
+集合的`sorted`方法接受一个`Ordering`隐式参数（详见3.3.10节），因此不需要额外导入：
 
 ```scala
 scala> List((2, "a"), (1, "b"), (2, "b")).sorted

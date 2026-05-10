@@ -478,7 +478,80 @@ def factorial(x: Int): Int = {
 println("Factorial of 3: " + factorial(3))
 ```
 
-### 3.3.7 多个参数列表
+### 3.3.7 零参数和无参数方法
+**零参数**(zero-parameter)方法是指参数列表为空的方法。在定义时必须使用空括号，而在调用时括号是可选的。例如：
+
+```scala
+def sayHello(): Unit = println("Hello")
+
+sayHello()
+sayHello    // also OK
+```
+
+**无参数**(parameterless)方法类似于零参数方法，但在定义和调用时都不使用空括号（就像访问字段一样）。例如：
+
+```scala
+def getAnswer: Int = 42
+
+val a = getAnswer
+val a = getAnswer()  // error
+```
+
+另外，在Scala代码中调用零参数的Java方法时，空括号也是可选的。
+
+最佳做法是：
+* 定义不需要参数的Scala方法时，如果返回`Unit`则使用零参数，否则（getter方法）使用无参数。
+* 调用零参数的Scala方法时添加空括号，调用无参数的Scala方法时不添加空括号。
+* 调用零参数的Java方法时，如果返回`void`则添加空括号，否则（getter方法）不添加空括号。
+
+| 语言 | 返回类型 | 参数定义 | 调用括号 |
+| --- | --- | --- | --- |
+| Scala | `Unit` | 零 | 可选（建议） |
+| Scala | `Unit` | 无（不建议） | 不能 |
+| Scala | 非`Unit` | 零（不建议） | 可选 |
+| Scala | 非`Unit` | 无 | 不能 |
+| Java | `void` | 零 | 可选（建议） |
+| Java | 非`void` | 零 | 可选（不建议） |
+
+例如，对于下面的Scala类`Foo`：
+
+```scala
+// Scala
+class Foo {
+  def doX(): Unit = {}
+  def doY: Unit = {}   // not recommended: mutator method is parameterless
+  def getX(): Int = 0  // not recommended: accessor method has empty parameter
+  def getY: Int = 0
+}
+```
+
+以及下面的Java类`Bar`：
+
+```java
+// Java
+public class Bar {
+    public void doX() {}
+    public int getX() { return 0; }
+}
+```
+
+下面的例子展示了如何在Scala代码中调用这些方法：
+
+```scala
+// Scala
+var a = 0
+val foo = new Foo
+foo.doX()  // or foo.doX, but not recommended
+foo.doY    // foo.doY() is an error
+a = foo.getX()  // or foo.getX, but not recommended
+a = foo.getY    // foo.getY() is an error
+
+val bar = new Bar
+bar.doX()     // or bar.doX, but not recommended
+a = bar.getX  // or bar.getX(), but not recommended
+```
+
+### 3.3.8 多个参数列表
 <https://docs.scala-lang.org/tour/multiple-parameter-lists.html>
 
 方法可以有多个参数列表。例如，Scala集合API中`Iterable`特质的`foldLeft()`方法定义如下：
@@ -537,7 +610,7 @@ def possible = foldLeft2(numbers, 0)(_ + _)
 
 （2）隐式参数
 
-为了将某些参数指定为`implicit`，必须将它们放在单独的隐式参数列表中（详见3.3.9节）。例如：
+为了将某些参数指定为`implicit`，必须将它们放在单独的隐式参数列表中（详见3.3.10节）。例如：
 
 ```scala
 def execute(arg: Int)(implicit ec: ExecutionContext) = ???
@@ -584,7 +657,7 @@ addCurried1(3)(4)  // 7
 addCurried2(3)(4)  // 7
 ```
 
-### 3.3.8 重复参数
+### 3.3.9 重复参数
 <https://scala-lang.org/files/archive/spec/2.13/04-basic-declarations-and-definitions.html#repeated-parameters>
 
 参数列表的最后一个参数可以添加后缀`*`（例如`x: T*`），称为**重复参数**(repeated parameter)。具有重复参数`T*`的方法可以接受任意数量的`T`类型参数。在方法内部，重复参数的类型是`Seq[T]`。
@@ -614,7 +687,7 @@ val xs = List(1, 2, 3)
 println(sum(xs: _*))  // 6
 ```
 
-### 3.3.9 隐式参数
+### 3.3.10 隐式参数
 <https://docs.scala-lang.org/tour/implicit-parameters.html>
 
 方法可以有**上下文参数**(contextual parameter)，也称为**隐式参数**(implicit parameter)。以关键字`implicit`开头的参数列表表示隐式参数。如果调用者没有显式提供这些参数，编译器将查找正确类型的`implicit`值。如果能找到合适的值，则自动传递。
@@ -652,7 +725,7 @@ Scala会在两个地方查找可用的隐式值：
 
 详见[FAQ - Where does Scala look for implicits?](https://docs.scala-lang.org/tutorials/FAQ/index.html#where-does-scala-look-for-implicits)
 
-### 3.3.10 隐式转换
+### 3.3.11 隐式转换
 <https://docs.scala-lang.org/tour/implicit-conversions.html>
 
 **隐式转换**(implicit conversion)是Scala的一个强大特性，有两个常见用法：
@@ -690,7 +763,7 @@ implicit def s2t(s: S): T = ???
 
 另一个例子是可以对数组调用`map()`等方法，这是因为隐式转换`Predef.xxxArrayOps()`能够将`Array[T]`转换为`ArrayOps[T]`，而后者定义了`map()`方法。
 
-### 3.3.11 传名参数
+### 3.3.12 传名参数
 <https://docs.scala-lang.org/tour/by-name-parameters.html>
 
 **传名参数**(by-name parameter)在每次使用时都会求值，如果没有被使用则不会求值（这类似于**将传名参数替换为传递的表达式**）。相反，传值参数(by-value parameter)即使没有使用也会求值，但只求值一次。
@@ -864,6 +937,7 @@ class Test {
 * 上面的`import`语句相当于Java的静态导入。
 * 也可以导入`logging.Logger`然后调用`Logger.info()`。
 * 如果一个对象不是顶级的，而是嵌套在另一个类中，那么该对象就“依赖于”外层类的实例。例如，假设`class A`具有成员`object B`，那么对于类`A`的两个实例`a1`和`a2`，`a1.B`和`a2.B`不是同一个对象。
+* `object`不能被继承，但`object`可以继承`class`。
 
 ### 3.5.2 伴生对象
 <https://docs.scala-lang.org/overviews/scala-book/companion-objects.html>

@@ -2,7 +2,7 @@
 title: Scala基础教程 第2节 控制结构
 date: 2026-03-28 09:46:59 +0800
 categories: [Scala]
-tags: [scala, if statement, for statement, yield statement, match expression, pattern matching, sealed class, regular expression, try statement, error handling]
+tags: [scala, if statement, for statement, yield statement, match expression, pattern matching, sealed class, regular expression, partial function, try statement, error handling]
 ---
 <https://docs.scala-lang.org/overviews/scala-book/control-structures.html>
 
@@ -541,7 +541,7 @@ println(matchAddress(":8080"))           // "Invalid address"
 println(matchAddress("invalid"))         // "Invalid address"
 ```
 
-提取器可用于初始化变量：
+提取器也可用于初始化变量：
 
 ```scala
 val addr = "localhost:8080"
@@ -638,6 +638,68 @@ Hi, we have saved your phone number 123-456-7890.
 Hi JohnSmith, we have saved your email address.
 Invalid contact information, neither an email address nor phone number.
 ```
+
+### 2.4.10 偏函数
+<https://docs.scala-lang.org/scala3/book/fun-partial-functions.html>
+
+**偏函数**（部分函数，partial function）是一种并非对所有可能的参数值都有定义的函数。在Scala中，偏函数是实现了`PartialFunction[A, B]`特质的一元函数，其中`A`是参数类型，`B`是结果类型。
+
+要定义偏函数，使用与`match`表达式中相同的`case`语句。例如，偏函数`doubledOdds`将参数值乘以2，但仅对奇数有定义：
+
+```scala
+val doubledOdds: PartialFunction[Int, Int] = {
+  case i if i % 2 == 1 => i * 2
+}
+```
+
+要检查偏函数是否对某个参数有定义，使用`isDefinedAt()`方法：
+
+```scala
+doubledOdds.isDefinedAt(3)  // true
+doubledOdds.isDefinedAt(4)  // false
+```
+
+用不属于定义域的参数调用偏函数会导致`MatchError`：
+
+```scala
+doubledOdds(3)  // 6
+doubledOdds(4)  // scala.MatchError: 4
+```
+
+可以使用`applyOrElse()`方法为不在定义域中的参数提供默认值，`pf.applyOrElse(x, f)`等价于`if (pf.isDefinedAt(x)) pf(x) else f(x)`。例如：
+
+```scala
+doubledOdds.applyOrElse(4, _ + 1)  // 5
+```
+
+可以用`orElse()`组合两个偏函数，对于第一个偏函数未定义的参数应用第二个函数：
+
+```scala
+val incrementedEvens: PartialFunction[Int, Int] = {
+  case i if i % 2 == 0 => i + 1
+}
+val pf = doubledOdds.orElse(incrementedEvens)
+pf(3)  // 6
+pf(4)  // 5
+```
+
+Scala集合的`collect()`方法将偏函数应用于有定义的元素，返回新集合。`c.collect(pf)`等价于`c.filter(pf.isDefinedAt).map(pf)`。例如：
+
+```scala
+val res = List(1, 2, 3, 4).collect(doubledOdds)  // List(2, 6)
+```
+
+注：`Seq`和`Map`本身也是一种偏函数
+* `Seq[T]`是`PartialFunction[Int, T]`的子类型，将索引映射为元素，定义域为`0 <= i < length`。
+* `Map[K, V]`是`PartialFunction[K, V]`的子类型，将键映射为值，定义域为键集。
+
+可选函数（即返回`Option`）、偏函数和提取器对象可以相互转换，如下表所示：
+
+| | 到可选函数 | 到偏函数 | 到提取器对象 |
+| --- | --- | --- | --- |
+| 从可选函数 | `Predef.identity` | `Function1.UnliftOps.unlift`<br>或`Function.unlift` | `Function1.UnliftOps.unlift` |
+| 从偏函数 | `lift` | `Predef.identity` | `Predef.identity` |
+| 从提取器对象 | `extractor.unapply(_)` | `{ case extractor(x) => x }` | `Predef.identity` |
 
 ## 2.5 try/catch
 <https://docs.scala-lang.org/overviews/scala-book/try-catch-finally.html>

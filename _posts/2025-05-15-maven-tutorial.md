@@ -490,7 +490,20 @@ A
 
 其中groupId和artifactId可以使用通配符`*`。
 
-### 6.5 依赖树分析
+### 6.5 下载依赖
+使用`dependency:get`目标手动下载依赖及其传递依赖。例如：
+
+```shell
+mvn dependency:get -Dartifact=org.apache.hadoop:hadoop-common:3.3.1
+```
+
+或者
+
+```shell
+mvn dependency:get -DgroupId=org.apache.hadoop -DartifactId=hadoop-common -Dversion=3.3.1
+```
+
+### 6.6 依赖树分析
 可以使用以下命令查看项目的依赖树：
 
 ```shell
