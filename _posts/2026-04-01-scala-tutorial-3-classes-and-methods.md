@@ -2,7 +2,7 @@
 title: Scala基础教程 第3节 类和方法
 date: 2026-04-01 20:55:26 +0800
 categories: [Scala]
-tags: [scala, class, constructor, instance field, method, function, block, default argument, keyword argument, operator overloading, variadic argument, implicit parameter, package, import statement, singleton, companion, case class, error handling, enumeration, inner class, annotation]
+tags: [scala, class, constructor, instance field, method, function, block, default argument, keyword argument, operator overloading, variadic argument, implicit parameter, package, import statement, singleton, companion, case class, enumeration, inner class, annotation]
 ---
 <https://docs.scala-lang.org/overviews/scala-book/classes.html>
 
@@ -1250,117 +1250,6 @@ class Speak extends Actor {
     case ResumeSpeakingMessage =>
       // code to resume speaking
   }
-}
-```
-
-### 3.6.3 函数式错误处理
-<https://docs.scala-lang.org/overviews/scala-book/functional-error-handling.html>
-
-函数式编程就像代数，没有空值或异常。但是，当尝试访问宕机的服务器或缺失的文件时仍然会有异常。本节将介绍Scala的函数式错误处理技术。
-
-#### Option/Some/None
-抽象类`Option[T]`表示可选的`T`类型值（类似于`java.util.Optional`），有两个实现类：
-* `Some[T]`表示存在的值
-* `None`表示不存在的值
-
-例如，假设要编写一个字符串转整数的方法`toInt()`，可以返回一个`Option[Int]`，而不是抛出异常或返回null：
-
-```scala
-def toInt(s: String): Option[Int] = {
-  try {
-    Some(Integer.parseInt(s.trim))
-  } catch {
-    case e: Exception => None
-  }
-}
-```
-
-可以使用`match`或者`for`表达式处理`toInt()`的结果：
-
-```scala
-toInt(s) match {
-  case Some(i) => println(i)
-  case None => println("That didn't work.")
-}
-
-val y = for {
-  a <- toInt(stringA)
-  b <- toInt(stringB)
-  c <- toInt(stringC)
-} yield a + b + c
-```
-
-在第二个例子中，`y`的类型为`Option[Int]`，当三个字符串都解析成功时，`y`的值为`Some(a + b + c)`，否则为`None`。
-
-注：
-* `Option`是可迭代的，等价于**长度为0或1的序列**，因此可以使用`isEmpty`、`map()`、`filter()`、`foreach()`等序列方法。详见[API文档](https://www.scala-lang.org/api/2.13.18/scala/Option.html)。
-* Scala字符串有两个转换为整数的方法`toInt`和`toIntOption`，前者返回`Int`或抛出异常，后者返回`Option[Int]`。
-
-#### Try/Success/Failure
-抽象类`Try[T]`表示可能失败（抛出异常）的计算，有两个实现类：
-* `Success[T]`包含成功计算的结果
-* `Failure[T]`包含抛出的异常
-
-下面是使用这些类重写的`toInt()`方法：
-
-```scala
-import scala.util.{Try, Success, Failure}
-
-def toInt(s: String): Try[Int] = Try {
-  Integer.parseInt(s.trim)
-}
-```
-
-可以看到，这比使用`Option`的方式更简短。
-
-在REPL中演示该方法如何工作：
-
-```scala
-scala> val a = toInt("1")
-val a: scala.util.Try[Int] = Success(1)
-
-scala> val b = toInt("boo")
-val b: scala.util.Try[Int] = Failure(java.lang.NumberFormatException: For input string: "boo")
-```
-
-有很多方式可以处理`Try`的结果，包括从失败中“恢复”，但常见的方式仍然是使用`match`和`for`表达式：
-
-```scala
-toInt(s) match {
-  case Success(i) => println(i)
-  case Failure(e) => println(s"Failed. Reason: ${e.getMessage}")
-}
-
-val y = for {
-  a <- toInt(stringA)
-  b <- toInt(stringB)
-  c <- toInt(stringC)
-} yield a + b + c
-```
-
-#### Either/Left/Right
-抽象类`Either[A, B]`表示两种可能类型之一的值，有两个实现类：
-* `Left[A, B]`表示`A`类型的值
-* `Right[A, B]`表示`B`类型的值
-
-习惯上用`Left`表示失败，用`Right`表示成功。
-
-下面的`toInt()`方法当字符串成功转换为整数时返回包含整数的`Right`，否则返回包含原始字符串的`Left`：
-
-```scala
-def toInt(s: String): Either[String, Int] = {
-  try {
-    Right(s.toInt)
-  } catch {
-    case e: NumberFormatException => Left(s)
-  }
-}
-```
-
-```scala
-toInt(s) match {
-  case Left(x) => println(s"$x is not an integer")
-  case Right(x) => println(s"$x is an integer")
 }
 ```
 

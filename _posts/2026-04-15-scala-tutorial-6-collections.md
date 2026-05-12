@@ -2,7 +2,7 @@
 title: Scala基础教程 第6节 集合类
 date: 2026-04-15 22:16:05 +0800
 categories: [Scala]
-tags: [scala, collection, sequence, array list, linked list, vector, map, set, array, generic array, string, function, view]
+tags: [scala, collection, sequence, array list, linked list, vector, map, set, array, generic array, string, function, view, functional programming, error handling]
 ---
 <https://docs.scala-lang.org/overviews/scala-book/collections-101.html>
 
@@ -220,6 +220,8 @@ val list = 1 :: 2 :: 3 :: Nil  // same as List(1, 2, 3)
 实际上，`List`类有两个子类：
 * `case class ::(head, next)`表示非空列表。
 * `case object Nil`表示空列表。
+
+这可用于对列表进行模式匹配，见6.8.1节示例。
 
 另外，`List`类有两个冒号方法：
 * `x :: a`在开头追加元素，返回`new ::(x, this)`，等价于`+:`/`prepended()`。
@@ -795,30 +797,19 @@ val doubledNums = for (i <- nums) yield i * 2
 def filter(p: A => Boolean): List[A]
 ```
 
-给定以下列表：
+给定以下字符串列表：
 
 ```scala
-val nums = List.range(1, 10)  // List(1, 2, 3, 4, 5, 6, 7, 8, 9)
+val fruits = List("apple", "banana", "lime", "orange")
 ```
 
-可以像这样创建一个包含`nums`中所有大于5的整数的新列表：
+可以像这样创建一个包含所有长度大于5的字符串的新列表：
 
 ```scala
-val a = nums.filter(_ > 5)  // List(6, 7, 8, 9)
+val longFruits = fruits.filter(_.length > 5)  // List(banana, orange)
 ```
 
-这行代码等价于
-
-```scala
-def lessThanFive(i: Int): Boolean = i < 5
-val a = nums.filter(lessThanFive)
-```
-
-像这样创建只包含偶数的列表：
-
-```scala
-val b = nums.filter(_ % 2 == 0)  // List(2, 4, 6, 8)
-```
+`_.length > 5`等价于`s => .length > 5`。
 
 ### 6.3.2 多参数函数
 `List[A]`的`reduce()`方法接受一个`(A, A) => A`类型的二元运算符`op`，将`op`依次应用于每个元素，返回最终结果<code>op(...op(op(a<sub>1</sub>, a<sub>2</sub>), a<sub>3</sub>)..., a<sub>n</sub>)</code>。简化的声明如下：
@@ -1265,3 +1256,218 @@ val alphabet = strings.reduce(_ ++ _)  // abcdefghijklmnopqrstuvwxyz
 ```
 
 并行集合的“无序”语义只意味着操作的执行（在时间意义上）无序，并不意味着结果的组合（在空间意义上）无序。结果会按划分分区的顺序重新组合。
+
+## 6.8 函数式编程
+<https://docs.scala-lang.org/overviews/scala-book/functional-programming.html>
+
+Scala可以采用面向对象编程(OOP)风格、函数式编程(FP)风格，甚至混合风格来编写代码。本节简要介绍Scala对函数式编程的支持。
+
+### 6.8.1 纯函数
+<https://docs.scala-lang.org/overviews/scala-book/pure-functions.html>
+
+函数式编程强调仅使用纯函数和不可变值来构建应用程序。
+
+**纯函数**(pure function)是输出只取决于输入参数、不修改任何隐藏状态、不向外部读写数据的函数。
+
+Scala标准库中纯函数的例子：
+* `scala.math`包中的数学函数，如`abs()`、`ceil()`、`sin()`等。
+* 字符串方法`isEmpty`、`length`、`substring()`等。
+* 集合方法`map()`、`filter()`、`drop()`等。
+
+相反，非纯函数有以下一个或多个特征：
+* 读取隐式输入（即访问未作为参数传入的变量和数据）
+* 写入隐式输出
+* 修改输入参数
+* 与外部进行I/O
+
+集合类的`foreach()`方法是非纯函数，因为其返回类型是`Unit`，调用它的唯一原因为了实现某种副作用。类似地，任何返回`Unit`的方法本质上都是非纯函数。
+
+当然，无法与外部交互的程序没什么用。因此，真实的应用程序由纯函数与非纯函数组合而成。建议使用纯函数来编写应用程序的核心逻辑，然后用非纯函数与外部进行交互。
+
+用Scala编写纯函数很简单，只需使用`def`语法即可。例如，下面的纯函数将输入值翻倍：
+
+```scala
+def double(i: Int): Int = i * 2
+```
+
+下面的纯函数递归地计算整数列表的和：
+
+```scala
+def sum(list: List[Int]): Int = list match {
+  case Nil => 0
+  case head :: tail => head + sum(tail)
+}
+```
+
+注：第二个`case`利用了`List`的子类`case class ::`的模式匹配。`head :: tail`是`::(head, tail)`的中缀形式，是模式匹配的特殊语法糖。
+
+### 6.8.2 传递函数值
+<https://docs.scala-lang.org/overviews/scala-book/passing-functions-around.html>
+
+在Scala中，可以创建函数类型的变量。这一特性最大的优势是允许将函数作为参数传递给其他函数（6.3节已经介绍过）。例如，下面的方法计算列表中所有偶数的平方和：
+
+```scala
+def evenSquareSum(nums: List[Int]): Int = {
+  nums.filter(_ % 2 == 0)
+    .map(x => x * x)
+    .reduce(_ + _)
+}
+```
+
+其中，匿名函数`_ % 2 == 0`、`x => x * x`和`_ + _`分别被传递给高阶函数`filter()`、`map()`和`reduce()`。
+
+### 6.8.3 函数式错误处理
+<https://docs.scala-lang.org/overviews/scala-book/functional-error-handling.html>
+
+函数式编程就像代数，没有null值或异常。但是，当尝试访问宕机的服务器或缺失的文件时仍然会有异常。本节将介绍Scala的函数式错误处理技术。
+
+#### Option/Some/None
+抽象类`Option[T]`表示可选的`T`类型值（类似于`java.util.Optional`），有两个实现类：
+* `Some[T]`表示存在的值
+* `None`表示不存在的值
+
+在Scala中可以使用`Option`来替代null值。例如，`User`类的`email`字段和`findUserById()`方法的返回值可能为`null`，因此每次使用前都需要判断：
+
+```scala
+case class User(id: Int, name: String, email: String) {
+  def emailDomain: String = {
+    // email may be null
+    if (email == null || !email.contains("@")) {
+      null
+    } else {
+      email.split("@", 2)(1)
+    }
+  }
+}
+
+// return null if not found
+def findUserById(id: Int): User = ...
+
+val user1 = User(1, "Alice", null)
+val domain = user1.emailDomain  // may be null
+if (domain != null) {
+  println(domain)
+}
+
+val user2 = findUserById(2)  // may be null
+val username = if (user2 != null) user2.name else "Unknown"
+```
+
+更好的做法是将`email`字段和`findUserById()`的返回类型声明为`Option`，代码也会更简洁：
+
+```scala
+case class User(id: Int, name: String, email: Option[String]) {
+  def emailDomain: Option[String] = {
+    email.filter(_.contains("@")).map(_.split("@", 2)(1))
+  }
+}
+
+def findUserById(id: Int): Option[User] = ...
+
+val user1 = User(1, "Alice", None)
+user1.emailDomain.foreach(println)
+
+val user2: Option[User] = findUserById(2)
+val username = user2.map(_.name).getOrElse("Unknown")
+```
+
+注：`Option`是可迭代的，可视为**长度为0或1的序列**，因此可以使用`isEmpty`、`map()`、`filter()`、`foreach()`等序列方法。详见[API文档](https://www.scala-lang.org/api/2.13.18/scala/Option.html)。
+
+`Option`也可以用于错误处理。例如，假设要编写一个字符串转整数的方法`toInt()`，可以返回一个`Option[Int]`，而不是抛出异常或返回null：
+
+```scala
+def toInt(s: String): Option[Int] = {
+  try {
+    Some(Integer.parseInt(s.trim))
+  } catch {
+    case e: Exception => None
+  }
+}
+```
+
+可以使用`match`或者`for`表达式处理`toInt()`的结果：
+
+```scala
+toInt(s) match {
+  case Some(i) => println(i)
+  case None => println("That didn't work.")
+}
+
+val y = for {
+  a <- toInt(stringA)
+  b <- toInt(stringB)
+  c <- toInt(stringC)
+} yield a + b + c
+```
+
+在第二个例子中，`y`的类型为`Option[Int]`，当三个字符串都解析成功时，`y`的值为`Some(a + b + c)`，否则为`None`。
+
+注：Scala字符串有两个转换为整数的方法`toInt`和`toIntOption`，前者返回`Int`或抛出异常，后者返回`Option[Int]`。
+
+#### Try/Success/Failure
+抽象类`Try[T]`表示可能失败（抛出异常）的计算，有两个实现类：
+* `Success[T]`包含成功计算的结果
+* `Failure[T]`包含抛出的异常
+
+下面是使用这些类重写的`toInt()`方法：
+
+```scala
+import scala.util.{Try, Success, Failure}
+
+def toInt(s: String): Try[Int] = Try {
+  Integer.parseInt(s.trim)
+}
+```
+
+可以看到，这比使用`Option`的方式更简短。
+
+在REPL中演示该方法如何工作：
+
+```scala
+scala> val a = toInt("1")
+val a: scala.util.Try[Int] = Success(1)
+
+scala> val b = toInt("boo")
+val b: scala.util.Try[Int] = Failure(java.lang.NumberFormatException: For input string: "boo")
+```
+
+有很多方式可以处理`Try`的结果，包括从失败中“恢复”，但常见的方式仍然是使用`match`和`for`表达式：
+
+```scala
+toInt(s) match {
+  case Success(i) => println(i)
+  case Failure(e) => println(s"Failed. Reason: ${e.getMessage}")
+}
+
+val y = for {
+  a <- toInt(stringA)
+  b <- toInt(stringB)
+  c <- toInt(stringC)
+} yield a + b + c
+```
+
+#### Either/Left/Right
+抽象类`Either[A, B]`表示两种可能类型之一的值，有两个实现类：
+* `Left[A, B]`表示`A`类型的值
+* `Right[A, B]`表示`B`类型的值
+
+习惯上用`Left`表示失败，用`Right`表示成功。
+
+下面的`toInt()`方法当字符串成功转换为整数时返回包含整数的`Right`，否则返回包含原始字符串的`Left`：
+
+```scala
+def toInt(s: String): Either[String, Int] = {
+  try {
+    Right(s.toInt)
+  } catch {
+    case e: NumberFormatException => Left(s)
+  }
+}
+```
+
+```scala
+toInt(s) match {
+  case Left(x) => println(s"$x is not an integer")
+  case Right(x) => println(s"$x is an integer")
+}
+```
