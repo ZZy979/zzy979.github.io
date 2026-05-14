@@ -721,7 +721,7 @@ synchronized (getClass()) { staticCounter++; } // Don't
 注释：Java虚拟机为同步方法提供了内置支持。但是，同步块会被编译为很长的字节码序列来管理内部锁。
 
 ### 12.4.7 监视器概念
-多年来，研究人员一直在寻找一种不要求程序员显式加锁就可以保证多线程安全性的方法。最成功的解决方案之一是**监视器**(monitor)概念。用Java的术语来讲，监视器有如下属性：
+多年来，研究人员一直在寻找一种不要求程序员显式加锁就可以保证多线程安全性的方法。最成功的解决方案之一是**监视器**(monitor)（有的地方翻译为“管程”）概念。用Java的术语来讲，监视器有如下属性：
 * 监视器是只包含私有字段的类。
 * 该类的每个对象有一个关联的锁。
 * 所有方法都由这个锁锁定。换句话说，如果调用`obj.method()`，那么在方法调用开始时会自动获得`obj`的锁，并在方法返回时自动释放这个锁。因为所有字段都是私有的，这可以确保在一个线程操作字段时，没有其他线程能够访问这些字段。
@@ -1489,7 +1489,7 @@ class Counter extends RecursiveTask<Integer> {
 ## 12.7 异步计算框架
 到目前为止，并发计算的方法都是先分解一个任务，然后等待所有部分完成。下面几节将介绍如何实现无等待的**异步**(asynchronous)计算。
 
-### 12.7.1 可完成Future
+### 12.7.1 CompletableFuture
 `CompletableFuture`类实现了`Future`接口，它提供了另一种获得结果的机制。需要注册一个**回调**(callback)，一旦结果可用，就会（在某个线程中）使用结果调用它。
 
 ```java
@@ -1543,7 +1543,7 @@ f.whenComplete((result, throwable) -> {
 
 警告：与普通的`Future`不同，调用`cancel()`方法时`CompletableFuture`的计算不会被中断，而是将其设置为以异常`CancellationException`完成。
 
-### 12.7.2 组合可完成Future
+### 12.7.2 组合CompletableFuture
 非阻塞调用通过回调来实现。然而，组合多个步骤的回调会使程序逻辑过于分散（“[回调地狱](http://callbackhell.com/)”）、难以理解。
 
 `CompletableFuture`提供了一种将异步任务**组合**为处理流水线的机制来解决这个问题。
@@ -1564,9 +1564,9 @@ CompletableFuture<List<URL>> imageURLs = contents.thenApply(this::getImageURLs);
 
 `thenApply()`方法不会阻塞，而是返回另一个future。当第一个future完成时，其结果会提供给`getImageURLs()`方法，这个方法的返回值就是最终结果。
 
-利用可完成future，你只需指定希望完成的操作以及执行顺序。虽然不会立即执行，但重要的是所有代码都放在一处。
+利用`CompletableFuture`，你只需指定希望完成的操作以及执行顺序。虽然不会立即执行，但重要的是所有代码都放在一处。
 
-有很多不同的方法来组合可完成future。首先来看处理单个future的方法（如下表所示）（这里把`Function<? super T, ? extends U>`简写为`T -> U`）。对于列出的每个方法，还有两个`Async`形式（这里没有列出），其中一种形式使用公共的`ForkJoinPool`，另一种形式有一个`Executor`参数。
+有很多不同的方法来组合`CompletableFuture`。首先来看处理单个future的方法（如下表所示）（这里把`Function<? super T, ? extends U>`简写为`T -> U`）。对于列出的每个方法，还有两个`Async`形式（这里没有列出），其中一种形式使用公共的`ForkJoinPool`，另一种形式有一个`Executor`参数。
 
 | 方法 | 参数 | 描述 |
 | --- | --- | --- |

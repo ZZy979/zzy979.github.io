@@ -1163,7 +1163,7 @@ val b = a.par.map(_ + 42)
 
 Scala并行集合库为许多重要的集合类提供了对应的并行版本（在`scala.collection.parallel`包中），包括`ParArray`, `ParSeq`, `ParVector`, `ParMap`, `ParSet`, `ParRange`, `ParTrieMap`等
 
-注意：如果使用Scala 2.13+，使用并行集合必须依赖一个单独的模块[scala-parallel-collections](https://github.com/scala/scala-parallel-collections)（[API文档](https://javadoc.io/doc/org.scala-lang.modules/scala-parallel-collections_2.13/latest/index.html)）：
+注意：对于Scala 2.13+，要使用并行集合必须依赖一个单独的模块[scala-parallel-collections](https://github.com/scala/scala-parallel-collections)（[API文档](https://javadoc.io/doc/org.scala-lang.modules/scala-parallel-collections_2.13/latest/index.html)）：
 
 ```xml
 <dependency>

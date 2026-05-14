@@ -119,6 +119,14 @@ i = 2, j = b
 i = 2, j = c
 ```
 
+注：多个生成器也可以写在同一行中，用分号分隔：
+
+```scala
+for (i <- 1 to 2; j <- 'a' to 'c') {
+  println(s"i = $i, j = $j")
+}
+```
+
 ### 2.2.2 守卫
 `for`循环还可以包含`if`语句，称为**守卫**(guard)。例如：
 
@@ -644,7 +652,7 @@ Invalid contact information, neither an email address nor phone number.
 
 **偏函数**（部分函数，partial function）是一种并非对所有可能的参数值都有定义的函数。在Scala中，偏函数是实现了`PartialFunction[A, B]`特质的一元函数，其中`A`是参数类型，`B`是结果类型。
 
-要定义偏函数，使用与`match`表达式中相同的`case`语句。例如，偏函数`doubledOdds`将参数值乘以2，但仅对奇数有定义：
+使用与`match`表达式中相同的`case`语句来定义偏函数。例如，偏函数`doubledOdds`将参数值乘以2，但仅对奇数有定义：
 
 ```scala
 val doubledOdds: PartialFunction[Int, Int] = {
