@@ -152,11 +152,13 @@ fmt.Println(os.Args[1:])
 
 这个语句的输出和`strings.Join()`类似，但用方括号括起来（例如`[foo bar]`）。所有切片都会以这种格式打印。
 
-练习1.1 修改`echo`程序，使其打印`os.Args[0]`（命令名称）。
+[练习1.1](https://github.com/ZZy979/gopl.io/blob/main/ch1/exec1-1/main.go) 修改`echo`程序，使其打印`os.Args[0]`（命令名称）。
 
-练习1.2 修改`echo`程序，打印每个参数的索引和值，每行一个。
+[练习1.2](https://github.com/ZZy979/gopl.io/blob/main/ch1/exec1-2/main.go) 修改`echo`程序，打印每个参数的索引和值，每行一个。
 
-练习1.3 测量程序`echo2`和`echo3`运行时间的差异（1.6节介绍了`time`包，11.4节说明了如何编写基准测试以进行系统的性能评估）。
+[练习1.3](https://github.com/ZZy979/gopl.io/blob/main/ch1/exec1-3/main.go) 测量程序`echo2`和`echo3`运行时间的差异（1.6节介绍了`time`包，11.4节说明了如何编写基准测试以进行系统的性能评估）。
+
+随机生成100000个长度为10的字符串，分别使用两种方式进行拼接。测试结果：`strings.Join()`耗时5.57 ms，循环拼接耗时89294.05 ms。
 
 ## 1.3 查找重复的行
 本节将展示一个名为`dup`的程序的三种变体，该程序用于查找相邻的重复行（灵感来自Unix的`uniq`命令）。
@@ -233,7 +235,7 @@ input := bufio.NewScanner(os.Stdin)
 
 在底层，`bufio.Scanner`和`os.ReadFile()`都使用了`*os.File`的`Read()`方法（来自`io.Reader`接口）。
 
-练习1.4 修改`dup2`，打印每个重复的行出现的所有文件的名称。
+[练习1.4](https://github.com/ZZy979/gopl.io/blob/main/ch1/exec1-4/main.go) 修改`dup2`，打印每个重复的行出现的所有文件的名称。
 
 ## 1.4 GIF动画
 下一个程序演示了Go标准库`image`包的基本用法。我们将使用它创建一系列位图图像，然后将其编码为GIF动画。这些图像叫做**李萨如图形**(Lissajous figures)，是由两个维度的简谐震荡（例如输入到示波器x和y方向的两个正弦波）合成的曲线。图1.1显示了一些示例。
@@ -263,7 +265,7 @@ $ ./lissajous > lissajous.gif
 
 ![lissajous](/assets/images/gopl-note-ch01-tutorial/lissajous.gif)
 
-练习1.5 修改`lissajous`程序的调色板，改为黑色背景、绿色曲线。使用`color.RGBA{0xRR, 0xGG, 0xBB, 0xff}`创建颜色，其中十六进制数`RR`、`GG`和`BB`分别表示红、绿、蓝分量。
+[练习1.5](https://github.com/ZZy979/gopl.io/blob/main/ch1/exec1-5/main.go) 修改`lissajous`程序的调色板，改为黑色背景、绿色曲线。使用`color.RGBA{0xRR, 0xGG, 0xBB, 0xff}`创建颜色，其中十六进制数`RR`、`GG`和`BB`分别表示红、绿、蓝分量。
 
 练习1.6 修改`lissajous`程序，通过向`palette`添加更多值，然后以某种有趣的方式修改`SetColorIndex()`的第三个参数来生成多种颜色的图像。
 
@@ -280,7 +282,7 @@ $ ./lissajous > lissajous.gif
 
 ```shell
 $ go build gopl.io/ch1/fetch
-$ ./fetch http://gopl.io
+$ ./fetch https://gopl.io
 <html>
 <head>
   <title>The Go Programming Language</title>
@@ -295,11 +297,11 @@ fetch: Get "http://bad.gopl.io": dial tcp: lookup bad.gopl.io: no such host
 exit status 1
 ```
 
-练习1.7 函数`io.Copy(dst, src)`将数据从`src`复制到`dst`。使用该函数而不是`io.ReadAll()`将响应体复制到`os.Stout`，从而不需要缓冲区来存放整个响应。务必检查函数返回的错误。
+[练习1.7](https://github.com/ZZy979/gopl.io/blob/main/ch1/exec1-7/main.go) 函数`io.Copy(dst, src)`将数据从`src`复制到`dst`。使用该函数而不是`io.ReadAll()`将响应体复制到`os.Stout`，从而不需要缓冲区来存放整个响应。务必检查函数返回的错误。
 
-练习1.8 修改`fetch`，向每个缺少前缀`http://`的参数URL添加该前缀。使用函数`strings.HasPrefix()`。
+[练习1.8](https://github.com/ZZy979/gopl.io/blob/main/ch1/exec1-7/main.go) 修改`fetch`，向每个缺少前缀`http://`的参数URL添加该前缀。使用函数`strings.HasPrefix()`。
 
-练习1.9 修改`fetch`，同时打印HTTP状态代码`resp.Status`。
+[练习1.9](https://github.com/ZZy979/gopl.io/blob/main/ch1/exec1-7/main.go) 修改`fetch`，同时打印HTTP状态代码`resp.Status`。
 
 ## 1.6 并发获取URL
 Go语言最有趣、最新颖的特性之一是对并发编程的支持。这是一个很大的话题，将在第8章和第9章专门讨论。现在仅仅尝试一下Go的主要并发机制——goroutine和channel。
@@ -405,6 +407,8 @@ if err != nil {
 
 但是组合语句更紧凑，并且缩小了变量`err`的作用域，这是一种好的做法。2.7节将介绍作用域。
 
+注：`ParseForm()`对于GET请求会使用query。
+
 在这些程序中，有三种不同的类型用作输出流。`fetch`程序将HTTP响应拷贝到`os.Stout`（一个文件），就像`lissajous`程序一样。`fetchall`程序通过将响应拷贝到`io.Discard`将其丢弃。上面的Web服务器则使用`fmt.Fprintf()`将响应写入`http.ResponseWriter`。
 
 尽管这三种类型在实现细节上有所不同，但它们都满足一个共同的**接口**(interface)，使其可用于需要输出流的任何地方。该接口名为`io.Writer`，将在7.1节中讨论。
@@ -436,7 +440,7 @@ $ go run gopl.io/ch1/lissajous web
 
 ![浏览器中的李萨如图形动画](/assets/images/gopl-note-ch01-tutorial/浏览器中的李萨如图形动画.png)
 
-练习1.12 修改`lissajous`服务器，从URL读取参数值。例如，URL <http://localhost:8000/?cycles=20> 将周期数设置为20而不是默认的5。使用`strconv.Atoi()`函数将字符串转换为整数。
+[练习1.12](https://github.com/ZZy979/gopl.io/blob/main/ch1/exec1-12/main.go) 修改`lissajous`服务器，从URL读取参数值。例如，URL <http://localhost:8000/?cycles=20> 将周期数设置为20而不是默认的5。使用`strconv.Atoi()`函数将字符串转换为整数。
 
 ## 1.8 未尽事项
 Go语言还有很多方面在本章中没有覆盖到。以下是一些仅仅提及或完全忽略的话题。

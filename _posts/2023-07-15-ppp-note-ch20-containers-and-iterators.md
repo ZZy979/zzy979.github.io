@@ -748,9 +748,9 @@ STL提供了很多容器：
 | `vector` | `ArrayList` | `list` |
 | `list` | `LinkedList` | - |
 | `deque` | `ArrayDeque` | `collections.deque` |
-| `map` | `TreeMap` | - |
+| `map` | `TreeMap` | `sortedcontainers.SortedDict` |
 | `unordered_map` | `HashMap` | `dict` |
-| `set` | `TreeSet` | - |
+| `set` | `TreeSet` | `sortedcontainers.SortedSet` |
 | `unordered_set` | `HashSet` | `set` |
 
 * Python标准库并没有提供有序集合（如`TreeMap`和`TreeSet`）。如果需要，可以使用[Sorted Containers](https://grantjenks.com/docs/sortedcontainers/)库。
