@@ -52,7 +52,7 @@ int d = from_string<int>("Mary had a little lamb");  // oops!
 
 注：`to()`是借助字符串完成“类型转换”的，并不是通常意义上的类型转换（像`static_cast`）。例如，`to<int>(123.5)`会出错而不是返回123；`to<char>(9)`会返回`'9'`而不是`'\t'`。
 
-注：另见[【C++】字符串编码问题]({% post_url 2025-02-04-cpp-string-encoding %})。
+注：另见[【C++】字符类型和字符编码]({% post_url 2025-02-04-cpp-char-types-and-encoding %})。
 
 ## 23.3 I/O流
 I/O流建立了字符串和其他类型之间的联系。第10和11章已经介绍了iostream库。标准I/O流的类层次结构：

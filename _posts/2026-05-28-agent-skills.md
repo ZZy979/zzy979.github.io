@@ -2,7 +2,7 @@
 title: Agent Skills：从原理到实践
 date: 2026-05-28 16:21 +0800
 categories: [Artificial Intelligence]
-tags: [agent, skill, copilot]
+tags: [agent, skill, copilot, langchain]
 ---
 [Agent Skills](https://agentskills.io)是继[MCP]({% post_url 2026-03-21-agent-mcp %})之后Anthropic推出的又一个Agent行业标准。本文将介绍Agent Skills的核心原理，如何在实践中使用skill，以及如何创建自己的skill。
 
@@ -146,9 +146,9 @@ scripts/extract.py
 
 3.将下载的skill放到正确的位置，以便Agent可以找到。一个通用的约定是`.agents/skills/`目录：单个工程使用的skill放到工程根目录(`<project>/.agents/skills/`)，跨工程或客户端的skill放到用户主目录(`~/.agents/skills/`)。另外，客户端可能也会扫描自定义目录，例如Claude Code会扫描`.claude/skills`目录。
 
-下面展示一个实际使用的例子。
+下面展示两个实际使用的例子。
 
-### 示例：绘制Excalidraw图表
+### 示例1：绘制Excalidraw图表
 这个示例使用GitHub Copilot和Excalidraw图表制作skill来生成一张流程图，用于解释Agent的“ReAct模式”。
 
 （1）设置GitHub Copilot
@@ -197,10 +197,144 @@ You should look for available skills at first.
 
 ![react-react_flow](/assets/images/agent-skills/react-react_flow.png)
 
-[LangChain DeepAgents](https://docs.langchain.com/oss/python/deepagents/overview)原生支持Agent Skills，参见文档 <https://docs.langchain.com/oss/python/deepagents/skills> 。
+### 示例2：文档检索
+<https://docs.langchain.com/oss/python/deepagents/skills>
+
+[Deep Agents](https://docs.langchain.com/oss/python/deepagents/overview)是LangChain提供的深度Agent框架，在[LangChain Agent](https://docs.langchain.com/oss/python/langchain/agents)的基础上自带了上下文压缩、虚拟文件系统、子Agent调用等特性，并且原生支持Agent Skills标准。与LangChain和LangGraph的比较参见[LangChain vs. LangGraph vs. Deep Agents](https://docs.langchain.com/oss/python/langchain/overview)。
+
+本示例使用Deep Agents和skill实现一个文档检索Agent。
+
+（1）安装依赖
+
+```shell
+pip install deepagents
+```
+
+（2）编写skill
+
+在任意位置创建工程根目录skill-test，在其中创建子目录skills，用于存放当前工程的所有skill。
+
+在skills目录中创建langgraph-docs目录，用于编写LangGraph文档检索skill。之后在其中创建SKILL.md文件，内容如下：
+
+[langgraph-docs/SKILL.md](https://github.com/ZZy979/agent-demos/blob/main/langchain/skill/skills/langgraph-docs/SKILL.md)
+
+这个skill告诉Agent如何检索LangGraph的最新文档来回答相关问题。
+
+（3）创建Agent
+
+在代码中，使用`create_deep_agent()`创建Agent，并通过`skills`参数传递skill目录：
+
+```python
+from deepagents import create_deep_agent
+from deepagents.backends import FilesystemBackend
+from langchain.chat_models import init_chat_model
+
+model = init_chat_model('deepseek-v4-flash', extra_body={'thinking': {'type': 'disabled'}})
+backend = FilesystemBackend(root_dir='.', virtual_mode=True)
+agent = create_deep_agent(
+    model=model,
+    tools=[fetch_documentation],
+    backend=backend,
+    skills=['skills/']
+)
+```
+
+这个示例使用`FilesystemBackend`从磁盘加载skill。其他存储选项参见[Backends and remote skill loading](https://docs.langchain.com/oss/python/deepagents/skills#backends-and-remote-skill-loading)。
+
+工具`fetch_documentation`用于获取URL内容，可以使用`requests`库实现。
+
+（4）调用Agent
+
+使用`invoke()`调用Agent。在启动时，Agent会将每个skill的`name`和`description`加载到系统提示中。当用户问题与某个skill的描述相匹配时，Agent会读取其SKILL.md并遵循其中的指令。
+
+```python
+result = agent.invoke(
+    {'messages': [{'role': 'user', 'content': 'What is LangGraph?'}]},
+    config={'configurable': {'thread_id': '1'}},
+)
+```
+
+将Python脚本放在工程根目录中，目录结构如下：
+
+```
+skill-test/
+    skills/
+        langgraph-docs/
+            SKILL.md
+    langgraph_doc_agent.py
+```
+
+设置API Key并运行代码：
+
+```shell
+export DEEPSEEK_API_KEY=sk-xxx
+python langgraph_doc_agent.py
+```
+
+程序输出如下。可以看到，Agent首先读取了langgraph-docs/SKILL.md的内容，然后按照指示从llms.txt获取文档索引，之后读取了文档 "LangGraph Overview" 的内容，最后总结内容并输出答案。
+
+````
+human: What is LangGraph?
+ai: Let me read the LangGraph skill documentation to give you an accurate answer.
+tool:      1    ---
+     2  name: langgraph-docs
+     3  description: Use this skill for requests related to LangGraph in order to fetch relevant documentation to provide accurate, up-to-date guidance.
+     4  ---
+     5  
+     6  # langgraph-docs
+...
+
+ai: Let me fetch the documentation index.
+tool: # LangGraph
+## Overview
+- [LangGraph Overview](https://docs.langchain.com/oss/python/langgraph/overview): Introduction to LangGraph, a library for building stateful, multi-actor applications with LLMs.
+- [Why LangGraph?](https://docs.langchain.com/oss/python/langgraph/why-langgraph): Motivation for LangGraph and its key features.
+...
+
+ai: 
+tool: LangGraph overview - Docs by LangChain
+LangGraph overview
+==================
+
+Copy page
+
+Gain control with LangGraph to design agents that reliably handle complex tasks
+...
+
+ai: ## What is LangGraph?
+
+**LangGraph** is a low-level orchestration framework and runtime for building, managing, and deploying long-running, stateful agents built by LangChain Inc. Think of it as the engine under the hood — it handles the hard infrastructure problems involved in running agents reliably in production.
+
+### Core capabilities:
+
+- **Persistence** — Agents can survive failures and resume from where they left off, even across long-running execution.
+- **Human-in-the-loop** — You can pause execution, inspect state, and intervene at any point.
+- **Comprehensive memory** — Short-term working memory and long-term cross-session memory.
+- **Streaming** — Stream outputs from graph execution for better UX.
+- **Durable execution** — Agents keep running reliably even through failures.
+
+### How it fits in the LangChain ecosystem:
+
+| Layer | Role |
+|---|---|
+| **Deep Agents** | Agent harness — planning, subagents, filesystem tools |
+| **LangChain** | Agent framework — abstractions for models, tools, agent loops |
+| **LangGraph** | **Orchestration runtime** — durable execution, streaming, state management |
+| **LangSmith** | Platform — tracing, evaluation, prompts, deployment |
+
+You build agents in LangGraph as a **state graph** — you define state, add nodes (which execute logic like calling an LLM), and connect them with edges. It's an expressive, low-level API that gives you full control, inspired by Google's Pregel and Apache Beam.
+
+[Full overview](https://docs.langchain.com/oss/python/langgraph/overview) | [Quickstart guide](https://docs.langchain.com/oss/python/langgraph/quickstart)
+````
+
+完整代码：[langchain/skill/langgraph_doc_agent.py](https://github.com/ZZy979/agent-demos/blob/main/langchain/skill/langgraph_doc_agent.py)
+
+另外，[《使用LangChain构建RAG Agent》]({% post_url 2026-03-08-build-rag-agent-with-langchain %})第4节中给出了一个具有相同功能的示例[langchain/rag/langgraph_doc_agent.py](https://github.com/ZZy979/agent-demos/blob/main/langchain/rag/langgraph_doc_agent.py)。但是，那个示例将所有指令（相当于SKILL.md+llms.txt）都放在了系统提示中，这会占用大量的上下文窗口，并且Agent只能做这一件事。相比之下，使用skill的Agent可以按需加载，并且可以在不修改代码的情况下添加更多skill。
 
 ## 4.创建自己的Skill
-创建自己的skill很容易，只需按照第2节描述的格式编写Markdown文件即可。参见文档[Quickstart](https://agentskills.io/skill-creation/quickstart)和[Best practices for skill creators](https://agentskills.io/skill-creation/best-practices)。另外，可以使用Anthropic提供的[skill-creator](https://skillsmp.com/skills/anthropics-skills-skills-skill-creator-skill-md)让Agent帮助你创建skill。
+创建自己的skill很容易，只需按照第2节描述的格式编写Markdown文件即可。参见文档[Quickstart](https://agentskills.io/skill-creation/quickstart)和[Best practices for skill creators](https://agentskills.io/skill-creation/best-practices)。
+
+另外，可以使用Anthropic提供的[skill-creator](https://skillsmp.com/skills/anthropics-skills-skills-skill-creator-skill-md)让Agent帮助你创建skill。
 
 ## 参考
 * [Agent Skills Specification](https://agentskills.io/specification)
