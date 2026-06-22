@@ -1,7 +1,7 @@
 ---
 title: 《Go程序设计语言》笔记 目录
 date: 2026-02-26 21:31:25 +0800
-categories: [Go]
+categories: [Go, GOPL]
 tags: [go]
 ---
 《Go程序设计语言》(The Go Programming Language)
@@ -12,7 +12,7 @@ tags: [go]
 
 ## 目录
 * [第1章 入门]({% post_url 2026-02-26-gopl-note-ch01-tutorial %})
-* 第2章 程序结构
+* [第2章 程序结构]({% post_url 2026-05-23-gopl-note-ch02-program-structure %})
 * 第3章 基本数据类型
 * 第4章 复合类型
 * 第5章 函数

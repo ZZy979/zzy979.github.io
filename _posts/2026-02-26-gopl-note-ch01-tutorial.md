@@ -1,7 +1,7 @@
 ---
 title: 《Go程序设计语言》笔记 第1章 入门
 date: 2026-02-26 22:05:17 +0800
-categories: [Go]
+categories: [Go, GOPL]
 tags: [go, hello world, package, import statement, command-line argument, slice, comment, assignment, for statement, if statement, map, io, formatting, file access, image processing, constant, struct, http, concurrency, goroutine, channel]
 ---
 本章介绍Go语言的基本组件。本章将展示可以用Go编写的程序的多样性，从简单的文件处理、图形，到并发的网络客户端和服务器。
