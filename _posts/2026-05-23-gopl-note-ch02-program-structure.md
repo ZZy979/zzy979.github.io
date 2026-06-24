@@ -501,7 +501,7 @@ fmt.Println(tempconv.CToF(tempconv.BoilingC)) // "212°F"
 
 包声明前的**文档注释**(doc comment)（详见10.7.4节）对包的整体功能进行说明。每个包中应该只有一个文件有包文档注释。如果文档注释很多，通常放在一个单独的文件中（习惯上称为doc.go）。
 
-练习2.1 向`tempconv`包添加用于处理开尔文温度的类型、常量和函数。0 K是-273.15 °C，1 K和1 °C的间隔是一样的。
+[练习2.1](https://github.com/ZZy979/gopl.io/tree/main/ch2/tempconv) 向`tempconv`包添加用于处理开尔文温度的类型、常量和函数。0 K是-273.15 °C，1 K和1 °C的间隔是一样的。
 
 ### 2.6.1 导入
 在Go中，每个包都由一个唯一字符串标识，称为其**导入路径**(import path)。导入路径是出现在`import`声明中的字符串，如`"gopl.io/ch2/tempconv"`。Go语言规范并没有定义这些字符串的来源或含义，其解释方式取决于工具。使用`go`工具（第10章）时，导入路径表示包的源文件所在目录。
@@ -565,11 +565,21 @@ for i, _ := range pc
 
 在下一节和10.5节还会看到其他使用`init()`函数的例子。
 
-练习2.3 使用循环重写`PopCount()`。比较两个版本的性能。
+[练习2.3](https://github.com/ZZy979/gopl.io/blob/main/ch2/popcount/main.go) 使用循环重写`PopCount()`。比较两个版本的性能。
 
-练习2.4 用移位算法重写`PopCount()`：将参数右移64次，每次测试最右边的位。与查表算法比较性能。
+[练习2.4](https://github.com/ZZy979/gopl.io/blob/main/ch2/popcount/main.go) 用移位算法重写`PopCount()`：将参数右移64次，每次测试最右边的位。与查表算法比较性能。
 
-练习2.5 表达式`x&(x-1)`会将`x`最右侧的非零位清零。利用这个性质重写`PopCount()`，并测试性能。
+[练习2.5](https://github.com/ZZy979/gopl.io/blob/main/ch2/popcount/main.go) 表达式`x&(x-1)`会将`x`最右侧的非零位清零。利用这个性质重写`PopCount()`，并测试性能。
+
+性能测试（CPU: 12th Gen Intel(R) Core(TM) i5-12450H）
+
+| 算法 | 平均耗时(ns) |
+| --- | --- |
+| 查表 | 0.1286 |
+| 循环（练习2.3） | 20.16 |
+| 移位（练习2.4） | 20.98 |
+| 清除最右非零位（练习2.5） | 4.499 |
+| 分治 | 0.1215 |
 
 ## 2.7 作用域
 声明的**作用域**(scope)是指源代码中可以使用声明的名字的范围。
