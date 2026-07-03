@@ -25,16 +25,16 @@ a + 1 = *p;   // error, a + 1 is rvalue
 注：实际上C++标准定义了三个值类别——左值(lvalue)、纯右值(prvalue)和将亡值(xvalue)，纯右值和将亡值统称为右值(rvalue)，详见[Value categories - cppreference](https://en.cppreference.com/w/cpp/language/value_category)。“右值”只是沿用了C语言中的叫法。
 
 ## 2.左值引用和右值引用
-C++的**引用**(reference)是一种类型，可以看作对象的别名。引用在本质上和指针一样，都是对象的地址（示例见[Compiler Explorer](https://godbolt.org/z/xx4vz4YWM)，指针和引用的区别详见[《C++程序设计原理与实践》笔记 第17章]({% post_url 2023-04-22-ppp-note-ch17-vector-and-free-store %}) 17.9节）。
+C++的**引用**(reference)是一种类型，可以看作对象的别名。主流编译器底层用指针实现引用，本质上都是对象的地址（示例见[Compiler Explorer](https://godbolt.org/z/xx4vz4YWM)，指针和引用的区别详见[《C++程序设计原理与实践》笔记 第17章]({% post_url 2023-04-22-ppp-note-ch17-vector-and-free-store %}) 17.9节）。
 
 C++提供了两种类型的引用：
 * **左值引用**(lvalue reference)：使用`&`表示，`T&`是`T`类型的左值引用。左值引用是最常用的引用类型，可用于在函数调用中实现**传引用**(pass-by-reference)语义。
 * **右值引用**(rvalue reference)：使用`&&`表示，`T&&`是`T`类型的右值引用。右值引用是C++11引入的，用于实现**移动语义**（见第3节）。
 
 左值/右值是表达式的**值类别**，而左值引用/右值引用是表达式的**类型**。二者是完全不同的概念，但是存在一定的联系：
-* **左值引用必须使用左值初始化**（即左值引用只能绑定到左值），一个例外是`const`左值引用可以使用右值初始化；**右值引用必须使用右值初始化**。
+* 非常量左值引用(`T&`)只能绑定到左值，常量左值引用(`const T&`)可以绑定到左值或右值（会延长右值的生存期），右值引用(`T&&`)只能绑定到右值。
 * 如果函数的返回类型是左值引用（例如`vector::operator[]`），则函数调用表达式是左值；如果函数的返回类型是右值引用（例如`std::move()`）或者不是引用（例如`vector::size()`），则函数调用表达式是右值。
-* 左值引用类型的表达式是左值；右值引用类型的表达式可能是左值或右值：**有名字的右值引用（例如变量和形参）是左值**，没有名字的右值引用（例如`std::move()`和`std::forward()`调用表达式）是右值。详见[lvalue - cppreference](https://en.cppreference.com/w/cpp/language/value_category#lvalue)：
+* 左值引用类型的表达式一定是左值；右值引用类型的表达式可能是左值或右值：**有名字的右值引用（例如变量和形参）是左值**，没有名字的右值引用（例如`std::move()`和`std::forward()`调用表达式）是右值。详见[lvalue - cppreference](https://en.cppreference.com/w/cpp/language/value_category#lvalue)：
 
 > Even if the variable's type is rvalue reference, the expression consisting of its name is an lvalue expression.
 
@@ -187,7 +187,7 @@ void use() {
 
 移动之后，`vec`将引用`res`的元素，而`res`将被置空。从而以仅仅拷贝一个`int`和一个指针的代价将10万个元素从`res`“移交”给`vec`。
 
-换句话说，**移动即“窃取”资源（转移资源所有权）**，是一种安全的浅拷贝，目的是解决由**即将被销毁的对象**初始化或赋给其他对象时发生不必要的拷贝。
+换句话说，**移动即转移资源所有权**，是一种安全的浅拷贝，目的是解决由**即将被销毁的对象**初始化或赋给其他对象时发生不必要的拷贝。
 
 ### 3.2 移动构造函数和移动赋值
 为了在C++中表达移动语义，需要定义**移动构造函数**(move constructor)和**移动赋值**(move assignment)运算符：
@@ -220,6 +220,9 @@ vector& vector::operator=(vector&& v) noexcept {
 }
 ```
 
+注：虽然C++标准没有强制要求，但最好将移动操作标记为`noexcept`，这可以使标准库容器在重新分配内存时优先使用移动而非拷贝，从而提升性能（例如`std::vector`要求移动操作是`noexcept`才会使用移动）。
+
+移动构造函数和移动赋值运算符的调用时机如下：
 * 当使用一个右值初始化一个相同类型的对象时，移动构造函数将被调用。
 * 当对象出现在赋值表达式左侧，并且右侧是一个相同类型的右值时，移动赋值运算符将被调用。
 
@@ -228,10 +231,10 @@ vector& vector::operator=(vector&& v) noexcept {
 再次考虑前面的例子。为`vector`实现了移动语义后，在`fill()`返回时，`vector`的移动构造函数将被隐式调用，因为表达式`fill(cin)`是右值（`fill()`和`use()`的代码均不需要修改）。
 
 注意：
-* 移动语义只对拥有资源的类（如STL容器）有意义，对于[基本类型](https://en.cppreference.com/w/cpp/named_req/ScalarType)（如`int`）和[POD类型](https://en.cppreference.com/w/cpp/named_req/PODType)（如`struct Point { int x, y; };`）无意义。
+* 移动语义只对拥有资源的类（如STL容器）有意义，对于[基本类型](https://en.cppreference.com/w/cpp/named_req/ScalarType)和[POD类型](https://en.cppreference.com/w/cpp/named_req/PODType)无意义。
 * 对于拥有资源的类，移动语义只能省略资源的拷贝，而类本身的数据成员仍然需要拷贝。例如，`vector`的移动构造函数省略了数组元素的拷贝，但仍然需要拷贝`sz`和`elem`两个成员。
-* 如果一个类没有定义移动操作，但所有成员都是可移动的，编译器会自动生成移动构造函数和（或）移动赋值，即逐个成员移动（见[Implicitly-declared move constructor](https://en.cppreference.com/w/cpp/language/move_constructor#Implicitly-declared_move_constructor)和[Implicitly-declared move assignment operator](https://en.cppreference.com/w/cpp/language/move_assignment#Implicitly-declared_move_assignment_operator)）。
-* 如果定义了一个拥有资源的类，则应当提供适当的移动操作，因为移动语义的“正确含义”只有类作者自己知道（编译器自动生成的移动操作很有可能是错误的）。
+* 如果一个类没有定义移动操作，但所有基类和成员都是可移动的，并且没有定义拷贝操作和析构函数，则编译器会自动生成移动操作（逐个成员移动）。详见[Implicitly-declared move constructor](https://en.cppreference.com/w/cpp/language/move_constructor#Implicitly-declared_move_constructor)和[Implicitly-declared move assignment operator](https://en.cppreference.com/w/cpp/language/move_assignment#Implicitly-declared_move_assignment_operator)。
+* 拥有资源的类应当提供适当的析构函数、拷贝操作和移动操作，因为移动语义的“正确含义”只有类作者自己知道（编译器自动生成的移动操作很有可能是错误的）。这称为[三/五/零原则](https://cppreference.com/cpp/language/rule_of_three)。
 
 ### 3.3 std::move
 前面提到，右值引用不能绑定到左值，因此**左值不能被移动**。但是，标准库头文件\<utility\>提供了`std::move()`函数，作用是**将参数转换为右值引用**（即将参数“当作”右值，使其变成“可移动的”）。
@@ -435,23 +438,23 @@ move constructor
 
 使用`std::move()`之前考虑三个问题：**可移动吗？移动了吗？移动比拷贝更快吗？**
 
-（1）使用`std::move()`的前提：**类型是可移动的**，否则移动操作会退化为拷贝操作。
+（1）使用`std::move()`的前提：类型是**可移动的**，否则移动操作会退化为拷贝操作。
 * 可移动的类型：基本类型（如`int`）、定义了移动操作的类（如STL容器、protobuf消息类）和所有成员都可移动的类。
 * 不可移动的类型：禁止了移动操作的类（如`std::mutex`）和包含不可移动成员的类。这种类型只能通过传指针或引用的方式来避免拷贝。
 
-（2）**std::move≠移动。** 只有当参数是非`const`左值，并且将`std::move()`的结果用于**初始化或赋值给另一个对象**时才会执行移动操作。
+（2）**std::move ≠ 移动。** 只有当参数是非`const`左值，并且将`std::move()`的结果用于**初始化或赋值给另一个对象**时才会执行移动操作。
 * 对右值使用`std::move()`没有意义，因为结果仍然是右值。
-* 不要对`const`对象使用`std::move()`，因为返回类型是`const T&&`，会执行拷贝操作而不是移动操作。
+* 不要对`const`对象使用`std::move()`，因为移动操作通常会修改源对象（置空），而`const`对象禁止修改，重载解析会优先匹配拷贝操作。
 * 将`std::move()`的结果赋给右值引用变量没有意义，因为并没有执行任何移动操作（见3.3节结尾的示例）。
 
 （3）不要对仍然需要的对象使用`std::move()`。已被移动的标准库对象处于一种“合法但未指定的状态”，因此不应该再被使用。
 
 （4）不要在`return`语句中使用`std::move()`，因为会影响NRVO。见[Move-eligible expressions](https://en.cppreference.com/w/cpp/language/value_category#Move-eligible_expressions)和[Automatic move from local variables and parameters](https://en.cppreference.com/w/cpp/language/return#Automatic_move_from_local_variables_and_parameters)。
 
-（5）**移动≠避免拷贝。** 即使类型是可移动的，也要考虑移动是否确实比拷贝更快。
+（5）**移动 ≠ 避免拷贝。** 只有拥有资源的类型，移动才有显著收益。
 * 对于基本类型，移动等价于拷贝（示例见[Compiler Explorer](https://godbolt.org/z/Efz9n9hcc)）。
 * 对于拥有资源的类，移动语义只能省略资源的拷贝，而类本身的数据成员仍然需要拷贝，且移动的字节数一般是拷贝的2倍（拷贝+置空）。
-* 对于一个具体的类，要想知道移动是否比拷贝更快，需要比较二者拷贝的字节数。考虑下面的几个例子。
+* 对于一般的类，要想知道移动是否比拷贝更快，需要比较二者拷贝的字节数。考虑下面的几个例子。
 
 ①只包含基本类型成员的类（POD类型）
 
@@ -518,7 +521,7 @@ struct C {
 };
 ```
 
-注：对于这个类，即使没有提供移动构造函数和移动赋值，编译器也会自动生成（但成员`k`是直接拷贝而不是使用`std::exchange()`）。
+注：对于这个类，即使没有提供移动构造函数和移动赋值，编译器也会自动生成（但成员`k`是直接拷贝而不是交换）。
 
 （2）将局部对象传递给接受右值引用参数的函数。例如：
 
@@ -551,7 +554,7 @@ void f() {
 ## 4.完美转发
 除了移动语义，右值引用还有一个重要的用途——实现**完美转发**(perfect forwarding)。
 
-考虑实现简化的`make_unique<T>()`函数。该函数只接受一个参数，（拷贝或移动）构造一个`T`类型的对象，并返回拥有该对象的`std::unique_ptr<T>`。
+考虑实现简化的`std::make_unique`函数。该函数只接受一个参数，（拷贝或移动）构造一个`T`类型的对象，并返回拥有该对象的`std::unique_ptr<T>`。
 
 ```cpp
 #include <iostream>
@@ -601,7 +604,33 @@ rref&& r4 = 1;  // type of r4 is int&&
 引用折叠是实现转发引用的基础。
 
 ### 4.2 转发引用
-前面提到，`&&`表示右值引用，但是有一个例外：当`T`是模板参数时，函数模板中的`T&&`（不能有`const`限定）是**转发引用**(forwarding reference)，也叫万能引用(universal reference)。详见[Forwarding references - cppreference](https://en.cppreference.com/w/cpp/language/reference#Forwarding_references)。
+前面提到，`&&`表示右值引用，但是有一个例外——以下两种形式的引用称为**转发引用**(forwarding reference)（也叫万能引用(universal reference)）：
+* 函数模板的参数`T&&`，其中`T`是该函数模板的模板参数（无`const`限定）
+* `auto&&`
+
+详见[Forwarding references - cppreference](https://en.cppreference.com/w/cpp/language/reference#Forwarding_references)。
+
+例如：
+
+```cpp
+template<class T>
+void f(T&& x);  // x is a forwarding reference
+
+template<class T>
+void g(const T&& x);  // x is not a forwarding reference
+
+template<class T>
+struct A {
+    template<class U>
+    f(T&& x, U&& y);  // x is not a forwarding reference, but y is
+};
+
+auto&& r = foo();  // r is a forwarding reference
+
+for (auto&& x : bar()) {  // x is a forwarding reference
+    // ...
+}
+```
 
 转发引用的作用是**根据实参是左值或右值自动匹配为左值引用或右值引用**。这正是`make_unique()`函数需要的形参类型：
 
@@ -625,10 +654,12 @@ auto q = make_unique<C>(std::move(c));  // argument is rvalue, calls make_unique
 
 注：这里依赖于特殊的模板参数推导规则，详见[Deduction from a function call - cppreference](https://en.cppreference.com/w/cpp/language/template_argument_deduction#Deduction_from_a_function_call)。
 
-现在已经解决了形参类型的问题。但是，在这两种情况下，**形参`x`始终是左值**（见第2节结尾）。如果直接调用`new T(x)`，则调用的都是拷贝构造函数，而`new T(std::move(x))`调用的都是移动构造函数。因此还需要一种方式能够实现：当形参是左值引用时得到左值表达式，当形参是右值引用时得到右值表达式。这就是`std::forward()`函数。
+现在已经解决了形参类型的问题，但是又遇到另一个问题：如何将参数正确地“转发”给`T`的构造函数？无论实参是左值还是右值，形参`x`都是左值，即**右值引用在传递时会失去右性**。如果写成`new T(x)`则调用的都是拷贝构造函数，而`new T(std::move(x))`调用的都是移动构造函数，都无法满足要求。
+
+因此还需要一种方式能够实现：当形参是左值引用时得到左值表达式，当形参是右值引用时得到右值表达式——这就是`std::forward()`函数。
 
 ### 4.3 std::forward
-函数`std::forward()`定义在标准库头文件\<utility\>中，作用是保持参数的值类别。与`std::move()`类似，`std::forward()`仅仅是一个强制类型转换，但是有两个重载版本：
+函数`std::forward()`定义在标准库头文件\<utility\>中，作用是**保持参数的值类别**。与`std::move()`类似，`std::forward()`仅仅是一个强制类型转换，但是有两个重载版本：
 
 ```cpp
 // (1)
@@ -648,20 +679,21 @@ T&& forward(std::remove_reference_t<T>&& t) noexcept {
 
 `std::forward()`的返回类型和调用表达式的值类别取决于它的实参和模板参数。假设`c`是一个类`C`的对象，`rr`是`C&&`类型的变量，则
 
-| 调用表达式 | 匹配的重载 | 返回类型 | 值类别 |
-| --- | --- | --- | --- |
-| `std::forward<C&>(c)` | (1) | `C&` | 左值 |
-| `std::forward<C>(c)` | (1) | `C&&` | 右值 |
-| `std::forward<C&>(rr)` | (1) | `C&` | 左值 |
-| `std::forward<C>(rr)` | (1) | `C&&` | 右值 |
-| `std::forward<C&>(C())` | (2) | `C&&` | 编译失败 |
-| `std::forward<C>(C())` | (2) | `C&&` | 右值 |
+| 情况 | 调用表达式 | 匹配的重载 | 返回类型 | 值类别 |
+| --- | --- | --- | --- | --- |
+| ① | `std::forward<C&>(c)` | (1) | `C&` | 左值 |
+| ② | `std::forward<C>(c)` | (1) | `C&&` | 右值 |
+| ③ | `std::forward<C&>(rr)` | (1) | `C&` | 左值 |
+| ④ | `std::forward<C>(rr)` | (1) | `C&&` | 右值 |
+| ⑤ | `std::forward<C&>(C())` | (2) | `C&` | 编译失败（右值不能绑定到左值引用） |
+| ⑥ | `std::forward<C>(C())` | (2) | `C&&` | 右值 |
 
-注意：调用`std::forward()`时必须显式指定模板参数，无法自动推导。
+注意：
+* 上表中只有①④⑥是有实际意义的。
+* 调用`std::forward()`时必须显式指定模板参数，不能自动推导。因为需要原始实参的引用类型（左值引用/右值引用），仅靠实参无法还原。
+* 在实际中，`std::forward()`的模板参数通常指定为外层函数模板的模板参数。
 
-上表中只有第1、4、6种情况是有意义的。在实际中，`std::forward()`通常用在函数模板中，模板参数指定为外层模板参数而不是手动指定。
-
-回到前面的例子，正确的构造函数调用是使用`std::forward()`：
+回到前面的例子，正确的构造函数调用是`new T(std::forward<Arg>(x))`。`make_unique()`函数的完整定义如下：
 
 ```cpp
 template<class T, class Arg>
@@ -670,7 +702,7 @@ std::unique_ptr<T> make_unique(Arg&& x) {
 }
 ```
 
-程序的输出如下：
+程序的输出如下(<https://godbolt.org/z/fGE6GWGzn>)：
 
 ```
 copy constructor
@@ -755,7 +787,10 @@ def make_unique(T, *args):
 ```
 
 ## 5.总结
-C++的值语义是万恶之源。
+
+* 值语义会导致大量不必要的拷贝，C++11通过移动语义弥补性能缺陷。
+* `std::move` ≠ 移动，移动 ≠ 避免拷贝
+* 完美转发 = 转发引用 + `std::forward`
 
 ## 参考
 * [Reference declaration - cppreference](https://en.cppreference.com/w/cpp/language/reference)
