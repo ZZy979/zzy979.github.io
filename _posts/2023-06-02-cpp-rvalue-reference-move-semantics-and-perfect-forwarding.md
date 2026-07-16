@@ -2,14 +2,21 @@
 title: 【C++】右值引用、移动语义和完美转发
 date: 2023-06-02 01:50:58 +0800
 categories: [C/C++]
-tags: [cpp, rvalue reference, move semantics, move constructor, move assignment, perfect forwarding]
+tags: [cpp, value category, reference, rvalue reference, move semantics, move constructor, move assignment, copy elision, forwarding reference, perfect forwarding]
 ---
-在C++中，如果一个类获取了资源（例如动态内存、文件、锁、线程、套接字等），则需要定义拷贝构造函数、拷贝赋值运算符和析构函数以确保资源被正确地拷贝和释放。然而，在某些情况下会存在不必要的拷贝，影响程序性能。为了解决这一问题，C++11引入了移动语义。本文首先介绍C++的左值和右值及其引用，之后介绍移动语义和完美转发及其实现。
+在C++中，如果一个类获取了资源（例如动态内存、文件、锁、线程、套接字等），则需要定义拷贝构造函数、拷贝赋值运算符和析构函数以确保资源被正确地拷贝和释放。然而，在某些情况下会存在不必要的拷贝，影响程序性能。为了解决这一问题，C++11引入了移动语义。本文首先介绍C++的值类别和左/右值引用，之后介绍移动语义及其实现，最后介绍完美转发。
 
-## 1.左值和右值
-在C++中，每个表达式除了具有类型，还有**值类别**(value category)：
-* **左值**(lvalue)：可以出现在赋值表达式左侧的值，例如变量名`a`、数据成员`a.m`、下标表达式`a[n]`、解引用表达式`*p`、返回类型是左值引用的函数调用等。**左值可以被赋值和取地址。**
-* **右值**(rvalue)：只能出现在赋值表达式右侧的值，例如字面值`42`、算术表达式`a+b`、临时对象`Point(3,4)`、返回类型不是引用类型的函数调用等。**右值不能被赋值和取地址。**
+## 1.值类别
+在C++中，每个表达式除了具有类型，还有**值类别**(value category)。
+
+传统C++ (C++98/03)继承了C语言的值类别，只有两种：lvalue和rvalue。
+
+| 值类别 | 性质 | 示例 |
+| --- | --- | --- |
+| **左值**(lvalue) | 可以出现在赋值运算符左侧，可以取地址 | 变量名`a`、数据成员`a.m`、数组下标`a[i]`、指针解引用`*p`、返回左值引用的函数调用等 |
+| **右值**(rvalue) | 只能出现在赋值运算符右侧，不能取地址 | 整数常量`42`、算术表达式`a + b`、临时对象`Point{3, 4}`、返回非引用类型的函数调用等 |
+
+详见[C Value categories](https://en.cppreference.com/c/language/value_category)。
 
 例如：
 
@@ -22,7 +29,19 @@ p = &42;      // error, 42 is rvalue
 a + 1 = *p;   // error, a + 1 is rvalue
 ```
 
-注：实际上C++标准定义了三个值类别——左值(lvalue)、纯右值(prvalue)和将亡值(xvalue)，纯右值和将亡值统称为右值(rvalue)，详见[Value categories - cppreference](https://en.cppreference.com/w/cpp/language/value_category)。“右值”只是沿用了C语言中的叫法。
+然而C++11引入了右值引用和移动语义，值类别的定义发生了很大变化。因此C++标准做了扩充和修正，定义了三种基本值类别：lvalue、xvalue和prvalue，以及两种混合类别：glvalue和rvalue。
+
+| 值类别 | 性质 | 示例 |
+| --- | --- | --- |
+| 左值(lvalue) | 具有标识(identity)，不可移动 | `a`、`a.m`、`a[i]`、`*p`、返回左值引用的函数调用等 |
+| 将亡值(xvalue) | 具有标识，可移动 | `f().m`、返回右值引用的函数调用（如`std::move(x)`）等 |
+| 纯右值(prvalue) | 没有标识，可移动 | `42`、`this`、`a + b`、`Point{3, 4}`、返回非引用类型的函数调用等 |
+| 泛左值(glvalue) | 具有标识（lvalue或xvalue） | |
+| 右值(rvalue) | 可移动（prvalue或xvalue） | |
+
+![值类别](/assets/images/cpp-rvalue-reference-move-semantics-and-perfect-forwarding/值类别.png)
+
+详见[C++ Value categories](https://en.cppreference.com/w/cpp/language/value_category)。
 
 ## 2.左值引用和右值引用
 C++的**引用**(reference)是一种类型，可以看作对象的别名。主流编译器底层用指针实现引用，本质上都是对象的地址（示例见[Compiler Explorer](https://godbolt.org/z/xx4vz4YWM)，指针和引用的区别详见[《C++程序设计原理与实践》笔记 第17章]({% post_url 2023-04-22-ppp-note-ch17-vector-and-free-store %}) 17.9节）。
@@ -121,6 +140,73 @@ int main() {
 * `f(3)`调用`f(int&&)`，因为3是右值。如果没有定义`f(int&&)`，则调用`f(const int&)`，因为`const`左值引用可以绑定到右值。
 * `f(x)`调用`f(int&)`，因为`x`是左值（尽管其类型是`int&&`）。
 
+### 2.3 decltype
+运算符`decltype`可用于检查表达式的类型和值类别。假设表达式`expr`的类型为`T`，则根据其值类别的不同，`decltype(expr)`会产生不同的类型：
+
+| 值类别 | decltype |
+| --- | --- |
+| xvalue | `T&&` |
+| lvalue | `T&` |
+| prvalue | `T` |
+
+注意：对于一个变量名`x`，`decltype(x)`产生变量的声明类型，而`decltype((x))`产生左值表达式在上表中对应的类型。详见[decltype specifier](https://en.cppreference.com/cpp/language/decltype)。
+
+例如，对于以下代码
+
+```cpp
+int a = 42;
+int& r = a;
+int&& rr = std::move(a);
+```
+
+| x | decltype(x) | decltype((x)) |
+| --- | --- | --- |
+| `42` | `int` | `int` |
+| `a` | `int` | `int&` |
+| `r` | `int&` | `int&` |
+| `rr` | `int&&` | `int&` |
+| `std::move(a)` | `int&&` | `int&&` |
+
+可以像这样用类模板和`decltype`来判断表达式的值类别：
+
+```cpp
+#include <type_traits>
+#include <utility>
+
+template <class T> struct is_prvalue : std::true_type {};
+template <class T> struct is_prvalue<T&> : std::false_type {};
+template <class T> struct is_prvalue<T&&> : std::false_type {};
+
+template <class T> struct is_lvalue : std::false_type {};
+template <class T> struct is_lvalue<T&> : std::true_type {};
+template <class T> struct is_lvalue<T&&> : std::false_type {};
+
+template <class T> struct is_xvalue : std::false_type {};
+template <class T> struct is_xvalue<T&> : std::false_type {};
+template <class T> struct is_xvalue<T&&> : std::true_type {};
+
+int main() {
+    int a = 42;
+    int& r = a;
+    int&& rr = std::move(a);
+
+    // Expression `42` is prvalue
+    static_assert(is_prvalue<decltype((42))>::value);
+
+    // Expression `a` is lvalue
+    static_assert(is_lvalue<decltype((a))>::value);
+
+    // Expression `r` is lvalue
+    static_assert(is_lvalue<decltype((r))>::value);
+
+    // Expression `std::move(a)` is xvalue
+    static_assert(is_xvalue<decltype((std::move(a)))>::value);
+
+    // Expression `rr` is lvalue
+    static_assert(is_lvalue<decltype((rr))>::value);
+}
+```
+
 ## 3.移动语义
 为了在特定情况下避免不必要的拷贝，C++11引入了移动语义。下面通过一个`vector`的例子说明什么情况下存在不必要的拷贝，之后介绍如何实现移动语义。
 
@@ -177,13 +263,15 @@ void use() {
 }
 ```
 
-在函数`fill()`返回的过程中，会发生拷贝操作(`res`→`vec`)。假设`res`有10万个元素，则将其拷贝到`vec`的代价是很高的。但实际上，`use()`永远不会使用`res`，因为`res`在函数`fill()`返回后就会被销毁，因此从`res`到`vec`的拷贝就是不必要的——可以设法让`vec`直接复用`res`的资源。
+在函数`fill()`返回的过程中，会发生拷贝操作(`res`→`vec`)。假设`res`有10万个元素，则将其拷贝到`vec`的代价是很高的。
+
+![vector拷贝](/assets/images/cpp-rvalue-reference-move-semantics-and-perfect-forwarding/vector拷贝.gif)
+
+但实际上，`use()`永远不会使用`res`，因为`res`在函数`fill()`返回后就会被销毁，因此从`res`到`vec`的拷贝就是不必要的——可以设法让`vec`直接复用`res`的资源。
 
 为了解决这一问题，C++11引入了**移动语义**(move semantics)：通过“窃取”资源，直接将`res`的资源**移动**(move)到`vec`，如下图所示：
 
-![移动前](/assets/images/ppp-note-ch18-vectors-and-arrays/移动前.png)
-
-![移动后](/assets/images/ppp-note-ch18-vectors-and-arrays/移动后.png)
+![vector移动](/assets/images/cpp-rvalue-reference-move-semantics-and-perfect-forwarding/vector移动.gif)
 
 移动之后，`vec`将引用`res`的元素，而`res`将被置空。从而以仅仅拷贝一个`int`和一个指针的代价将10万个元素从`res`“移交”给`vec`。
 
@@ -268,9 +356,9 @@ int&& move(int&& t) {
 }
 ```
 
-C++标准规定：**`std::move()`的调用表达式是右值**（准确来说是将亡值）。如果`a`是一个左值，则`std::move(a)`是一个右值，这意味着该对象被认为是“可移动的”（可能被窃取资源），因此**不能再使用**。
+C++标准规定：**`std::move()`的调用表达式是将亡值**。这意味着，如果`x`是左值，虽然`x`本身不可移动，但`std::move(x)`是可移动的。使用该表达式初始化或赋值给其他对象后，对象`x`就**不能再使用了**（因为可能被窃取资源）。
 
-注意：**`std::move()`本身并不执行任何移动操作**。只有将`std::move()`的结果用于初始化或赋值给另一个对象时才会执行移动操作，否则没有任何作用—— "std::move doesn't move anything." （`move`这个名字相当具有误导性，或许叫`make_movable`更合适）
+注意：**`std::move()`函数本身并不执行任何移动操作**。只有将函数调用结果用于初始化或赋值给其他对象时才会执行移动操作，否则没有任何作用—— "std::move doesn't move anything." （`move`这个名字相当具有误导性，或许叫`make_movable`更合适）
 
 考虑下面的例子：
 
@@ -442,7 +530,7 @@ move constructor
 * 可移动的类型：基本类型（如`int`）、定义了移动操作的类（如STL容器、protobuf消息类）和所有成员都可移动的类。
 * 不可移动的类型：禁止了移动操作的类（如`std::mutex`）和包含不可移动成员的类。这种类型只能通过传指针或引用的方式来避免拷贝。
 
-（2）**std::move ≠ 移动。** 只有当参数是非`const`左值，并且将`std::move()`的结果用于**初始化或赋值给另一个对象**时才会执行移动操作。
+（2）**std::move ≠ 移动。** 只有当参数是非`const`左值，并且将`std::move()`的结果用于**初始化或赋值给其他对象**时才会执行移动操作。
 * 对右值使用`std::move()`没有意义，因为结果仍然是右值。
 * 不要对`const`对象使用`std::move()`，因为移动操作通常会修改源对象（置空），而`const`对象禁止修改，重载解析会优先匹配拷贝操作。
 * 将`std::move()`的结果赋给右值引用变量没有意义，因为并没有执行任何移动操作（见3.3节结尾的示例）。
@@ -537,7 +625,7 @@ bool f(std::vector<X>& v) {
 
 这几乎是真实业务代码中唯一需要使用`std::move()`的情况。当然，仍然需要满足前提：类`X`可移动，且移动比拷贝更快。如果类`X`不可移动，可用智能指针来包装：`vector<shared_ptr<X>>`。另外，如果不需要额外的初始化操作，可用`v.push_back(X(args...))`或`v.emplace_back(args...)`来代替（前者也会调用移动构造函数，即使类`X`不可拷贝；而后者直接原地构造，省去拷贝或移动操作）。
 
-（3）对于不再需要的对象，将其资源转移给另一个对象。例如：
+（3）对于不再需要的对象，将其资源转移给其他对象。例如：
 
 ```cpp
 void process(Data data);
@@ -654,7 +742,7 @@ auto q = make_unique<C>(std::move(c));  // argument is rvalue, calls make_unique
 
 注：这里依赖于特殊的模板参数推导规则，详见[Deduction from a function call - cppreference](https://en.cppreference.com/w/cpp/language/template_argument_deduction#Deduction_from_a_function_call)。
 
-现在已经解决了形参类型的问题，但是又遇到另一个问题：如何将参数正确地“转发”给`T`的构造函数？无论实参是左值还是右值，形参`x`都是左值，即**右值引用在传递时会失去右性**。如果写成`new T(x)`则调用的都是拷贝构造函数，而`new T(std::move(x))`调用的都是移动构造函数，都无法满足要求。
+现在已经解决了形参类型的问题，但是又遇到另一个问题：如何将参数正确地“转发”给`T`的构造函数？无论实参是左值还是右值，形参`x`都是左值，即**右值引用在传递时会失去右值性质**。如果写成`new T(x)`则调用的都是拷贝构造函数，而`new T(std::move(x))`调用的都是移动构造函数，都无法满足要求。
 
 因此还需要一种方式能够实现：当形参是左值引用时得到左值表达式，当形参是右值引用时得到右值表达式——这就是`std::forward()`函数。
 
@@ -805,3 +893,4 @@ def make_unique(T, *args):
 * [On harmful overuse of std::move](https://devblogs.microsoft.com/oldnewthing/20231124-00/?p=109059)
 * [聊聊C++中的完美转发](https://zhuanlan.zhihu.com/p/161039484)
 * [谈谈完美转发(Perfect Forwarding)：完美转发 = 引用折叠 + 万能引用 + std::forward](https://zhuanlan.zhihu.com/p/369203981)
+* [C++模板从入门到劝退(0)——左值与右值](https://r00tk1ts.github.io/2022/05/27/C++模板从入门到劝退(0)——左值与右值/)
