@@ -2,7 +2,7 @@
 title: 【SQL】LEFT JOIN查询中WHERE和ON的区别
 date: 2026-06-26 14:37 +0800
 categories: [Database]
-tags: [sql, left join]
+tags: [database, sql, left join]
 ---
 ## 1.问题
 假设有下面的用户表和订单表：
