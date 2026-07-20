@@ -144,7 +144,7 @@ public:
     C() { std::cout << "C()\n"; }
     C(const C& c) { std::cout << "C(const C&)\n"; }
     C(C&& c) noexcept { std::cout << "C(C&&)\n"; }
-    C(int, double) { std::cout << "C(int, double)\n"; }
+    C(int, double&) { std::cout << "C(int, double&)\n"; }
 };
 
 template<class T, class... Args>
@@ -154,15 +154,16 @@ std::unique_ptr<T> make_unique(Args&&... args) {
 
 int main() {
     C c;
+    double x = 2.5;
     auto p1 = make_unique<C>();             // (1) calls C()
     auto p2 = make_unique<C>(c);            // (2) calls C(const C&)
     auto p3 = make_unique<C>(std::move(c)); // (3) calls C(C&&)
-    auto p4 = make_unique<C>(1, 2.5);       // (4) calls C(int, double)
+    auto p4 = make_unique<C>(1, x);         // (4) calls C(int, double)
     return 0;
 }
 ```
 
-使用[C++ Insights](https://cppinsights.io/s/2c3d8372)工具可以看到，这四个调用对应的模板实例化如下：
+使用[C++ Insights](https://cppinsights.io/s/12b66d06)工具可以看到，这四个调用对应的模板实例化如下：
 
 ```cpp
 // (1) T = C, Args = {}
@@ -183,10 +184,10 @@ std::unique_ptr<C> make_unique<C, C>(C&& arg0) {
     return std::unique_ptr<C>(new C(std::forward<C>(arg0)));
 }
 
-// (4) T = C, Args = {int, double}
+// (4) T = C, Args = {int, double&}
 template<>
-std::unique_ptr<C> make_unique<C, int, double>(int&& arg0, double&& arg1) {
-    return std::unique_ptr<C>(new C(std::forward<int>(arg0), std::forward<double>(arg1)));
+std::unique_ptr<C> make_unique<C, int, double&>(int&& arg0, double& arg1) {
+    return std::unique_ptr<C>(new C(std::forward<int>(arg0), std::forward<double&>(arg1)));
 }
 ```
 
@@ -238,7 +239,7 @@ int main() {
 
 调用`printer(1, 2.5, "abc")`等价于`((std::cout << 1) << 2.5) << "abc"`。
 
-如果希望打印分隔符，则可以使用`,`运算符的一元折叠（`,`运算符是从左到右求值的）：
+如果希望打印分隔符，则可以使用`,`运算符的一元折叠（逗号运算符是从左到右求值的）：
 
 ```cpp
 #include <iostream>
@@ -265,7 +266,7 @@ auto t = std::make_tuple(42, "Foo", 3.14);
 print_tuple(t);  // prints "42 Foo 3.14"
 ```
 
-C++的`std::tuple`不是可迭代的，只能通过`std::get<I>()`获取第`I`个元素。但模板实参`I`必须是编译时常量，因此无法直接用`for`循环遍历：
+C++的`std::tuple`不像Python元组是可迭代的，只能通过`std::get<I>()`获取第`I`个元素。但模板实参`I`必须是编译时常量，因此无法直接用`for`循环遍历：
 
 ```cpp
 template<class Tuple>

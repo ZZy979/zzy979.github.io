@@ -639,7 +639,9 @@ void f() {
 调用`process()`函数时，将`foo_data`的资源转移给了形参`data`，因此在调用之后不能再使用`foo_data`（在实际中，一般会将`process()`的参数定义为`const Data&`，这样就不需要使用`std::move()`）。
 
 ## 4.完美转发
-除了移动语义，右值引用还有一个重要的用途——实现**完美转发**(perfect forwarding)。完美转发是指在模板函数中将参数“无损地”传递给另一个函数，并保持参数的原始值类别。
+除了移动语义，右值引用还有一个重要的用途——实现完美转发。
+
+**完美转发**(perfect forwarding)是指在模板函数中将参数“无损地”传递给另一个函数，并保持参数的原始值类别。
 
 考虑实现简化的`std::make_unique`函数。该函数只接受一个参数，（拷贝或移动）构造一个`T`类型的对象，并返回拥有该对象的`std::unique_ptr<T>`。
 
@@ -655,7 +657,7 @@ public:
     C(C&& c) noexcept { std::cout << "move constructor\n"; }
 };
 
-template<class T, class Arg>
+template<class T>
 std::unique_ptr<T> make_unique(??? x) {
     return std::unique_ptr<T>(new T(???));
 }
@@ -670,7 +672,7 @@ int main() {
 
 我们希望当实参是左值时应该调用拷贝构造函数，当实参是右值时应该调用移动构造函数。那么`make_unique()`的形参类型应该如何定义？传递给构造函数的参数又应该是什么？为了解决这两个问题，需要用到完美转发。
 
-下面首先介绍引用折叠和转发引用的概念，之后介绍`std::forward()`函数以及如何实现完美转发。
+接下来先介绍引用折叠和转发引用的概念，之后介绍`std::forward()`函数以及如何实现完美转发。
 
 ### 4.1 引用折叠
 在C++中不存在引用的引用，但是允许通过模板或`typedef`间接形成引用的引用。在这种情况下，适用**引用折叠**(reference collapsing)规则：右值引用的右值引用折叠为右值引用，其他组合都形成左值引用。例如：
@@ -731,6 +733,8 @@ std::unique_ptr<T> make_unique(Arg&& x) {
     return std::unique_ptr<T>(new T(???));
 }
 ```
+
+注：参数`x`必须用一个单独的模板参数，因为`Arg`可能被推导为`C`或`C&`，而`std::unique_ptr`的模板参数必须是`C`。
 
 分别用左值和右值调用该函数：
 
@@ -850,7 +854,7 @@ std::unique_ptr<T> make_unique(Args&&... args) {
 
 ### 4.4 小结
 完美转发的实现步骤：
-1. 在函数模板中使用转发接收参数。
+1. 在函数模板中使用转发引用接收参数。
 2. 利用模板参数推导和引用折叠得到正确的引用类型。
 3. 使用`std::forward()`传递参数并恢复原始值类别。
 
