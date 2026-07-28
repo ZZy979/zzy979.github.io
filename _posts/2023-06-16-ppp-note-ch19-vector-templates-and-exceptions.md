@@ -2,7 +2,7 @@
 title: 《C++程序设计原理与实践》笔记 第19章 向量、模板和异常
 date: 2023-06-16 00:30:58 +0800
 categories: [C/C++, PPP]
-tags: [cpp, vector, template, generic programming, concept, memory error, memory leak, raii]
+tags: [cpp, vector, template, generic programming, concept, dynamic memory allocation, allocator, memory error, memory leak, raii]
 ---
 本章将完成最常见、最有用的STL容器`vector`的设计与实现。我们将展示如何实现元素数量可变的容器，如何以参数形式指定容器的元素类型，以及如何处理越界错误。本章使用的技术依赖模板和异常，因此我们将介绍如何定义模板，并给出资源管理的基本技术，这些技术是正确使用异常的关键。
 
@@ -383,6 +383,8 @@ template<class T>
 concept unsigned_integral = std::integral<T> && !std::signed_integral<T>;
 ```
 
+* 详见[《C++20之概念》]({% post_url 2024-03-24-cpp20-concept %})。
+
 ### 19.3.4 容器和继承
 将派生类对象的容器赋给基类对象的容器是错误的。例如：
 
@@ -594,55 +596,13 @@ public:
 
 这里列出了4个基本操作：
 * 分配能够容纳n个`T`类型对象（即`n * sizeof(T)`字节）的未初始化内存空间（不调用构造函数）
-* 在未初始化内存中构造一个`T`类型对象
-* 销毁一个`T`类型对象，将其所在内存返回到未初始化状态
+* 在未初始化内存中构造一个`T`类型对象（调用构造函数）
+* 销毁一个`T`类型对象，将其所在内存返回到未初始化状态（调用析构函数）
 * 释放能够容纳n个`T`类型对象的内存空间（不调用析构函数）
 
-例如：
+注：详见[《【C++】动态内存管理》]({% post_url 2026-07-28-cpp-dynamic-memory-management %})。
 
-```cpp
-struct C {
-    C(int x) {}
-    ~C() {}
-};
-
-void f() {
-    allocator<C> alloc;
-    int n = 3;
-    C* p = alloc.allocate(n);
-
-    for (int i = 0; i < n; ++i)
-        alloc.construct(p + i, i);  // calls C(int)
-
-    for (int i = 0; i < n; ++i)
-        alloc.destroy(p + i);       // calls ~C()
-
-    alloc.deallocate(p, n);
-}
-```
-
-注：
-* C++20将`allocator`的`construct()`和`destroy()`函数移至`allocator_traits`类，后者分别调用`std::construct_at()`和`std::destroy_at()`。
-* 实际上`allocator::allocate()`底层就是使用`malloc()`函数实现的，使用该函数代替`allocator`也能解决上述问题。使用`allocator`的另一个原因是：将内存分配/释放与对象构造/销毁分离，并抽象为接口，从而支持自定义内存管理策略，提供更好的灵活性。
-* 除了`allocator`外，标准库头文件\<cstdlib\>提供了`malloc()`函数，\<new\>提供了一组`operator new`和`operator new[]`函数，都能够分配未初始化内存。这些函数与`new`/`new[]`运算符的区别和联系：
-    * `new`和`new[]`叫做[new表达式](https://en.cppreference.com/w/cpp/language/new)(new expression)，是语言级别的运算符；`operator new`和`operator new[]`叫做[分配函数](https://en.cppreference.com/w/cpp/memory/new/operator_new)(allocation functions)，是标准库头文件\<new\>中定义的一组库函数。
-    * `new`在分配内存后会调用构造函数来初始化对象，而`operator new`和`malloc()`只负责分配内存。
-    * `new`通过调用`operator new`分配内存，而`operator new`就是通过调用`malloc()`函数实现的。
-    * `new(p) T(args...)`这种特殊形式的`new`叫做[Placement new](https://en.cppreference.com/w/cpp/language/new#Placement_new)，并不分配内存，而是在已分配的未初始化内存空间中（原地）构造对象——在C++中这是在不分配内存的情况下调用构造函数的唯一方式。
-* 下表总结了在自由存储上分配内存/初始化对象的各种方式：
-
-| 表达式 | 分配内存（字节） | 初始化对象 |
-| --- | --- | --- |
-| `new T(args...)` | `sizeof(T)` | 是 |
-| `new T[n]{...}` | `n * sizeof(T)` | 是 |
-| `allocator<T>::allocate(n)` | `n * sizeof(T)` | 否 |
-| `operator new(n)`或`malloc(n)` | `n` | 否 |
-| `allocator<T>::construct(p, args...)` | 无 | 是 |
-| `new(p) T(args...)` | 无 | 是 |
-
-* 相应地，`delete`和`delete[]`会自动调用析构函数并释放内存；而`operator delete`和`free()`只负责释放内存，之前必须手动调用析构函数（`allocator<T>::destroy(p)`或`p->~T()`）。
-
-（回到正题）`allocator`正是我们实现`vector<T>::reserve()`所需要的。首先给`vector`增加一个模板参数`A`（用于支持自定义分配器）：
+`allocator`正是我们实现`vector<T>::reserve()`所需要的。首先给`vector`增加一个模板参数`A`（用于支持自定义分配器）：
 
 ```cpp
 template<class T, class A = allocator<T>>

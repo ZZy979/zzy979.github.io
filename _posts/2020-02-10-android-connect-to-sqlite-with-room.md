@@ -13,14 +13,15 @@ tags: [android, database, room]
   * <http://www.mamicode.com/info-detail-2762152.html>
   * <https://www.jianshu.com/p/145f5e959dfb>
 
-1.在app/build.gradle中添加依赖
+## 1.添加依赖
+在app/build.gradle中添加以下依赖：
 
 ```
 implementation 'androidx.room:room-runtime:2.7.1'
 annotationProcessor 'androidx.room:room-compiler:2.7.1'
 ```
 
-2.定义实体类
+## 2.定义实体类
 
 <https://developer.android.google.cn/training/data-storage/room/defining-data>
 
@@ -38,7 +39,7 @@ public class User {
 }
 ```
 
-3.定义DAO（即Repository）
+## 3.定义DAO（即Repository）
 
 <https://developer.android.google.cn/training/data-storage/room/accessing-data>
 
@@ -63,7 +64,9 @@ public interface UserDao {
 }
 ```
 
-4.定义数据库
+注：也可以让DAO方法直接返回`LiveData`，从而能够在数据变化时自动更新UI，参见[Room, LiveData, and ViewModel](https://android-app-development-documentation.readthedocs.io/en/latest/room.html)。
+
+## 4.定义数据库
 
 由于创建RoomDatabase实例的成本相当高，因此官方推荐使用单例模式。
 
@@ -89,6 +92,6 @@ public abstract class AppDatabase extends RoomDatabase {
 }
 ```
 
-5.测试
+## 5.测试
 
 <https://developer.android.google.cn/training/data-storage/room/testing-db>

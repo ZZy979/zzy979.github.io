@@ -604,6 +604,26 @@ struct {
 
 **联合只能使用第一个成员类型的值进行初始化。**
 
+注：联合的另一种用法是表示网络协议报文头，从而可以同时访问整体数据和内部字段。例如，下面的联合`tcp_header`表示[TCP消息头](https://www.ietf.org/rfc/rfc9293.html#name-header-format)。可以通过`data`访问整个消息头（20字节），也可以通过`fields.src_port`访问其中的源端口号字段（前16位）。在这种情况下，联合的成员`data`和`fields`是对同一份数据的两种不同访问方式。
+
+```c
+union tcp_header {
+    unsigned char data[20];
+    struct {
+        unsigned src_port    : 16;
+        unsigned dst_port    : 16;
+        unsigned seq_num     : 32;
+        unsigned ack_num     : 32;
+        unsigned data_offset : 4;
+        unsigned reserved    : 4;
+        unsigned flags       : 8;
+        unsigned window      : 16;
+        unsigned checksum    : 16;
+        unsigned urgent_ptr  : 16;
+    } fields;
+};
+```
+
 ## 6.9 位字段
 在存储空间很宝贵的情况下，有可能需要将多个对象保存在一个机器字中。一种常见用法是类似于编译器符号表中的单个二进制位标志集合。来自外部的数据格式（如硬件设备接口）也经常需要获取字的一部分。
 

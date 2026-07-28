@@ -155,15 +155,15 @@ std::unique_ptr<T> make_unique(Args&&... args) {
 int main() {
     C c;
     double x = 2.5;
-    auto p1 = make_unique<C>();             // (1) calls C()
-    auto p2 = make_unique<C>(c);            // (2) calls C(const C&)
-    auto p3 = make_unique<C>(std::move(c)); // (3) calls C(C&&)
-    auto p4 = make_unique<C>(1, x);         // (4) calls C(int, double)
+    auto p1 = make_unique<C>();             // (1) calls make_unique<C>() and C()
+    auto p2 = make_unique<C>(c);            // (2) calls make_unique<C, C&>(C&) and C(const C&)
+    auto p3 = make_unique<C>(std::move(c)); // (3) calls make_unique<C, C>(C&&) and C(C&&)
+    auto p4 = make_unique<C>(1, x);         // (4) calls make_unique<C, int, double&>(int&&, double&) and C(int, double&)
     return 0;
 }
 ```
 
-使用[C++ Insights](https://cppinsights.io/s/12b66d06)工具可以看到，这四个调用对应的模板实例化如下：
+使用[C++ Insights](https://cppinsights.io/s/a3fc3e7c)工具可以看到，这四个调用对应的模板实例化如下：
 
 ```cpp
 // (1) T = C, Args = {}
