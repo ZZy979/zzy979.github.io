@@ -365,13 +365,21 @@ C++标准规定：**`std::move()`的调用表达式是将亡值**。这意味着
 ```cpp
 std::vector<int> a = {1, 2, 3};
 std::vector<int> b = std::move(a);  // (1) calls move constructor
-std::cout << a.size() << ' ' << b.size() << std::endl;  // prints "0 3"
+std::cout << a.size() << ' ' << b.size() << '\n';  // prints "0 3"
 
-std::vector<int>&& r = std::move(b);  // (2) no move
-std::cout << b.size() << ' ' << r.size() << std::endl;  // prints "3 3"
+std::vector<int>&& r = std::move(b);  // (2) no move, same as "auto* r = &b;"
+std::cout << b.size() << ' ' << r.size() << '\n';  // prints "3 3"
+std::cout << (&b == &r) << '\n';  // prints "1"
+
+std::vector<int> c = r;  // (3) calls copy constructor
+std::cout << r.size() << ' ' << c.size() << '\n';  // prints "3 3"
+std::cout << (&c == &r) << '\n';  // prints "0"
 ```
 
-其中，(1)处的移动操作并不是发生在`std::move(a)`，而是`b`的移动构造函数，(2)处没有执行任何移动操作。
+其中
+* (1)执行了移动操作，但并不是发生在`std::move(a)`，而是`b`的移动构造函数。
+* (2)没有执行任何移动操作，仅仅是取了`b`的地址。
+* (3)执行了拷贝操作，因为`r`是左值。
 
 ### 3.4 拷贝消除
 C++标准支持**拷贝消除**(copy elision)，允许编译器在某些情况下省略拷贝构造函数和移动构造函数的调用，从而提高程序的性能。拷贝消除的规则也随着C++标准版本的更新而不断扩展。
@@ -850,7 +858,7 @@ std::unique_ptr<T> make_unique(Args&&... args) {
 }
 ```
 
-类似的函数还有`vector<T>::emplace_back()`、`allocator<T>::construct()`、`std::invoke()`等。
+类似的函数还有`std::vector<T>::emplace_back()`、`std::allocator<T>::construct()`、`std::invoke()`等。
 
 ### 4.4 小结
 完美转发的实现步骤：

@@ -218,6 +218,36 @@ void operator delete[](void* ptr, void* place) noexcept;
 * `new`表达式 = `operator new` + 构造函数
 * `delete`表达式 = 析构函数 + `operator delete`
 
+（1）`T* p = new T(args...);`大致等价于
+
+```cpp
+T* p = static_cast<T*>(operator new(sizeof(T)));
+new(p) T(args...);
+```
+
+（2）`T* p = new T[n]{v_1, v_2, ..., v_n};`大致等价于
+
+```cpp
+T* p = static_cast<T*>(operator new[](n * sizeof(T)));
+for (int i = 0; i < n; ++i)
+    new(p + i) T(v_i);  // or "new(p + i) T" if v_i is absent
+```
+
+（3）`delete p;`大致等价于
+
+```cpp
+p->~T();
+operator delete(p);
+```
+
+（4）`delete[] p;`大致等价于
+
+```cpp
+for (int i = 0; i < n; ++i)
+    p[i].~T();
+operator delete[](p);
+```
+
 ### 3.2 重载operator new/delete
 类可以通过重载`operator new`和`operator delete`来实现自定义内存分配策略，需要将其定义为**公有静态**成员函数（关键字`static`可省略）。这样`new`和`delete`表达式就会使用这些函数来分配或释放该类对象的内存（除非使用`::new`和`::delete`形式）。
 
