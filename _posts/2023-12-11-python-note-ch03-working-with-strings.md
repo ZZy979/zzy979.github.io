@@ -115,7 +115,7 @@ render_with_liquid: false
 '2023-12-11 21:51:08'
 ```
 
-* 可以使用`string.Formatter`类自定义字符串格式化语法。
+* 可以使用`string.Formatter`类自定义字符串格式化语法，详见[Custom string formatting](https://docs.python.org/3/library/string.html#custom-string-formatting)。
 
 下面详细介绍其中的一些要素。
 
