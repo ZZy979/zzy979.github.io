@@ -156,7 +156,7 @@ export PYTHONPATH=$PYTHONPATH:~/python
 ### 10.1.4 包
 为了组织模块，可以将其分组为**包**(package)。包本质上是另一种模块，但可以包含其他模块。模块是一个文件(.py)，而包是一个目录。
 
-要被Python视为包，目录必须包含文件 **\_\_init\_\_.py** 。如果像普通模块一样导入包，该文件的内容就是包的内容。例如，如果有一个名为`constants`的包，文件constants/\_\_init\_\_.py包含语句`PI = 3.14`，就可以像下面这样做：
+要被Python视为包，目录必须包含文件 **`__init__.py`** 。如果像普通模块一样导入包，该文件的内容就是包的内容。例如，如果有一个名为`constants`的包，文件constants/\_\_init\_\_.py包含语句`PI = 3.14`，就可以像下面这样做：
 
 ```python
 import constants
@@ -188,6 +188,8 @@ from drawing import shapes # (3) Imports the shapes module
 * 执行第3条语句后，`shapes`模块可用，可以通过全名或短名(`shapes`)来使用。
 
 注意，不必先导入包再导入其中的模块，可以直接导入包中的模块。
+
+注：包中的 **`__main__.py`** 文件用于提供命令行接口，以便使用`python`命令的`-m`选项直接执行包。详见[\_\_main\_\_.py in Python Packages](https://docs.python.org/3/library/__main__.html#main-py-in-python-packages)。
 
 ## 10.2 探索模块
 在介绍一些标准库模块前，先向你展示如何自行探索模块。这是一种很有价值的技能，因为在你的Python程序员职业生涯中，会遇到很多有用的模块，而这里无法一一介绍。

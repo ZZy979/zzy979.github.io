@@ -1073,7 +1073,7 @@ Spark Streaming还提供了窗口操作，可以在数据的滑动窗口上执�
 val ssc = new StreamingContext(conf, Minutes(1))
 val stream = ...
 // Compute last 5 minutes of data, every 2 minutes
-val windowedStream = stream.window(Seconds(5), Seconds(2))
+val windowedStream = stream.window(Minutes(5), Minutes(2))
 ```
 
 假设作业启动时间为10:01:40，则`windowedStream`输出的RDD批次如下图所示：
