@@ -2,7 +2,7 @@
 title: 《Python基础教程》笔记 第2章 列表和元组
 date: 2023-11-27 21:38:21 +0800
 categories: [Python, Beginning Python]
-tags: [python, sequence, slice, "null", list, tuple, method, sort]
+tags: [python, sequence, slice, list, tuple, method, sort]
 ---
 本章将介绍一个新概念：**数据结构**(data structure)。数据结构是以某种方式组织起来的数据元素的集合。在Python中，最基本的数据结构是**序列**(sequence)。
 
@@ -553,7 +553,9 @@ object.method(arguments)
 
 这看起来类似于拼接(`a + b`)，但主要区别是`extend()`方法会修改原列表，而拼接操作返回一个新列表。
 
-`a.extend(b)`等价于`a = a + b`、`a += b`或者`a[len(a):] = b`。
+`a.extend(b)`等价于`a += b`或者`a[len(a):] = b`。
+
+注：`a += b`与`a = a + b`的区别见5.2.3节。
 
 #### index
 `index()`方法用于在列表中查找指定值第一次出现的索引，如果未找到则引发`ValueError`。
