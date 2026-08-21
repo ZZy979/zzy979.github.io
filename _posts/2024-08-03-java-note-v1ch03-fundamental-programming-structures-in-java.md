@@ -173,11 +173,12 @@ public static void main(String\u005B\u005D args)
 
 **码点**(code point)是指编码表中一个字符对应的编码值。在Unicode标准中，码点用十六进制书写，并加上前缀U+。例如，U+0041就是字母A的码点。Unicode的码点可以分成17个**代码平面**(code plane)。第一个代码平面称为**基本多语言平面**(basic multilingual plane)，由经典Unicode字符组成，码点从U+0000到U+FFFF。其余16个代码平面包含**补充字符**(supplementary character)，码点从U+10000到U+10FFFF。
 
-注：Unicode字符的完整列表见 <https://symbl.cc/en/unicode-table/> 。
+注：Unicode字符的完整列表见 <https://symbl.cc/en/unicode-table/> 和 <https://www.unicode.org/charts/> 。
 
 为了能够用二进制表示Unicode码点，同时避免浪费存储空间，需要一种将码点映射到**码元**(code unit)序列的变长编码规则。这种编码规则称为Unicode Transformation Format (UTF)，常见的有UTF-8、UTF-16和UTF-32。参考：
-* [UTF-16 - Wikipedia](https://en.wikipedia.org/wiki/UTF-16)
+* Wikipedia [UTF-8](https://en.wikipedia.org/wiki/UTF-8), [UTF-16](https://en.wikipedia.org/wiki/UTF-16), [UTF-32](https://en.wikipedia.org/wiki/UTF-32)
 * [Unicode FAQ](https://www.unicode.org/faq/utf_bom.html)
+* [卷II第2章]({% post_url 2025-04-07-java-note-v2ch02-input-and-output %}) 2.1.8节
 
 Java采用UTF-16编码。UTF-16编码使用1个或2个16位的码元表示一个码点。例如，希腊字母π的码点为U+03C0，编码为一个码元`\u03C0`；数学符号𝕆的码点为U+1D546，编码为两个码元`\uD835`和`\uDD46`。（编码算法的具体描述见[RFC 2781](https://datatracker.ietf.org/doc/html/rfc2781)）。
 
