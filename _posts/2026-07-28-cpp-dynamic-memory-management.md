@@ -71,7 +71,7 @@ int main() {
 ### 2.1 基本用法
 [new表达式](https://en.cppreference.com/cpp/language/new)用于在动态内存上创建并初始化对象：
 * 表达式`new T(args...)`或`new T{args...}`分配一个`T`类型对象的内存并初始化，返回指向该对象的指针。如果省略了括号和参数则为[默认初始化](https://en.cppreference.com/cpp/language/default_initialization)。
-* 表达式`new T[n]{...}`分配包含n个`T`类型对象的数组的内存并初始化所有元素，返回指向首元素的指针。数组大小`n`不必是常量，如果指定了初始值列表则可以省略。如果省略了初始值列表则所有元素均为默认初始化。
+* 表达式`new T[n]{...}`分配包含n个`T`类型对象的数组的内存并初始化所有元素，返回指向首元素的指针。数组大小`n`不必是常量。如果指定了初始值列表则可以省略数组大小；如果省略了初始值列表则所有元素均为默认初始化。
 
 [delete表达式](https://en.cppreference.com/cpp/language/delete)用于销毁由`new`表达式创建的对象并释放内存：
 * 表达式`delete p`调用`p`指向对象的析构函数，并释放内存。
@@ -81,7 +81,7 @@ int main() {
 
 注：调用`delete[]`时并没有指定元素个数，那么`delete[]`表达式如何知道要释放的数组大小？一种实现方式是`new[]`在返回的内存地址之前额外分配几个字节，用于保存数组大小，这样`delete[]`根据提供的指针向前查看几个字节即可。参见 <https://en.cppreference.com/cpp/language/new#Allocation> ：
 
-> Array allocation may supply unspecified overhead, which may vary from one call to `new` to the next, unless the allocation function selected is the standard non-allocating form. The pointer returned by the `new` expression will be offset by that value from the pointer returned by the allocation function. Many implementations use the array overhead to store the number of objects in the array which is used by the `delete[]` expression to call the correct number of destructors.
+> Array allocation may supply unspecified overhead... The pointer returned by the `new` expression will be offset by that value from the pointer returned by the allocation function. Many implementations use the array overhead to store the number of objects in the array which is used by the `delete[]` expression to call the correct number of destructors.
 
 例如：
 
@@ -121,11 +121,9 @@ void f2() {
 ### 2.2 不抛出异常版本
 当`new`分配内存失败时，会抛出`std::bad_alloc`异常（因此无需判断返回的指针是否为空）。
 
-可以使用不抛出异常的版本避免异常，当分配失败时会返回空指针：
+可以使用不抛出异常的版本避免异常，当分配失败时会返回空指针。语法为`new(std::nothrow) T`，其中`std::nothrow`定义在头文件`<new>`中。例如：
 
 ```cpp
-#include <new>
-
 std::size_t n = UINT64_MAX;
 if (auto* p = new(std::nothrow) int[n]) {
     delete[] p;
@@ -135,17 +133,18 @@ if (auto* p = new(std::nothrow) int[n]) {
 ```
 
 ### 2.3 定位new
-[定位new](https://en.cppreference.com/cpp/language/new#Placement_new) (placement new)是`new`表达式的一种特殊形式，用于**在已分配的内存上构造对象**。
+[定位new](https://en.cppreference.com/cpp/language/new#Placement_new) (placement new)是`new`表达式的一种特殊形式，用于**在已分配的未初始化内存上构造对象**。
 
 表达式`new(p) T(args...)`不分配内存，在指针`p`指向的未初始化内存上“原地”构造一个`T`类型的对象。这是在C++中手动调用构造函数的唯一方式。
 
 定位`new`的一种用途是实现分配器，详见第4节。另外，定位`new`在需要精确控制对象布局或实现内存池时也非常有用。例如：
 
 ```cpp
-alignas(T) unsigned char buf[sizeof(T)];  // Statically allocate storage large enough for object of type T.
-T* p = new(buf) T;  // Construct a T object directly into pre-allocated storage at buf.
-p->~T();  // You must manually call the object's destructor.
-// Leaving this block scope automatically deallocates buf.
+{
+    alignas(T) unsigned char buf[sizeof(T)];  // Statically allocate storage large enough for object of type T.
+    T* p = new(buf) T;  // Construct a T object directly into pre-allocated storage at buf.
+    p->~T();  // You must manually call the object's destructor.
+}  // Leaving this block scope automatically deallocates buf.
 ```
 
 注意事项：
@@ -181,7 +180,7 @@ void* operator new[](std::size_t sz, void* ptr);
 * (2) 同(1)，但分配失败时返回空指针。
 * (3) 不分配内存，直接返回`ptr`。
 
-`new`表达式通过调用适当的分配函数来分配内存。对于非数组类型，函数名为`operator new`；对于数组类型，函数名为`operator new[]`。调用时，将请求的字节数作为第一个参数，对于非数组类型为`sizeof(T)`。
+`new`表达式通过调用适当的分配函数来分配内存。对于非数组类型，函数名为`operator new`；对于数组类型，函数名为`operator new[]`。调用时，将分配的字节数作为第一个参数，对于非数组类型为`sizeof(T)`。
 * `new T`调用重载(1) `operator new(sizeof(T))`
 * `new T[n]`调用重载(1) `operator new[](n * sizeof(T))`
 * `new(std::nothrow) T`调用重载(2) `operator new(sizeof(T), std::nothrow)`
@@ -225,7 +224,7 @@ T* p = static_cast<T*>(operator new(sizeof(T)));
 new(p) T(args...);
 ```
 
-（2）`T* p = new T[n]{v_1, v_2, ..., v_n};`大致等价于
+（2）`T* p = new T[n]{v_0, v_1, ...};`大致等价于
 
 ```cpp
 T* p = static_cast<T*>(operator new[](n * sizeof(T)));
@@ -397,7 +396,7 @@ int main() {
 ## 4.分配器
 C++具名要求[Allocator](https://en.cppreference.com/cpp/named_req/Allocator)描述了**分配器**类型，用于封装内存分配/释放以及对象的构造/析构。所有需要动态分配内存的标准库容器都是通过分配器完成的。
 
-简单来说，用于`T`类型的分配器类型`Alloc`需要满足以下要求：
+简单来说，用于`T`类型对象的分配器类型`Alloc`需要满足以下要求：
 * 成员类型`Alloc::value_type`定义为`T`的别名。
 * `a.allocate(n)` 分配n个`T`类型对象的未初始化内存。
 * `a.deallocate(p, n)` 释放`p`指向的n个`T`类型对象的内存。
@@ -619,9 +618,23 @@ private:
 std::vector<int, PoolAllocator<int>> v(PoolAllocator<int>(100));
 ```
 
-注：为了简化示例，这个分配器使用线性查找，遍历整个池子寻找连续空闲块，但存在性能较差、内存碎片问题。真正的标准库分配器实现要复杂得多，参见[《malloc和free的实现原理解析》](https://jacktang816.github.io/post/mallocandfree/)。
+注：为了简化示例，这个分配器使用线性查找，遍历整个池子寻找连续空闲块，但存在性能较差、内存碎片等问题。真正的标准库分配器实现要复杂得多，参见[《malloc和free的实现原理解析》](https://jacktang816.github.io/post/mallocandfree/)。
 
-## 5.总结
+## 5.内存算法
+头文件`<memory>`提供了用于在未初始化内存中批量构造和销毁对象的算法，如下表所示。其中，`p`表示遍历范围`[b, e)`的迭代器，`q`表示遍历范围`[b2, b2+(e-b))`的迭代器，`T`是迭代器指向的元素类型。
+
+| 算法 | 描述 | 循环体 |
+| --- | --- | --- |
+| `uninitialized_copy(b, e, b2)` | 用[b, e)拷贝构造[b2, b2+(e-b)) | `new (&*q) T(*p)` |
+| `uninitialized_move(b, e, b2)` | 用[b, e)移动构造[b2, b2+(e-b)) | `new (&*q) T(std::move(*p))` |
+| `uninitialized_fill(b, e, v)` | 用v拷贝构造[b, e) | `new (&*p) T(v)` |
+| `uninitialized_default_construct(b, e)` | 用默认初始化构造[b, e) | `new (&*p) T` |
+| `uninitialized_value_construct(b, e)` | 用值初始化构造[b, e) | `new (&*p) T()` |
+| `destroy(b, e)` | 销毁[b, e) | `std::destroy_at(&*p)` |
+
+完整列表参见[Specialized \<memory\> algorithms](https://en.cppreference.com/cpp/algorithm/memory)。
+
+## 6.总结
 下表总结了C++中分配内存和初始化对象的各种方式。
 
 | 方式 | 分配内存 | 调用构造函数 |
@@ -644,7 +657,7 @@ std::vector<int, PoolAllocator<int>> v(PoolAllocator<int>(100));
 * 与C语言库交互：使用`malloc()`/`free()`。
 * 性能关键场景：自定义`operator new`或分配器。
 
-### 5.1 常见陷阱
+### 6.1 常见陷阱
 
 （1）new/delete不匹配
 
@@ -695,7 +708,7 @@ auto* p = new(buf) std::vector<int>{1, 2, 3, 4, 5};
 free(buf);
 ```
 
-### 5.2 最佳实践
+### 6.2 最佳实践
 下面总结了C++内存管理的最佳实践：
 * 避免裸指针，优先使用智能指针。
 * 优先使用STL容器。

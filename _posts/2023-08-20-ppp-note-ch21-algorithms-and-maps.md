@@ -22,7 +22,7 @@ math: true
 | `unique_copy(b, e, b2)` | 将[b, e)拷贝到[b2, b2+(e-b))，不拷贝相邻的重复元素 |
 | `merge(b, e, b2, e2, r)` | 将两个有序序列[b, e)和[b2, e2)合并至[r, r+(e-b)+(e2-b2)) |
 | `equal_range(b, e, v)` | 返回有序序列[b, e)中值为v的子序列，本质上是对v的二分搜索 |
-| `equal(b, e, b2)` | 判断[b, e)和[b2, b2+(e-b)的所有元素是否相等 |
+| `equal(b, e, b2)` | 判断[b, e)和[b2, b2+(e-b))的所有元素是否相等 |
 | `accumulate(b, e, i)` | 返回i与[b, e)中所有元素的和 |
 | `accumulate(b, e, i, op)` | 类似于accumulate，但使用op代替+ |
 | `inner_product(b, e, b2, i)` | 返回[b, e)和[b2, b2+(e-b))的内积 |
