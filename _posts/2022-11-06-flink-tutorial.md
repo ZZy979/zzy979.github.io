@@ -261,7 +261,7 @@ DataStream API调用构成一个数据流附加到执行环境，当调用`env.e
 
 这种分布式运行环境需要将你的应用序列化，还要求所有依赖库在集群中的每个节点上都可用。
 
-##### 执行配置
+##### 3.2.3.1 执行配置
 <https://nightlies.apache.org/flink/flink-docs-stable/docs/dev/datastream/execution/execution_configuration/>
 
 `StreamExecutionEnvironment`包含`ExecutionConfig`，可用于设置作业运行时配置。
@@ -279,7 +279,7 @@ ExecutionConfig executionConfig = env.getConfig();
 * `getGlobalJobParameters()`/`setGlobalJobParameters()` 设置自定义全局配置（在所有算子中都可访问）。
 * `registerTypeWithKryoSerializer()` 将给定的类型注册到Kryo并指定序列化器，使序列化更加高效。
 
-##### 序列化问题
+##### 3.2.3.2 序列化问题
 当作业启动时，JobManager会将所有算子的函数对象（包括所有非`transient`字段和引用的外部对象）序列化，打包成任务并分发到各个TaskManager。如果对象包含不可序列化的字段，作业就会启动失败。例如：
 
 ```java
@@ -1078,7 +1078,7 @@ Table table2 = tableEnv.sqlQuery("SELECT * FROM SourceTable");
 TableResult tableResult = table1.insertInto("SinkTable").execute();
 ```
 
-#### 4.1.1 示例：单词计数
+#### 示例：单词计数
 
 下面是使用Table API和SQL实现的单词计数示例。
 
@@ -1146,7 +1146,7 @@ Table API和SQL可以很容易地与DataStream API集成，并在`Table`和`Data
 
 表可以是常规表(`TABLE`)或虚拟表(`VIEW`)。常规表用于描述外部数据，例如文件、数据库表或消息队列。视图可以从现有的`Table`对象创建。
 
-##### 创建连接器表
+##### 4.1.2.1 创建连接器表
 连接器(connector)描述了外部数据源，例如Kafka、文件系统、JDBC等。
 
 可以直接使用Table API创建常规表。首先使用静态方法`TableDescriptor.forConnector()`创建表描述符，之后使用`TableEnvironment`类的`createTemporaryTable()`方法创建临时表，或者使用`createTable()`方法创建永久表。
@@ -1194,7 +1194,7 @@ Flink SQL支持的数据类型参见[Data Types](https://nightlies.apache.org/fl
 
 Table API连接器的完整列表参见[Table API Connectors](https://nightlies.apache.org/flink/flink-docs-stable/docs/connectors/table/overview/)。
 
-##### 创建视图
+##### 4.1.2.2 创建视图
 `Table`对象对应SQL术语中的`VIEW`（虚拟表），它封装了逻辑查询计划。可以使用`createTemporaryView()`方法创建视图：
 
 ```java
@@ -1209,7 +1209,7 @@ tableEnv.createTemporaryView("projectedTable", projTable);
 
 可以使用Table API或SQL两种方式对`Table`对象执行查询操作。
 
-##### Table API
+##### 4.1.3.1 Table API
 Table API是一种语言集成查询API，使用`Table`类提供的方法来执行关系型查询操作，返回一个新的`Table`对象。调用其`execute()`方法来执行查询操作。
 
 下面的示例展示了一个简单的Table API聚合查询：
@@ -1253,7 +1253,7 @@ Table API操作的完整列表（流式和批处理统一）参见[Table API](ht
 
 内置SQL函数参见[System (Built-in) Functions](https://nightlies.apache.org/flink/flink-docs-stable/docs/dev/table/functions/systemfunctions/)。
 
-##### SQL
+##### 4.1.3.2 SQL
 Flink SQL基于[Apache Calcite](https://calcite.apache.org/)，它实现了SQL标准。可以将SQL查询作为字符串传递给`TableEnvironment`类的`sqlQuery()`方法，返回一个`Table`对象。或者直接调用`TableEnvironment`类的`executeSql()`方法执行SQL。
 
 下面是使用SQL实现的与上一节中用户订单示例相同的查询操作：
@@ -1272,7 +1272,7 @@ Table userStats = tableEnv.sqlQuery(
 
 Flink SQL语法参见文档[SQL](https://nightlies.apache.org/flink/flink-docs-stable/docs/dev/table/sql/overview/)。
 
-##### 混合Table API和SQL
+##### 4.1.3.3 混合Table API和SQL
 Table API和SQL查询可以很容易地混合使用，因为二者都返回`Table`对象：
 * 可以在SQL查询返回的`Table`对象上调用Table API查询。
 * 可以通过在`TableEnvironment`中注册结果表并在`FROM`子句中引用来对Table API查询的结果执行SQL查询。

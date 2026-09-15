@@ -11,10 +11,10 @@ Blade是腾讯开发的一个开源构建工具，旨在简化大型项目的构
 
 例如，自己的代码依赖A库，A库又依赖B库，如果手动编译则需要写复杂的编译和链接命令，当依赖库代码发生变化时还需要重新编译，构建工具旨在自动化这一过程。
 
-* 项目主页：<https://github.com/chen3feng/blade-build>
-* 官方文档：<https://github.com/chen3feng/blade-build/blob/master/doc/en/README.md>
-* 用户手册：<https://github.com/chen3feng/blade-build/blob/master/doc/blade_user_manual.pdf>
-* 介绍ppt：<https://github.com/chen3feng/blade-build/blob/master/doc/blade.pdf>
+* 项目主页：<https://github.com/blade-build/blade-build>
+* 官方文档：<https://github.com/blade-build/blade-build/blob/master/doc/en/README.md>
+* 用户手册：<https://github.com/blade-build/blade-build/blob/master/doc/blade_user_manual.pdf>
+* 介绍ppt：<https://github.com/blade-build/blade-build/blob/master/doc/blade.pdf>
 
 特性：
 * 自动分析库之间的依赖关系
@@ -25,7 +25,7 @@ Blade是腾讯开发的一个开源构建工具，旨在简化大型项目的构
 ## 2.依赖软件
 Blade需要以下依赖：
 * Linux或macOS操作系统
-* Python 2.7
+* Python 2.7+或3.6+
 * Ninja 1.8+
 
 构建特定语言所需的编译器：
@@ -35,7 +35,12 @@ Blade需要以下依赖：
 
 ## 3.安装
 ### 3.1 安装Python
-Linux或macOS系统默认已经安装了Python 2.7。
+Linux或macOS系统默认已经安装了Python，使用以下命令查看版本：
+
+```shell
+$ python -V
+Python 2.7.17
+```
 
 ### 3.2 安装Ninja
 [Ninja](https://ninja-build.org/)是一个小型构建系统，Blade将其作为底层构建工具使用。
@@ -53,13 +58,13 @@ $ ninja --version
 安装方式：下载源代码，执行install脚本
 
 ```bash
-$ git clone https://github.com/chen3feng/blade-build.git
+$ git clone https://github.com/blade-build/blade-build.git
 $ cd blade-build/
-$ git checkout v2.0
+$ git checkout v2.1.0
 $ ./install
 ```
 
-执行完成后Blade将被安装在~/bin目录下，该目录也被添加到PATH环境变量，执行`source ~/.profile`命令或重启终端使其生效，此时应该能够在命令行中直接执行blade命令：
+执行完成后Blade将被安装在~/bin目录下，该目录也被添加到PATH环境变量，执行`source ~/.profile`命令或重启终端使其生效，此时应该能够在命令行中直接执行`blade`命令：
 
 ```bash
 $ blade -h
@@ -74,7 +79,7 @@ blade <subcommand> [options...] [targets...]
 ## 4.简单示例
 下面使用Blade创建一个Hello World项目。
 
-官方文档：[Quick Start](https://github.com/chen3feng/blade-build/blob/master/doc/en/quick_start.md)
+官方文档：[Quick Start](https://github.com/blade-build/blade-build/blob/master/doc/en/quick_start.md)
 
 ### 4.1 创建工作目录
 首先创建项目根目录blade-demo，并在根目录下创建一个文件BLADE_ROOT和一个子目录quick-start：
@@ -236,7 +241,7 @@ blade-demo/
 注：该示例只有quick-start一个子目录和一个BUILD文件。实际的项目会按模块将文件分为多个不同的子目录，每个子目录下都包含一个BUILD文件。
 
 完整代码：
-* <https://github.com/chen3feng/blade-build/blob/master/example/quick-start>
+* <https://github.com/blade-build/blade-build/blob/master/example/quick-start>
 * <https://github.com/ZZy979/blade-demo/tree/main/quick-start>
 
 ## 5.代码组织结构
@@ -311,11 +316,11 @@ cc_library(
 ### 6.3 构建目标
 Blade支持多种语言，每种语言支持多种构建目标。以下是几种常用的构建目标的语法。
 
-完整列表参考：[Write a BUILD file - Build Rules](https://github.com/chen3feng/blade-build/blob/master/doc/en/build_file.md#build-rules)
+完整列表参考：[Write a BUILD file - Build Rules](https://github.com/blade-build/blade-build/blob/master/doc/en/build_file.md#build-rules)
 
 公共属性：
 * `name`：字符串，指定构建目标的名称，和路径一起构成目标的唯一标识
-* `srcs`：字符串列表，指定源文件，位于当前目录或当前目录的子目录下，可使用[glob](https://github.com/chen3feng/blade-build/blob/master/doc/en/functions.md#glob)函数
+* `srcs`：字符串列表，指定源文件，位于当前目录或当前目录的子目录下，可使用[glob](https://github.com/blade-build/blade-build/blob/master/doc/en/functions.md#glob)函数
 * `hdrs`：字符串列表，指定公共接口头文件
 * `deps`：字符串列表，指定依赖目标，支持以下格式：
   * `//path/to/dir:name`：项目根目录下path/to/dir/BUILD文件中声明的名为name的目标
@@ -404,7 +409,7 @@ resource_library(
 
 ```
 resource_library(
-    name = 'foo',
+    name = 'my_resource',
     srcs = ['a.txt', 'b.txt'],
 )
 ```
@@ -412,10 +417,10 @@ resource_library(
 在resource_demo目录下执行
 
 ```bash
-$ blade build :foo
+$ blade build :my_resource
 ```
 
-将在blade-demo/build64_release/resource_demo目录下生成foo.h、foo.c和libfoo.a。目录结构如下：
+将在blade-demo/build64_release/resource_demo目录下生成my_resource.h、my_resource.c和libmy_resource.a。目录结构如下：
 
 ```
 blade-demo/
@@ -428,12 +433,12 @@ blade-demo/
         resource_demo/
             a.txt.c
             b.txt.c
-            foo.h
-            foo.c
-            libfoo.a
+            my_resource.h
+            my_resource.c
+            libmy_resource.a
 ```
 
-其中，foo.h中声明了变量`RESOURCE_resource_demo_a_txt`和`RESOURCE_resource_demo_b_txt`，分别为a.txt和b.txt的文件内容：
+其中，my_resource.h中声明了变量`RESOURCE_resource_demo_a_txt`和`RESOURCE_resource_demo_b_txt`，分别为a.txt和b.txt的文件内容：
 
 ```c
 // a.txt
@@ -468,7 +473,7 @@ const unsigned int RESOURCE_resource_demo_b_txt_len = 6;
 #include <iostream>
 #include <string>
 
-#include "resource_demo/foo.h"
+#include "resource_demo/my_resource.h"
 
 int main() {
     std::string a(RESOURCE_resource_demo_a_txt, RESOURCE_resource_demo_a_txt_len);
@@ -482,7 +487,7 @@ int main() {
 cc_binary(
     name = 'test',
     srcs = 'test.cc',
-    deps = '//resource_demo:foo',
+    deps = '//resource_demo:my_resource',
 )
 ```
 
@@ -536,7 +541,7 @@ maven_jar(
 java_library(
     name = 'Foo',
     srcs = ['Foo.java', 'Bar.java', ...],
-    resources = ['resources/foo.conf', ...],
+    resources = ['conf/foo.conf', ...],
     deps = [':name', '//path/to/dir:name', ...],
     exported_deps = [':name', '//path/to/dir:name', ...],
     provided_deps = [':name', '//path/to/dir:name', ...],
@@ -549,15 +554,20 @@ java_library(
 * `provided_deps`：字符串列表，指定**由运行环境提供**的依赖（例如Hadoop、Spark等）
   * 如果当前目标被`java_binary`、`java_test`、`java_fat_library`或`scala_fat_library`目标依赖或传递依赖，则`provided_deps`及其上游依赖不会被打包进上述目标中。
 
-生成的jar文件名为{name}.jar，仅包含类文件，**不包含依赖**。`srcs`和`resources`支持[glob](https://github.com/chen3feng/blade-build/blob/master/doc/en/functions.md#glob)函数。三种依赖的区别详见6.3.3.6节。
+生成的jar文件名为{name}.jar，仅包含类文件，**不包含依赖**。`srcs`和`resources`支持[glob](https://github.com/blade-build/blade-build/blob/master/doc/en/functions.md#glob)函数。三种依赖的区别详见6.3.3.6节。
 
 `resources`属性中的资源文件路径可以是字符串或二元组：
 
 | 资源文件路径 | jar内路径 |
 | --- | --- |
-| `'resources/foo.conf'` | resources/foo.conf |
+| `'conf/foo.conf'` | conf/foo.conf |
+| `'resources/foo.conf'` | foo.conf |
 | `'//path/to/foo.conf'` | path/to/foo.conf |
 | `('//path/to/foo.conf', 'conf/foo.conf')` | conf/foo.conf |
+
+注意：
+* 不支持指定整个目录，但可以使用`glob()`函数，例如`resources = glob(['conf/*'])`。
+* 特殊处理：`resources`属性会剔除 "resources/" 前缀（见[java_targets.py](https://github.com/blade-build/blade-build/blob/master/src/blade/java_targets.py) `_java_resource_jar_path()`），因此资源文件路径`'resources/foo.conf'`对应JAR中的路径为foo.conf。
 
 ##### 6.3.3.3 java_binary
 从Java源代码构建可执行jar文件，包含依赖。语法：
@@ -566,7 +576,7 @@ java_library(
 java_binary(
     name = 'Foo',
     srcs = ['Foo.java', 'Bar.java', ...],
-    resources = ['resources/foo.conf', ...],
+    resources = ['conf/foo.conf', ...],
     deps = [':name', '//path/to/dir:name', ...],
     main_class = 'foo.Foo',
     exclusions = ['org.slf4j:*:*', 'org.apache.hadoop:*:*', ...],
@@ -595,7 +605,7 @@ java_binary_config(
 java_fat_library(
     name = 'Foo',
     srcs = ['Foo.java', 'Bar.java', ...],
-    resources = ['resources/foo.conf', ...],
+    resources = ['conf/foo.conf', ...],
     deps = [':name', '//path/to/dir:name', ...],
     exclusions = ['org.slf4j:*:*', 'org.apache.hadoop:*:*', ...],
 )
@@ -614,7 +624,7 @@ java_fat_library(
 java_test(
     name = 'FooTest',
     srcs = ['FooTest.java', ...],
-    resources = ['resources/foo.conf', ...],
+    resources = ['conf/foo.conf', ...],
     deps = [':Foo', ...],
     exclusions = ['org.slf4j:*:*', 'org.apache.hadoop:*:*', ...],
     testdata = ['data1.txt', '//path/to/data2.txt'],
@@ -806,7 +816,7 @@ Scala构建目标和Java构建目标基本一致，但没有`scala_binary`。
 scala_library(
     name = 'Foo',
     srcs = ['Foo.scala', 'Bar.scala', ...],
-    resources = ['resources/foo.conf', ...],
+    resources = ['conf/foo.conf', ...],
     deps = [':name', '//path/to/dir:name', ...],
     exported_deps = [':name', '//path/to/dir:name', ...],
     provided_deps = [':name', '//path/to/dir:name', ...],
@@ -820,7 +830,7 @@ scala_library(
 scala_fat_library(
     name = 'Foo',
     srcs = ['Foo.scala', 'Bar.scala', ...],
-    resources = ['resources/foo.conf', ...],
+    resources = ['conf/foo.conf', ...],
     deps = [':name', '//path/to/dir:name', ...],
     exclusions = ['org.slf4j:*:*', 'org.apache.hadoop:*:*', ...],
 )
@@ -833,7 +843,7 @@ scala_fat_library(
 scala_test(
     name = 'FooTest',
     srcs = ['FooTest.scala', ...],
-    resources = ['resources/foo.conf', ...],
+    resources = ['conf/foo.conf', ...],
     deps = [':Foo', ...],
     exclusions = ['org.slf4j:*:*', 'org.apache.hadoop:*:*', ...],
     testdata = ['data1.txt', '//path/to/data2.txt'],
@@ -1214,18 +1224,18 @@ gen_rule(
 
 执行命令的工作目录是项目根目录。如果最后没有生成`outs`指定的文件则报错。
 
-例如，在子目录foo中有a.txt和b.txt两个文件：
+例如，在子目录custom_rule_demo中有a.txt和b.txt两个文件：
 
 ```
 blade-demo/
     BLADE_ROOT
-    foo/
+    custom_rule_demo/
         BUILD
         a.txt
         b.txt
 ```
 
-a.txt和b.txt的内容分别为“123”和“abc”，BUILD文件包含一个自定义规则——通过拼接a.txt和b.txt生成c.txt：
+a.txt和b.txt的内容分别为 "123" 和 "abc" ，BUILD文件包含一个自定义规则——通过拼接a.txt和b.txt生成c.txt：
 
 ```
 gen_rule(
@@ -1237,18 +1247,18 @@ gen_rule(
 )
 ```
 
-在foo目录下执行
+在custom_rule_demo目录下执行
 
 ```bash
 $ blade build :c
 Blade(info): Building...
-[1/1] CAT //foo:c
+[1/1] CAT //custom_rule_demo:c
 Blade(info): Build success.
 Blade(info): Cost time 0.199s
 
 $ alt
 $ pwd
-.../blade-demo/build64_release/foo
+.../blade-demo/build64_release/custom_rule_demo
 $ cat c.txt
 123
 abc
@@ -1256,19 +1266,19 @@ abc
 
 在这个示例中，各变量的值如下：
 ```
-$SRCS = "foo/a.txt foo/b.txt"
-$OUTS = "build64_release/foo/c.txt"
-$FIRST_SRC = "foo/a.txt"
-$FIRST_OUT = "build64_release/foo/c.txt"
-$SRC_DIR = "foo"
-$OUT_DIR = "build64_release/foo"
+$SRCS = "custom_rule_demo/a.txt custom_rule_demo/b.txt"
+$OUTS = "build64_release/custom_rule_demo/c.txt"
+$FIRST_SRC = "custom_rule_demo/a.txt"
+$FIRST_OUT = "build64_release/custom_rule_demo/c.txt"
+$SRC_DIR = "custom_rule_demo"
+$OUT_DIR = "build64_release/custom_rule_demo"
 $BUILD_DIR = "build64_release"
 ```
 
-另外，也可以使用[扩展机制](https://github.com/chen3feng/blade-build/blob/master/doc/en/build_rules/extension.md)来创建自定义构建规则。
+另外，也可以使用[扩展机制](https://github.com/blade-build/blade-build/blob/master/doc/en/build_rules/extension.md)来创建自定义构建规则。
 
 ## 7.命令行参考
-官方文档：[Command Line](https://github.com/chen3feng/blade-build/blob/master/doc/en/command_line.md)
+官方文档：[Command Line](https://github.com/blade-build/blade-build/blob/master/doc/en/command_line.md)
 
 Blade命令行语法：
 
@@ -1322,7 +1332,7 @@ blade build //common/...
 ```
 
 ## 8.测试
-官方文档：[Testing Support](https://github.com/chen3feng/blade-build/blob/master/doc/en/test.md)
+官方文档：[Testing Support](https://github.com/blade-build/blade-build/blob/master/doc/en/test.md)
 
 Blade为每种语言都提供了测试支持，分别使用不同的测试框架（但官方文档缺少详细的说明）。
 
@@ -1453,14 +1463,24 @@ GoogleTest的用法参考：[GoogleTest使用教程]({% post_url 2022-10-06-goog
 Java测试使用`java_test`目标来定义，底层使用[JUnit](https://junit.org/)框架。
 
 #### 8.2.1 配置JUnit
-虽然BLADE_ROOT支持`java_test_config.junit_libs`配置，但经过测试，该配置并不起作用，因此每个`java_test`必须显式地依赖JUnit库。可以在thirdparty目录下使用`maven_jar`声明JUnit库：
+虽然BLADE_ROOT支持`java_test_config.junit_libs`配置，但该配置在Blade 2中并不起作用，因此每个`java_test`必须显式地依赖JUnit库。
 
-thirdparty/junit/BUILD
+可以在thirdparty目录中使用`maven_jar`声明JUnit库：
+
+thirdparty/java/BUILD
 
 ```
 maven_jar(
   name = 'junit4',
   id = 'junit:junit:4.13.2',
+)
+```
+
+v3.0.0版本修复了这个问题（见[#1101](https://github.com/blade-build/blade-build/pull/1101)），可以直接在BLADE_ROOT中添加以下配置：
+
+```
+java_test_config(
+    junit_libs = '//thirdparty/java:junit4',
 )
 ```
 
@@ -1519,7 +1539,7 @@ java_test(
     srcs = 'FactorialTest.java',
     deps = [
         ':FactorialJava',
-        '//thirdparty/junit:junit4',
+        '//thirdparty/java:junit4',
     ],
 )
 ```
@@ -1544,34 +1564,29 @@ Scala测试使用`scala_test`目标来定义，底层使用[ScalaTest](https://w
 #### 8.3.1 配置ScalaTest
 在thirdparty目录下声明ScalaTest及其依赖的scala-xml库：
 
-thirdparty/scalatest/BUILD
-
-```
-java_library(
-    name = 'scalatest_2.13',
-    prebuilt = True,
-    binary_jar = '/home/zzy/.m2/repository/org/scalatest/scalatest-app_2.13/3.2.15/scalatest-app_2.13-3.2.15.jar',
-)
-```
-
-其中 "2.13" 是Scala版本，"3.2.15" 是ScalaTest版本。
-
-thirdparty/scala/BUILD
+thirdparty/java/BUILD
 
 ```
 maven_jar(
     name = 'scala-xml_2.13',
     id = 'org.scala-lang.modules:scala-xml_2.13:2.1.0',
 )
+
+maven_jar(
+    name = 'scalatest_2.13',
+    id = 'org.scalatest:scalatest-app_2.13:3.2.15',
+)
 ```
+
+其中 "2.13" 是Scala版本，"3.2.15" 是ScalaTest版本。
 
 之后在BLADE_ROOT中添加：
 
 ```
 scala_test_config(
     scalatest_libs = [
-        '//thirdparty/scala:scala-xml_2.13',
-        '//thirdparty/scalatest:scalatest_2.13',
+        '//thirdparty/java:scala-xml_2.13',
+        '//thirdparty/java:scalatest_2.13',
     ],
 )
 ```
@@ -1643,7 +1658,7 @@ Blade(info): [1/0/1] Test //test_demo:FactorialScalaTest finished : SUCCESS
 ```
 
 注意：
-* 必须配置`java_config.java_home`和`scala_config.scala_home`，否则运行Scala测试会报错（Blade自动生成的测试命令中包含 "java" 和 "scala"，但如果没有配置`java_home`和`scala_home`，Blade会将项目根目录拼接到这两个命令前面，见[builtin_tools.py](https://github.com/chen3feng/blade-build/blob/master/src/blade/builtin_tools.py) `generate_scala_test()`）。
+* 必须配置`java_config.java_home`和`scala_config.scala_home`，否则运行Scala测试会报错（Blade自动生成的测试命令中包含 "java" 和 "scala"，但如果没有配置`java_home`和`scala_home`，Blade会将项目根目录拼接到这两个命令前面，见[builtin_tools.py](https://github.com/blade-build/blade-build/blob/master/src/blade/builtin_tools.py) `generate_scala_test()`）。
 
 ### 8.4 Python - unittest
 Python测试使用`py_test`目标来定义，底层使用标准库自带的[unittest](https://docs.python.org/3/library/unittest.html)模块。
@@ -1722,7 +1737,7 @@ OK
 ```
 
 ## 9.配置文件
-官方文档：[Configuration file](https://github.com/chen3feng/blade-build/blob/master/doc/en/config.md)
+官方文档：[Configuration file](https://github.com/blade-build/blade-build/blob/master/doc/en/config.md)
 
 ## 10.IDE支持
 详见：[Blade项目的IDE支持]({% post_url 2023-04-25-blade-project-ide-support %})
