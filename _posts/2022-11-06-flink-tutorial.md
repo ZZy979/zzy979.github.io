@@ -1398,7 +1398,7 @@ DataStream<Row> resultStream = tableEnv.toDataStream(resultTable);
 | `+U` | `UPDATE_AFTER` | 更新操作（新值） |
 | `-D` | `DELETE` | 删除操作 |
 
-在上面的例子中没有聚合操作，因此输出只包含`+I`类型的记录。但是在很多情况下，将`Table`转换为`DataStream`时不仅会产生插入，还会产生更新。在这种情况下，使用`toDataStream()`会导致异常：
+在上面的例子中没有聚合操作，因此输出只包含`+I`类型的记录(insert-only)。但是在很多情况下，将`Table`转换为`DataStream`时不仅会产生插入，还会产生更新。在这种情况下，使用`toDataStream()`会导致异常：
 
 ```
 Table sink 'xxx' doesn't support consuming update changes which is produced by ...
@@ -1406,9 +1406,31 @@ Table sink 'xxx' doesn't support consuming update changes which is produced by .
 
 在这种情况下，需要使用`toChangelogStream()`。
 
-下面的示例展示了如何转换可更新表（相对于Insert-only）。结果中的每一行都表示一个更新操作（其类型可通过`row.getKind()`得到），称为**changelog流**。在这个例子中，`SUM(score)`计算的是**前缀和**。Alice的第一条记录产生一个插入操作`+I[Alice, 12]`；第二条记录则会产生两个更新操作：更新前`-U[Alice, 12]`和更新后`+U[Alice, 112]`。
+下面的示例展示了如何转换可更新表（updating，相对于insert-only）。结果中的每一行都表示一个更新操作（其类型可通过`row.getKind()`得到），称为**changelog流**。在这个例子中，`SUM(score)`计算的是**前缀和**。Alice的第一条记录产生一个插入操作`+I[Alice, 12]`；第二条记录则会产生两个更新操作：更新前`-U[Alice, 12]`和更新后`+U[Alice, 112]`。
 
 [ChangelogStream-Table转换](https://github.com/ZZy979/flink-tutorial/blob/main/src/main/java/com/example/table/ChangelogStreamTableConversion.java)
+
+输出结果如下：
+
+```
++I[Bob, 10]
++I[Alice, 12]
+-U[Alice, 12]
++U[Alice, 112]
+```
+
+Q：changelog流可以输出到什么样的sink表？
+
+A：输出changelog流的sink表必须是可更新的。
+* 消息队列：以upsert模式输出。例如，[upsert-kafka](https://nightlies.apache.org/flink/flink-docs-stable/docs/connectors/table/upsert-kafka/) connector会将`+I`和`+U`作为正常Kafka消息写入，`-D`作为空值消息写入。
+* 关系型数据库：如果数据库表定义了主键（对应changelog流的key），则以upsert模式输出，否则以insert-only模式输出。对于MySQL数据库，`+I`和`+U`表达为语句`INSERT .. ON DUPLICATE KEY UPDATE ..`。
+* 文件系统：取决于文件格式支持的模式（见`FileSystemTableSink.getChangelogMode()`）。例如，CSV格式只支持insert-only模式，输出`+U`记录会报错。
+
+Q：changelog流输出的记录下游如何使用？
+
+A：取决于输出表的类型和业务逻辑。
+* 消息队列：下游消费者需要自己实现upsert逻辑（例如，每读取到一条消息就用新值覆盖缓存中的旧值）。
+* 关系型数据库：只要支持upsert模式，表中每个key始终只有一行最新值，下游直接查询即可。
 
 上面的示例展示了Table API如何通过持续地为每条输入记录输出更新操作来**增量地**计算最终结果（底层原理是动态表，将在下一节介绍）。这使得Table API和SQL也能够处理无界流。然而，在输入流是有界的情况下，利用批处理可以更高效地计算结果。
 
@@ -1419,9 +1441,24 @@ StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironm
 // set the batch runtime mode
 env.setRuntimeMode(RuntimeExecutionMode.BATCH);
 
+// uncomment this for streaming mode
+// env.setRuntimeMode(RuntimeExecutionMode.STREAMING);
+
 // setup Table API
 // the table environment adopts the runtime mode during initialization
 StreamTableEnvironment tableEnv = StreamTableEnvironment.create(env);
+
+// define the same pipeline as above
+
+// prints in BATCH mode:
+// +I[Bob, 10]
+// +I[Alice, 112]
+
+// prints in STREAMING mode:
+// +I[Alice, 12]
+// +I[Bob, 10]
+// -U[Alice, 12]
+// +U[Alice, 112]
 ```
 
 ### 4.3 动态表
@@ -1537,16 +1574,32 @@ Table clickTable = tableEnv.fromDataStream(clickStream, schema);
 
 #### 4.3.3 动态表转换为流
 动态表包含`INSERT`、`UPDATE`和`DELETE`操作。将动态表转换为流或写入外部系统时，需要对这些操作进行编码。Flink的Table API和SQL支持三种编码方式：
-* **Append-only流**：仅包含`INSERT`操作，可以通过输出插入的行转换为流。
-* **Retract流**：包含add和retract两种类型消息的流。通过将`INSERT`编码为add消息、将`DELETE`编码为retract消息、将`UPDATE`编码为旧值的retract消息以及新值的add消息，从而将动态表转换为retract流（如下图所示）。
+* **Append-only流**：仅包含`INSERT`操作，可以通过输出插入的行(`+I`)转换为流。
+* **Retract流**：包含add和retract两种类型消息的流。通过将`INSERT`编码为add消息(`+I`)、将`DELETE`编码为retract消息(`-D`)、将`UPDATE`编码为旧值的retract消息(`-U`)以及新值的add消息(`+U`)，从而将动态表转换为retract流（如下图所示）。
 
 ![动态表转换为retract流](/assets/images/flink-tutorial/动态表转换为retract流.png)
 
-* **Upsert流**：包含upsert和delete两种消息的流。将动态表转换为upsert流需要一个唯一键，通过将`INSERT`和`UPDATE`编码为upsert消息、将`DELETE`编码为delete消息实现转换（如下图所示）。与retract流的主要区别在于`UPDATE`编码为单条消息，因此效率更高。
+* **Upsert流**：包含upsert和delete两种消息的流。将动态表转换为upsert流需要一个唯一键（可能是复合的），通过将`INSERT`和`UPDATE`编码为upsert消息(`+I`/`+U`)、将`DELETE`编码为delete消息(`-D`)实现转换（如下图所示）。与retract流的主要区别在于`UPDATE`编码为单条消息，因此效率更高。
 
 ![动态表转换为upsert流](/assets/images/flink-tutorial/动态表转换为upsert流.png)
 
 注意，在将动态表转换为`DataStream`时，只支持append-only和retract流。
+
+注：
+* 在早期的Flink版本中，append-only和retract两种编码方式分别对应`StreamTableEnvironment`类的`toAppendStream()`和`toRetractStream()`方法（不存在`toUpsertStream()`方法）。现在分别被`toDataStream()`和`toChangelogStream()`取代。
+* `ChangelogMode`类表示changelog流可包含的记录类型(`RowKind`)：
+
+| `ChangelogMode` | `+I` | `-U` | `+U` | `-D` |
+| --- | --- | --- | --- | --- |
+| `INSERT_ONLY` | √ | × | × | × |
+| `UPSERT` | √ | × | √ | √ |
+| `ALL` | √ | √ | √ | √ |
+
+这三种模式分别对应三种流类型：append-only、upsert和retract。
+
+* `ChangelogMode`主要有两种用途：
+  * `DynamicTableSink`接口的实现类通过`getChangelogMode()`方法指定sink表接受的记录类型。
+  * `StreamTableEnvironment.toChangelogStream()`方法通过可选的`ChangelogMode`参数指定结果流可包含的记录类型。
 
 ## 参考文档
 ### 基本概念
