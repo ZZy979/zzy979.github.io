@@ -356,13 +356,13 @@ $$
 
 对于二维网格中的每个单元格，`main()`函数计算多边形ABCD的四个顶点在图像画布上的坐标，其中B对应(i, j)，然后打印一条SVG指令`<polygon>`来绘制它（注：这意味着输出的图形不包含任何曲线，而是由直线段构成的）。
 
-练习3.1 如果函数`f`返回的`float64`值是无穷大，SVG文件将包含无效的`<polygon>`元素（尽管许多SVG渲染器能够处理这类问题）。修改程序跳过无效的多边形。
+[练习3.1](https://github.com/ZZy979/gopl.io/blob/main/ch3/exec3-1/main.go) 如果函数`f`返回的`float64`值是无穷大，SVG文件将包含无效的`<polygon>`元素（尽管许多SVG渲染器能够处理这类问题）。修改程序跳过无效的多边形。
 
-练习3.2 尝试`math`包中其他函数的可视化。例如[鸡蛋盒](https://mathcurve.com/surfaces.gb/boiteaoeufs/boiteaoeufs.shtml)(egg box) ($z = \sin x + \sin y$)、雪丘(moguls) ($z = \sin x\sin y$)、[马鞍面](https://mathcurve.com/surfaces.gb/paraboloidhyperbolic/paraboloidhyperbolic.shtml)(saddle) ($z = x^2 - y^2$)等。
+[练习3.2](https://github.com/ZZy979/gopl.io/blob/main/ch3/exec3-1/main.go) 尝试其他函数的可视化。例如[鸡蛋盒](https://mathcurve.com/surfaces.gb/boiteaoeufs/boiteaoeufs.shtml)(egg box) ($z = \sin x + \sin y$)、雪丘(moguls) ($z = \sin x\sin y$)、[马鞍面](https://mathcurve.com/surfaces.gb/paraboloidhyperbolic/paraboloidhyperbolic.shtml)(saddle) ($z = x^2 - y^2$)等。
 
-练习3.3 根据高度给多边形着色，使峰顶为红色(`#ff0000`)，谷底为蓝色(`#0000ff`)。
+[练习3.3](https://github.com/ZZy979/gopl.io/blob/main/ch3/exec3-1/main.go) 根据高度给多边形着色，使峰顶为红色(`#ff0000`)，谷底为蓝色(`#0000ff`)。
 
-练习3.4 按照1.7节中Lissajous示例的方法，构建一个web服务器，计算曲面并返回SVG数据给客户端。服务器必须设置`Content-Type`标头：
+[练习3.4](https://github.com/ZZy979/gopl.io/blob/main/ch3/exec3-1/main.go) 按照1.7节中Lissajous示例的方法，构建一个web服务器，计算曲面并返回SVG数据给客户端。服务器必须设置`Content-Type`标头：
 
 ```go
 w.Header().Set("Content-Type", "image/svg+xml")
@@ -407,7 +407,7 @@ fmt.Println(cmplx.Sqrt(-1)) // "(0+1i)"
 
 ![曼德勃罗集](/assets/images/gopl-note-ch03-basic-data-types/mandelbrot.png)
 
-练习3.5 实现彩色曼德勃罗集，使用函数`image.NewRGBA()`创建图像，使用类型`color.RGBA`或`color.YCbCr`表示颜色。
+[练习3.5](https://github.com/ZZy979/gopl.io/blob/main/ch3/exec3-5/main.go) 实现彩色曼德勃罗集，使用函数`image.NewRGBA()`创建图像，使用类型`color.RGBA`或`color.YCbCr`表示颜色。
 
 练习3.6 超级采样(supersampling)是一种抗锯齿技术，计算每个像素内几个点的颜色值并取平均值。最简单的方法是将每个像素划分为四个“子像素”。实现这种方法。
 
@@ -775,11 +775,11 @@ s2 := string(b)
 
 `bytes.Buffer`类型用途极其广泛。在第7章讨论接口时将会看到，它可以充当I/O函数需要的字节接收器(`io.Writer`)（例如上面的`Fprintf()`）或字节源(`io.Reader`)。
 
-练习3.10 使用`bytes.Buffer`而不是字符串拼接编写非递归版本的`comma`。
+[练习3.10](https://github.com/ZZy979/gopl.io/blob/main/ch3/exec3-10/comma.go) 使用`bytes.Buffer`而不是字符串拼接编写非递归版本的`comma`。
 
-练习3.11 修改`comma`使其正确处理浮点数和可选的正负号。
+[练习3.11](https://github.com/ZZy979/gopl.io/blob/main/ch3/exec3-10/comma.go) 修改`comma`使其正确处理浮点数和可选的正负号。
 
-练习3.12 编写一个函数，判断两个字符串是否互为变位词，即以不同的顺序包含相同的字母。
+[练习3.12](https://github.com/ZZy979/gopl.io/blob/main/ch3/exec3-12/anagram.go) 编写一个函数，判断两个字符串是否互为变位词(anagram)，即以不同的顺序包含相同的字母。
 
 ### 3.5.5 字符串和数字转换
 通常需要在数值和字符串之间进行转换，为此可以使用`strconv`包中的函数。
@@ -931,7 +931,7 @@ const (
 
 不过`iota`机制也有局限性。例如，无法生成1000的幂（KB、MB等），因为没有幂运算符。
 
-练习3.13 编写KB、MB直到YB的常量声明，尽可能地紧凑。
+[练习3.13](https://github.com/ZZy979/gopl.io/blob/main/ch3/exec3-13/consts.go) 编写KB、MB直到YB的常量声明，尽可能地紧凑。
 
 ### 3.6.2 无类型常量
 Go语言的常量有点不同寻常。尽管常量可以具有任意基本数据类型（如`int`或`float64`），但未明确指定类型、用字面值初始化的常量称为**无类型常量**(untyped constant)（例如前面的`KiB`、`MiB`等）。无类型常量具有比基本类型的值高得多的算术精度，可以假定至少有256位精度。无类型常量有6种“风格”(flavor)：布尔值、整数、浮点数、复数、rune和字符串。
