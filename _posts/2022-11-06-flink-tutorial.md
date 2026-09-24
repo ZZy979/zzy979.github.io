@@ -332,25 +332,30 @@ source算子（`StreamExecutionEnvironment`类的方法）
 * `fromElements()`：从指定元素创建流
 * `fromCollection()`：从指定集合创建流
 * `fromSequence()`：从整数区间创建流
-* `readTextFile()`：读取文本文件，每行作为一个元素
+* `readFile()`/`readTextFile()`：读取文件（已弃用），应使用flink-connector-files的[File Source](https://nightlies.apache.org/flink/flink-docs-stable/docs/connectors/datastream/filesystem/#file-source)
 * `socketTextStream()`：从套接字读取数据，使用指定的分隔符
 * `addSource()`：使用自定义`SourceFunction`
+* `fromSource()`：使用自定义[Data Source API](https://nightlies.apache.org/flink/flink-docs-stable/docs/internals/sources/#the-data-source-api)
 
 转换算子（`DataStream`及其子类的方法）
 * `map()`：元素一对一映射
 * `flatMap()`：元素一对n映射
 * `filter()`：按指定的条件过滤元素
 * `keyBy()`：按指定的key分组
-* `reduce()`：对已分组的流进行聚合
+* `window()`：对已分组的流划分时间窗口
+* `reduce()`：对已分组或划分窗口的流进行聚合
+* `apply()`/`process()`：自定义处理逻辑
 * `union()`：合并多个流
+* `join()`：关联两个流
+* `connect()`：连接两个流
+* `broadcast()`：广播流
 
 sink算子（`DataStream`及其子类的方法）
 * `print()`：将每个元素打印到标准输出流
-* `writeAsText()`：写入文本文件，每个元素占一行
-* `writeAsCsv()`：写入CSV文件
+* `writeAsText()`/`writeAsCsv()`：写入文件（已弃用），应使用[Streaming File Sink](https://nightlies.apache.org/flink/flink-docs-release-1.13/docs/connectors/datastream/streamfile_sink/)或者flink-connector-files的[File Sink](https://nightlies.apache.org/flink/flink-docs-stable/docs/connectors/datastream/filesystem/#file-sink)
 * `writeToSocket()`：写入套接字
 * `addSink()`：使用自定义`SinkFunction`
-  * 输出到文件：[FileSink](https://nightlies.apache.org/flink/flink-docs-stable/docs/connectors/datastream/filesystem/#file-sink)
+* `sinkTo()`：使用[Data Sink API](https://nightlies.apache.org/flink/flink-docs-stable/docs/internals/sinks/#the-data-sink-api)
 
 完整列表参考：
 * [DataStream API](https://nightlies.apache.org/flink/flink-docs-stable/docs/dev/datastream/overview/)
@@ -1583,7 +1588,7 @@ Table clickTable = tableEnv.fromDataStream(clickStream, schema);
 
 ![动态表转换为upsert流](/assets/images/flink-tutorial/动态表转换为upsert流.png)
 
-注意，在将动态表转换为`DataStream`时，只支持append-only和retract流。
+注意，在将动态表转换为`DataStream`时，只支持append-only和retract流（因为upsert流需要知道key才能正确更新，而Flink难以自动推断这个key）。
 
 注：
 * 在早期的Flink版本中，append-only和retract两种编码方式分别对应`StreamTableEnvironment`类的`toAppendStream()`和`toRetractStream()`方法（不存在`toUpsertStream()`方法）。现在分别被`toDataStream()`和`toChangelogStream()`取代。
