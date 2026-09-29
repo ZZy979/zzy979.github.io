@@ -35,7 +35,9 @@ render_with_liquid: false
 'Hello, Mars! Dusty enough for ya?'
 ```
 
-详见官方文档[Template strings](https://docs.python.org/3/library/string.html#template-strings)。
+详见官方文档[Template strings](https://docs.python.org/3/library/string.html#template-strings-strings)。
+
+注：另见Python 3.14新增的[t-strings](https://docs.python.org/3/builtins/stdtypes.html#stdtypes-tstrings)和[string.templatelib](https://docs.python.org/3/library/string.templatelib.html)模块。
 
 编写新代码时，应选择使用**字符串方法`format()`**，它结合并扩展了早期方法的优点。每个替换字段都用花括号括起来，其中可能包含名称和格式化信息。
 

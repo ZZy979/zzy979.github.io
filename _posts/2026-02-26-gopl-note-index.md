@@ -14,7 +14,7 @@ tags: [go]
 * [第1章 入门]({% post_url 2026-02-26-gopl-note-ch01-tutorial %})
 * [第2章 程序结构]({% post_url 2026-05-23-gopl-note-ch02-program-structure %})
 * [第3章 基本数据类型]({% post_url 2026-06-24-gopl-note-ch03-basic-data-types %})
-* 第4章 复合类型
+* [第4章 复合类型]({% post_url 2026-08-25-gopl-note-ch04-composite-types %})
 * 第5章 函数
 * 第6章 方法
 * 第7章 接口

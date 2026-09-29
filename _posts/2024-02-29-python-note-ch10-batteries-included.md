@@ -2,7 +2,7 @@
 title: 《Python基础教程》笔记 第10章 自带电池
 date: 2024-02-29 22:00:08 +0800
 categories: [Python, Beginning Python]
-tags: [python, module, package, pip, command-line argument, file access, set, priority queue, queue, date and time, random number, json, regular expression]
+tags: [python, module, package, pip, command-line argument, file access, set, priority queue, queue, date and time, random number, json, regular expression, template]
 math: true
 ---
 Python不仅核心语言非常强大，还提供了更多工具以供使用。标准安装包含一组称为**标准库**(standard library)的模块。本章简要介绍模块的工作原理，然后概述标准库，重点介绍几个很有用的模块。
@@ -319,7 +319,7 @@ test a is this
 
 除此之外，`os`及其子模块`os.path`还包含一些查看、创建和删除目录和文件的函数，以及一些操作路径的函数（例如`os.path.join()`和`os.path.split()`）。另外，`pathlib`模块提供了面向对象的路径操作接口。
 
-提示：`subprocess`模块融合了`os.system()`、`execv()`和`popen()`函数的功能。
+提示：`subprocess`模块融合了`os.system()`、`execv()`和`popen()`函数的功能。`shutil`模块提供了高层级文件操作（拷贝、移动、删除等）。
 
 ### 10.3.3 fileinput
 第11章将深入介绍如何读写文件，这里先做个预览。`fileinput`模块让你能够轻松地遍历一系列文本文件中的所有行。

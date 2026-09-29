@@ -205,6 +205,7 @@ input := bufio.NewScanner(os.Stdin)
 | `%c` | rune（Unicode码点） |
 | `%s` | 字符串 |
 | `%q` | 带引号的字符串或rune |
+| `%p` | 指针 |
 | `%v` | 以默认格式打印任何值 |
 | `%T` | 值的类型 |
 | `%%` | 百分号 |

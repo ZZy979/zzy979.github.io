@@ -2,7 +2,7 @@
 title: 《Java核心技术》笔记 卷II 第10章 安全
 date: 2025-08-26 23:16:43 +0800
 categories: [Java, Core Java]
-tags: [java, class loader, authentication, jaas, message digest, sha1, encryption, aes, rsa]
+tags: [java, class loader, authentication, jaas, message digest, sha, cryptography, aes, rsa]
 ---
 安全一直是Java的设计者和使用者所关心的一个主要问题。安全机制是Java不可分割的一部分。安全架构由三部分组成：
 * 语言和虚拟机设计特性（数组边界检查、无未经检查的类型转换、无指针算术等）。
@@ -347,7 +347,7 @@ java -Djava.security.auth.login.config=jaas/jaas.config jaas.JAASTest
 在过去的50年里，数学家和计算机学家已经开发出了复杂的算法，用于确保数据的完整性和创建电子签名。`java.security`包包含许多这类算法的实现。在下面几节中，将介绍消息摘要是如何检测数据文件中的更改，以及数字签名是如何证明签名者的身份的。
 
 ### 10.3.1 消息摘要
-**消息摘要**(message digest)是数据块的数字指纹。例如，SHA-1 (Secure Hash Algorithm #1)可以将任意长度的数据块压缩为160位（20字节）的序列。人们希望任何两条不同的消息都不会有相同的SHA-1指纹。当然，这是不可能是，因为只有2<sup>160</sup>个SHA-1指纹。但是2<sup>160</sup>太大了，碰撞的概率微乎其微。
+**消息摘要**(message digest)是数据块的数字指纹。例如，SHA-1 (Secure Hash Algorithm #1)可以将任意长度的数据块压缩为160位（20字节）的序列。人们希望任何两条不同的消息都不会有相同的SHA-1指纹。当然，这是不可能的，因为只有2<sup>160</sup>个SHA-1指纹。但是2<sup>160</sup>太大了，碰撞的概率微乎其微。
 
 消息摘要有两个基本属性：
 * 如果数据的1位或几位发生改变，那么消息摘要也（几乎）一定会改变。

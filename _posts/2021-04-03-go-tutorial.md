@@ -2,7 +2,7 @@
 title: Go语言入门教程
 date: 2021-04-03 10:55 +0800
 categories: [Go]
-tags: [go, hello world, package, module, error handling, slice, map, unit test, generic programming, database, mysql, http, restful]
+tags: [go, hello world, package, module, error handling, slice, map, unit test, generic programming, database, mysql, http, restful, template]
 render_with_liquid: false
 ---
 ## 1.简介
