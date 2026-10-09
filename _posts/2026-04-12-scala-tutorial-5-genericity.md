@@ -342,3 +342,143 @@ val error = moreAnimals.prepend(catsFromAntarctica) // NonEmptyList[Object]
 | 不变`A` | √ | √ |
 | 协变`+A` | × | √ |
 | 逆变`-A` | √ | × |
+
+### 5.4.3 上下文边界
+<https://docs.scala-lang.org/scala3/book/ca-context-bounds.html>
+
+在许多情况下，不必显式定义隐式参数的名字，只需提供参数类型即可。
+
+例如，假设`maxElement()`方法返回一个集合中的最大值：
+
+```scala
+def maxElement[A](as: List[A])(implicit ord: Ord[A]): A = {
+  as.reduceLeft(max(_, _)(ord))
+}
+
+val nums = List(1, 2, 3, 4, 5)
+implicit val ord: Ord[Int] = (x, y) => x > y
+println(maxElement(nums))
+```
+
+该方法只接受一个`Ord[A]`类型的隐式参数，只是为了将其传递给`max()`方法。`Ord`和`max()`的定义如下：
+
+```scala
+/** Defines how to compare values of type `A` */
+trait Ord[A] {
+  def greaterThan(a1: A, a2: A): Boolean
+}
+
+/** Returns the maximum of two values */
+def max[A](a1: A, a2: A)(implicit ord: Ord[A]): A = {
+  if (ord.greaterThan(a1, a2)) a1 else a2
+}
+```
+
+注：Scala集合框架使用特质`scala.math.Ordering`比较元素，它扩展了Java的`Comparator`接口。例如，`List[T]`的`max`和`sorted`方法接受一个`Ordering[T]`类型的隐式参数。
+
+在`maxElement()`中调用`max()`方法时，可以省略隐式参数`ord`：
+
+```scala
+def maxElement[A](as: List[A])(implicit ord: Ord[A]): A = {
+  as.reduceLeft(max(_, _))
+}
+```
+
+方法声明还可以进一步简化。**上下文边界**(context bound)是一种语法糖，用于表达“依赖于类型参数的隐式参数”模式。
+
+使用上下文边界，`maxElement()`方法可以这样写：
+
+```scala
+def maxElement[A: Ord](as: List[A]): A = {
+  as.reduceLeft(max(_, _))
+}
+```
+
+类型参数`A`的绑定`: Ord`表示有`Ord[A]`类型的隐式参数。编译器会将这种语法转换为前面的隐式参数写法（这种隐式参数称为**证据参数**(evidence parameter)）。
+
+注：真正使用了隐式参数的方法（例如这里的`max()`）不能使用上下文边界。
+
+## 5.5 广义类型约束
+在Scala中，`=:=`和`<:<`是定义在`scala.Predef`中的**广义类型约束**(generalized type constraint)，用于在编译时对类型参数进行约束。
+
+```scala
+sealed abstract class =:=[From, To] extends (From => To)
+sealed abstract class <:<[-From, +To] extends (From => To)
+```
+
+### 含义
+
+| 约束 | 含义 |
+| --- | --- |
+| `A =:= B` | 要求`A`和`B`是同一类型 |
+| `A <:< B` | 要求`A`是`B`的子类型 |
+
+注：在Scala中，泛型类型`op[A, B]`可以写成`A op B`（类似于表达式的中缀语法）。因此`A =:= B`是一种类型`=:=[A, B]`，而不是一个表达式。
+
+### 用法
+广义类型约束通常用作泛型方法的隐式证据参数。编译器只在满足约束时才会提供隐式实例。
+
+`=:=`示例：
+
+```scala
+def update[A, B](set: Set[A])(f: A => B)(implicit ev: A =:= B): Set[B] = {
+  set.map(f)
+}
+
+val s: Set[String] = ...
+update[String, String](s)(_.toUpperCase) // OK
+update[String, Int](s)(_.length) // error: Cannot prove that String =:= Int
+```
+
+`<:<`示例：
+
+```scala
+def upcast[A, B](set: Set[A])(implicit ev: A <:< B): Set[B] = {
+  set.map(ev(_))
+}
+
+// assume that Dog is a subclass of Animal
+val s: Set[Dog] = ...
+val s2: Set[Int] = ...
+upcast[Dog, Animal](s) // OK
+upcast[Int, Animal](s2) // error: Cannot prove that Int <:< Animal
+```
+
+其中，`ev`充当函数`A => B`（因为`<:<[From, To]`继承了`From => To`）。
+
+对于这两个简单的例子，直接省略第二个类型参数或者使用类型边界会更简单：
+
+```scala
+def update[A](set: Set[A])(f: A => A): Set[A] = {
+  set.map(f)
+}
+
+def upcast[A, B >: A](set: Set[A]): Set[B] = {
+  set.map(identity)
+}
+```
+
+但是有些约束无法用类型边界来表达。例如，在`scala.Option`类的`flatten()`方法中，类型边界只能约束`B`本身，而无法约束`Option[B]`。
+
+```scala
+abstract class Option[+A] {
+  def get: A
+
+  def flatten[B](implicit ev: A <:< Option[B]): Option[B] =
+    if (isEmpty) None else ev(this.get)
+}
+```
+
+标准库中的另一个例子是集合类的`toMap()`方法，类型边界无法表达“类型参数`K`和`V`构成的键值对是`A`的超类型”这一约束。
+
+```scala
+trait TraversableOnce[+A] {
+  def toMap[K, V](implicit ev: A <:< (K, V)): Map[K, V]
+}
+```
+
+参考
+* [Scala School - Advanced types](https://twitter.github.io/scala_school/advanced-types.html)
+* [<:< operator in scala - Stack Overflow](https://stackoverflow.com/questions/2603003/operator-in-scala)
+* [Kinds of types in Scala, part 2: take type, return type or type parameters](https://kubuszok.com/2018/kinds-of-types-in-scala-part-2/)
+* [Scala Generics: Generalized Type Constraints (Part 3)](https://dzone.com/articles/scala-generics-generalized-type-constraints-part-3)

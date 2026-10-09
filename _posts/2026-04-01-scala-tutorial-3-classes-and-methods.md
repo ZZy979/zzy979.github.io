@@ -709,8 +709,9 @@ object Comparator {
   }
 }
 
-def max[A](x: A, y: A)(implicit comparator: Comparator[A]): A =
+def max[A](x: A, y: A)(implicit comparator: Comparator[A]): A = {
   if (comparator.compare(x, y) >= 0) x else y
+}
 
 println(max(10, 6))             // 10
 println(max("hello", "world"))  // world
