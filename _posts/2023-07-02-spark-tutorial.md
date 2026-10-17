@@ -1046,7 +1046,15 @@ Spark Streaming提供了一些内置数据源：
 
 （3）自定义数据源
 * 自定义接收器：继承`Receiver`类，在`onStart()`方法中启动新线程，在线程中调用`store()`方法存储接收到的数据，最后使用`ssc.receiverStream()`从接收器创建输入DStream。详见[Custom Receiver Guide](https://spark.apache.org/docs/latest/streaming-custom-receivers.html)。
-* 自定义输入DStream：继承`InputDStream`类，实现`compute()`、`start()`和`stop()`方法。`compute(time)`方法生成给定时间的RDD，`time`是按分批间隔对齐的时间戳。例如，假设分批间隔是5分钟，作业在10:03开始运行，则`compute()`方法会依次在10:05、10:10、10:15等时刻被调用，参数是对应的时间戳。
+* 自定义输入DStream：继承`InputDStream`类，实现`compute()`、`start()`和`stop()`方法。`compute(time)`方法生成给定时间的RDD。
+
+注：关于DStream的分批时间
+* 分批时间（如`compute()`和`foreachRDD()`方法的`time`参数）是当前批次对应的时间戳（毫秒），**按分批间隔对齐**。例如，假设分批间隔是5分钟，作业在10:03:42开始运行，则分批时间依次为10:05:00、10:10:00、10:15:00等，不会出现10:04:00或者10:05:30。
+* 实际调用`compute()`的时间可能稍晚于分批时间。
+* DStream并未规定分批时间的含义，但通常是当前批次的**结束时间**（因为批次结束后才能计算完整数据，如6.4节图所示）。
+  * 对于基于接收器的`ReceiverInputDStream`（如6.1节示例中的套接字流），T时刻的批次包含[T-b, T]时间内接收到的数据，其中b是分批间隔。
+  * 对于自定义`InputDStream`，含义由业务逻辑决定。例如，假设每个批次从HDFS读取一个以开始时间命名的分区，分区间隔为b，则T+b时刻及以后的批次才能读取T时刻的分区。
+* 窗口操作输出的分批时间见6.6.2节。
 
 ### 6.6 DStream操作
 完整列表见API文档[DStream](https://spark.apache.org/docs/latest/api/scala/org/apache/spark/streaming/dstream/DStream.html)和[PairDStreamFunctions](https://spark.apache.org/docs/latest/api/scala/org/apache/spark/streaming/dstream/PairDStreamFunctions.html)。
@@ -1076,15 +1084,21 @@ val stream = ...
 val windowedStream = stream.window(Minutes(5), Minutes(2))
 ```
 
-假设作业启动时间为10:01:40，则`windowedStream`输出的RDD批次如下图所示：
+假设第一个分批时间为10:00，则`windowedStream`输出的RDD批次如下图所示：
 
 ![DStream窗口示例](/assets/images/spark-tutorial/DStream窗口示例.png)
 
-* 第1个批次时间为10:03，包含[10:02, 10:04)的数据
-* 第2个批次时间为10:05，包含[10:02, 10:06)的数据
-* 第3个批次时间为10:07，包含[10:03, 10:08)的数据
-* 第4个批次时间为10:09，包含[10:05, 10:10)的数据
-* 以此类推
+| 序号 | 输出批次 | 包含原始批次 |
+| --- | --- | --- |
+| 1 | 10:01 | [10:00, 10:01] |
+| 2 | 10:03 | [10:00, 10:03] |
+| 3 | 10:05 | [10:01, 10:05] |
+| 4 | 10:07 | [10:03, 10:07] |
+| ... | ... | ... |
+
+输出批次的时间是窗口内**最后一个**原始批次的时间。
+
+注：窗口操作输出的分批时间不一定按滑动距离对齐，但一定按原始分批间隔对齐。在上面的例子中，输出分批时间可能是10:01:00、10:03:00、10:05:00等，也可能是10:02:00、10:04:00、10:06:00等，但不会是10:01:30。
 
 #### 6.6.3 join操作
 在Spark Streaming中可以很容易地执行join操作。
