@@ -28,23 +28,23 @@ void free(void* ptr);
 
 int main() {
     // allocate memory of 10 ints
-    if (auto* p = (int*) malloc(10 * sizeof(int))) {
+    if (auto* p = (int*) std::malloc(10 * sizeof(int))) {
         for (int i = 0; i < 10; i++)
             p[i] = i;
         for (int i = 0; i < 10; i++)
             std::cout << p[i] << ' ';
         std::cout << '\n';
-        free(p);  // free memory
+        std::free(p);  // free memory
     }
 
     // allocate memory of a vector<int>
-    if (auto* pv = (std::vector<int>*) malloc(sizeof(std::vector<int>))) {
+    if (auto* pv = (std::vector<int>*) std::malloc(sizeof(std::vector<int>))) {
         new(pv) std::vector<int>{1, 2, 3, 4, 5};  // construct object
         for (int x : *pv)
             std::cout << x << ' ';
         std::cout << '\n';
         pv->~vector<int>();  // destroy object
-        free(pv);  // free memory
+        std::free(pv);  // free memory
     }
     return 0;
 }
@@ -702,10 +702,10 @@ delete[] p;
 （6）定位new不匹配析构
 
 ```cpp
-void* buf = malloc(sizeof(std::vector<int>));
+void* buf = std::malloc(sizeof(std::vector<int>));
 auto* p = new(buf) std::vector<int>{1, 2, 3, 4, 5};
 // forgot to call p->~vector<int>()
-free(buf);
+std::free(buf);
 ```
 
 ### 6.2 最佳实践

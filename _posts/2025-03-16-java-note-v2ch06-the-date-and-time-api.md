@@ -54,7 +54,7 @@ boolean overTenTimesFaster = timeElapsed.multipliedBy(10).minus(timeElapsed2).is
 
 由于夏令时(daylight savings time)等原因，API设计者建议不要使用时区时间，除非确实想表示绝对时刻。生日、假期、日程等通常最好表示成本地日期/时间。
 
-`LocalDate`是带有年、月、日的本地日期（已经在4.2.2节介绍过）。要构造`LocalDate`对象，可以使用静态方法`now()`或`of()`：
+`LocalDate`是带有年、月、日的本地日期（已经在卷I的4.2.2节介绍过）。要构造`LocalDate`对象，可以使用静态方法`now()`或`of()`：
 
 ```java
 LocalDate today = LocalDate.now(); // Today's date
@@ -331,9 +331,11 @@ formatter = DateTimeFormatter.ofPattern("E yyyy-MM-dd HH:mm");
 | `yy` | 年（两位数） | 69 |
 | `yyyy` | 年 | 1969 |
 | `MM` | 月 | 07 |
-| `MMM` | 月（简称） | Jul |
-| `MMMM` | 月（完整名称） | July |
+| `MMM` | 月（缩写） | Jul |
+| `MMMM` | 月（全称） | July |
 | `dd` | 日 | 16 |
+| `EEE` | 星期（缩写） | Wed |
+| `EEEE` | 星期（全称） | Wednesday |
 | `HH` | 小时 | 09 |
 | `mm` | 分钟 | 32 |
 | `ss` | 秒 | 00 |
