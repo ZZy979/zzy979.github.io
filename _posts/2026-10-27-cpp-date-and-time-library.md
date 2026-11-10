@@ -181,7 +181,7 @@ Fri Dec 31 00:00:00 1999
 ```
 
 ### 1.3 自定义格式化
-函数`std::ctime()`和`std::asctime()`只能将时间转换成固定格式的文本(`Www Mmm dd hh:mm:ss yyyy\n`)。`std::strftime()`可以按照自定义格式字符串将`std::tm`转换成文本，写入`str`指向的字符数组，返回写入的字符数（不包括结尾的`'\0'`）。如果数组`str`空间不够则返回0。
+函数`std::ctime()`和`std::asctime()`只能将时间转换成固定格式的文本(`Www Mmm dd hh:mm:ss yyyy\n`)。`std::strftime()`可以按照自定义格式字符串将`std::tm`转换成文本，写入`str`指向的字符数组，返回写入的字符数（不包括结尾的`'\0'`），如果数组空间不够则返回0。
 
 ```cpp
 std::size_t strftime(char* str, std::size_t count, const char* format, const std::tm* tp);
@@ -224,8 +224,10 @@ std::cout << buf << '\n';
 ```
 
 注：
-* C++标准规定的`<ctime>`并没有提供将字符串解析为日期的函数。但POSIX提供了[strptime()](https://pubs.opengroup.org/onlinepubs/9799919799/functions/strptime.html)。
-* 头文件`<iomanip>`提供了一对函数`std::get_time()`和`std::put_time()`，用于从C++输入/输出流按自定义格式读写`std::tm`对象。
+* C++标准规定的`<ctime>`并没有提供将字符串解析为日期的函数，但POSIX提供了[strptime()](https://pubs.opengroup.org/onlinepubs/9799919799/functions/strptime.html)。
+* 头文件`<iomanip>`提供了一对函数`std::get_time()`和`std::put_time()`，用于从C++输入/输出流按自定义格式读写`std::tm`对象：
+  * `in >> std::get_time(t, fmt)`从输入流`in`按格式串`fmt`解析`std::tm`，保存到指针`t`指向的对象。
+  * `out << std::put_time(t, fmt)`按格式串`fmt`将指针`t`指向的`std::tm`对象写到输出流`out`。
 
 虽然C风格日期时间库在C++中仍然可用，但存在线程不安全、年份和月份的偏移容易写错、缺少方便的日期计算函数等问题。因此，C++11引入了chrono库。
 
@@ -239,7 +241,7 @@ Chrono库定义在头文件`<chrono>`中，其中的声明位于命名空间`std
 * 时区(C++20)：`time_zone`、`zoned_time`等
 
 ### 2.2 时长
-类模板`std::chrono::duration`表示**时长**，即时间间隔。
+类模板`std::chrono::duration`表示**时长**，即时间间隔。例如“2小时”、“42秒”等。
 
 ```cpp
 template<class Rep, class Period = std::ratio<1>>
@@ -255,8 +257,8 @@ class duration;
 #include <iostream>
 
 int main() {
-    std::chrono::duration<int, std::ratio<3600>> d1(8);
-    std::chrono::duration<float, std::ratio<1, 1000>> d2(1.5);
+    std::chrono::duration<int, std::ratio<3600>> d1(8);  // 8 h
+    std::chrono::duration<float, std::ratio<1, 1000>> d2(1.5);  // 1.5 ms
     std::cout << "d1 = " << d1.count() << " hours\n";
     std::cout << "d2 = " << d2.count() << " milliseconds\n";
 }
@@ -319,12 +321,18 @@ using giga  = ratio<1000000000, 1>;  // 10^9
 using milliseconds = duration<int64_t, std::milli>;
 ```
 
+例如，可以像这样让当前线程sleep指定的秒数：
+
+```cpp
+std::this_thread::sleep_for(std::chrono::seconds(n));
+```
+
 另外，还为部分时长类型提供了字面值。例如，可以直接写`5ms`而不是`std::chrono::milliseconds(5)`，但需要声明`using namespace std::chrono_literals`。
 
 ```cpp
 using namespace std::chrono_literals;
 auto lesson = 45min;
-std::cout << "One lesson is " << lesson.count() << " minutes\n";
+std::cout << "One lesson is " << lesson << '\n';
 ```
 
 下表列出了所有时长别名和字面值：
@@ -343,22 +351,16 @@ std::cout << "One lesson is " << lesson.count() << " minutes\n";
 | `years` (C++20) | 年 | `std::ratio<31556952>` | |
 
 注：
-* `years`等于365.2425 `days`（格里高利年的平均长度），`months`等于1/12 `years`。
+* `years`等于365.2425 `days`（格里高利年的平均长度，每400年刚好是146097天），`months`等于1/12 `years`。
 * 这些别名的计数类型(`Rep`)都是某种有符号整数（如`int64_t`）。如果需要浮点数表示则必须自己定义。
 * 字面值后缀`d`和`y`表示的不是`days`和`years`，而是`day`和`year`，见2.4.1节。
-
-例如，可以像这样让当前线程sleep指定的秒数：
-
-```cpp
-std::this_thread::sleep_for(std::chrono::seconds(n));
-```
 
 #### 2.2.3 单位转换
 除了直接用数字构造`duration`对象，还可以用另一个（单位可能不同的）`duration`对象来构造，从而实现单位转换。但是，这种方式要求转换必须是“无损的”。具体来说，要用一个`duration<Rep, Period>`对象来构造`duration<Rep2, Period2>`对象，必须满足以下条件之一：
 * `Rep2`是浮点型。
 * `Rep`和`Rep2`都是整型，且`Period`能被`Period2`整除。（例如，可以用分钟构造秒，但不能用秒构造分钟）
 
-如果不满足以上条件，就必须使用`std::chrono::duration_cast`进行转换（可能是有损的）。对于一个`duration<Rep, Period>`类型的对象`d`，表达式
+如果不满足以上条件，就必须使用函数`std::chrono::duration_cast()`进行转换（可能是有损的）。对于一个`duration<Rep, Period>`类型的对象`d`，表达式
 
 ```cpp
 duration_cast<duration<Rep2, Period2>>(d)
@@ -412,32 +414,55 @@ cast with loss: 1000s = 16min
 
 注：从C++20起才能直接输出`duration`对象。
 
-C++17还引入了三个非成员函数，用于对时长按不同周期进行“取整”。对于`D`类型的时长对象`d`，
+C++17还引入了三个非成员函数，用于对时长按不同周期进行“取整”。对于一个时长对象`d`和类型`D`，
 
 | 表达式 | 结果 |
 | --- | --- |
-| `floor<D2>(d)` | 将`d`转换为`D2`并下取整 |
-| `ceil<D2>(d)` | 将`d`转换为`D2`并上取整 |
-| `round<D2>(d)` | 将`d`转换为`D2`并四舍五入 |
+| `floor<D>(d)` | 将`d`转换为`D`并下取整 |
+| `ceil<D>(d)` | 将`d`转换为`D`并上取整 |
+| `round<D>(d)` | 将`d`转换为`D`并四舍五入 |
 
 例如：
 
 ```cpp
 using namespace std::chrono;
+
 seconds s = 160s;
-std::cout << "cast:  " << duration_cast<minutes>(s) << '\n';
-std::cout << "floor: " << floor<minutes>(s) << '\n';
-std::cout << "ceil:  " << ceil<minutes>(s) << '\n';
-std::cout << "round: " << round<minutes>(s) << '\n';
+std::cout << " cast(" << s << ") = " << duration_cast<minutes>(s) << '\n';
+std::cout << "floor(" << s << ") = " << floor<minutes>(s) << '\n';
+std::cout << " ceil(" << s << ") = " << ceil<minutes>(s) << '\n';
+std::cout << "round(" << s << ") = " << round<minutes>(s) << "\n\n";
+
+auto m = 2.4min;
+std::cout << " cast(" << m << ") = " << duration_cast<minutes>(m) << '\n';
+std::cout << "floor(" << m << ") = " << floor<minutes>(m) << '\n';
+std::cout << " ceil(" << m << ") = " << ceil<minutes>(m) << '\n';
+std::cout << "round(" << m << ") = " << round<minutes>(m) << "\n\n";
+
+auto m2 = -2.4min;
+std::cout << " cast(" << m2 << ") = " << duration_cast<minutes>(m2) << '\n';
+std::cout << "floor(" << m2 << ") = " << floor<minutes>(m2) << '\n';
+std::cout << " ceil(" << m2 << ") = " << ceil<minutes>(m2) << '\n';
+std::cout << "round(" << m2 << ") = " << round<minutes>(m2) << '\n';
 ```
 
 输出：
 
 ```
-cast:  2min
-floor: 2min
-ceil:  3min
-round: 3min
+ cast(160s) = 2min
+floor(160s) = 2min
+ ceil(160s) = 3min
+round(160s) = 3min
+
+ cast(2.4min) = 2min
+floor(2.4min) = 2min
+ ceil(2.4min) = 3min
+round(2.4min) = 2min
+
+ cast(-2.4min) = -2min
+floor(-2.4min) = -3min
+ ceil(-2.4min) = -2min
+round(-2.4min) = -2min
 ```
 
 #### 2.2.4 算术运算
@@ -455,7 +480,7 @@ round: 3min
 
 如果两个时长操作数属于不同的类型`duration<Rep1, Period1>`和`duration<Rep2, Period2>`，会使用[std::common_type](https://en.cppreference.com/cpp/chrono/duration/common_type)转换为公共类型`duration<Rep, Period>`：
 * `Rep = std::common_type_t<Rep1, Rep2>`
-* `Period = std::ratio<GCD(Period1::num, Period2::num), LCM(Period1::den, Period2::den)>`
+* `Period = std::ratio<gcd(Period1::num, Period2::num), lcm(Period1::den, Period2::den)>`（即`Period1`和`Period2`的最大公因数）
 
 例如：
 
@@ -489,20 +514,20 @@ class time_point;
 #### 2.3.1 时钟
 可以通过调用时钟类型的静态成员函数`now()`来获取该时钟的当前时间点。常用的时钟类型如下：
 
-| 时钟 | 含义 | 纪元 | 周期长度 |
+| 时钟 | 含义 | 纪元 |
+| --- | --- | --- |
+| `system_clock` | 表示真实时间的系统时钟，可能被调整 | Unix纪元(1970-1-1 00:00:00 UTC) |
+| `steady_clock` | 永远不会被调整的单调时钟，<br>与真实时间无关，最适合度量间隔 | 未指定（可能是机器上次重启时间） |
+| `high_resolution_clock` | 具有最短周期的时钟，可能是前两者的别名 | |
+
+常用编译器标准库的实现：
+
+| 编译器 | `system_clock`周期 | `steady_clock`周期 | `high_resolution_clock` |
 | --- | --- | --- | --- |
-| `system_clock` | 表示真实时间的系统时钟，可能被调整 | Unix纪元(1970-1-1 00:00:00 UTC) | 未指定（GCC为纳秒，MSVC为100纳秒） |
-| `steady_clock` | 永远不会被调整的单调时钟，<br>与真实时间无关，最适合度量间隔 | 未指定（可能是机器上次重启时间） | 未指定（GCC和MSVC均为纳秒） |
-| `high_resolution_clock` | 具有最短周期的时钟，可能是前两者的别名<br>（GCC为`system_clock`，MSVC为`steady_clock`） | | |
-
-标准库为系统时钟不同周期的时间点定义了以下别名。其中`sys_days`在处理日历类型时经常用到，见2.4.3节。
-
-```cpp
-template<class Duration>
-using sys_time = time_point<system_clock, Duration>;
-using sys_seconds = sys_time<seconds>;
-using sys_days = sys_time<days>;
-```
+| GCC | ns | ns | `system_clock` |
+| Clang | ns | ns | `system_clock` |
+| Apple Clang | µs | ns | `steady_clock` |
+| MSVC | 100ns | ns | `steady_clock` |
 
 例如：
 
@@ -531,14 +556,35 @@ std::time_t t = system_clock::to_time_t(now);
 std::cout << "The system clock is currently at " << std::ctime(&t);
 ```
 
+标准库为系统时钟不同周期的时间点定义了以下别名。其中`sys_days`在处理日历类型时经常用到，见2.4.3节。
+
+```cpp
+template<class Duration>
+using sys_time = time_point<system_clock, Duration>;
+using sys_seconds = sys_time<seconds>;
+using sys_days = sys_time<days>;
+```
+
+类`std::chrono::local_t`是一个“伪时钟”，唯一的用途是作为表示本地时间的`time_point`的第一个模板参数，见2.5.1节。
+
+```cpp
+template<class Duration>
+using local_time = time_point<local_t, Duration>;
+using local_seconds = local_time<seconds>;
+using local_days = local_time<days>;
+```
+
 #### 2.3.2 算术运算
-时间点和时长可以进行加减运算。对于两个`T = time_point<C, D>`类型的对象`t`和`t2`，以及`D`类型的时长对象`d`：
+时间点和时长可以进行加减运算。对于`T = time_point<C, D>`类型的对象`t`和`t2`，以及`D`类型的时长对象`d`：
 
 | 表达式 | 结果 |
 | --- | --- |
 | `t + d` | `T(t.time_since_epoch() + d)` |
 | `t - d` | `T(t.time_since_epoch() - d)` |
 | `t - t2` | 时长`t.time_since_epoch() - t2.time_since_epoch()` |
+| `floor<D2>(t)` | `time_point<C, D2>{floor<D2>(t.time_since_epoch())}` |
+| `ceil<D2>(t)` | `time_point<C, D2>{ceil<D2>(t.time_since_epoch())}` |
+| `round<D2>(t)` | `time_point<C, D2>{round<D2>(t.time_since_epoch())}` |
 
 注：
 * 也可以使用`==`、`<`等运算符比较两个`time_point`。
@@ -565,16 +611,16 @@ int main() {
     auto end = steady_clock::now();
     auto diff = end - start;
 
-    std::cout << "Slow calculations took "
-        << diff / 1ms << "ms ≈ "
-        << diff / 1s << "s\n";
+    std::cout << "Slow calculations took " << diff
+        << " ≈ " << diff / 1ms << "ms"
+        << " ≈ " << diff / 1s << "s\n";
 }
 ```
 
 可能的输出：
 
 ```
-Slow calculations took 47617ms ≈ 47s
+Slow calculations took 12497845958ns ≈ 12497ms ≈ 12s
 ```
 
 C++11的chrono库能很好地做计时和时长计算，但无法处理“某年月日是星期几”这类日历问题。C++20新增的日历类型弥补了这个缺陷。
@@ -582,7 +628,7 @@ C++11的chrono库能很好地做计时和时长计算，但无法处理“某年
 ### 2.4 日历
 C++20在chrono库中引入了日历类型体系。核心是`year_month_day`，把年、月、日作为独立字段存储，并支持日期计算。
 
-注：不同编译器对C++20日历和时区的支持情况不同，详见[Compiler support for C++20](https://en.cppreference.com/cpp/compiler_support/20#cpp_lib_chrono_201907L) (P0355R7)。支持日历的最低版本是GCC 11、Clang 7和MSVC 19.29，并且需要添加编译选项`-std=c++20`。
+注：不同编译器对C++20日历和时区的支持情况不同，详见[Compiler support for C++20](https://en.cppreference.com/cpp/compiler_support/20#cpp_lib_chrono_201907L) (P0355R7)。支持日历的最低版本是GCC 11、Clang 7和MSVC 19.29，并且需要添加编译选项`-std=c++20`或`/std:c++20` (MSVC)。
 
 #### 2.4.1 核心类型
 以下四个类是日历的基本组成部分，每个类都可以通过构造函数、字面值或预定义常量来创建。
@@ -596,7 +642,7 @@ C++20在chrono库中引入了日历类型体系。核心是`year_month_day`，�
 
 注：`year`可以转换为`int`，`month`和`day`可以转换为`unsigned`，但必须通过`static_cast`显式转换。
 
-`weekday`类的`[]`运算符可用于创建以下两个类的对象（其中`w`是一个`weekday`对象）：
+`weekday`类的`[]`运算符可用于创建以下两个类的对象，其中`w`是一个`weekday`对象：
 
 | 类 | 含义 | 构造函数 | 下标语法 |
 | --- | --- | --- | --- |
@@ -605,7 +651,7 @@ C++20在chrono库中引入了日历类型体系。核心是`year_month_day`，�
 
 特殊常量`std::chrono::last`用于表示“某月的最后一天”或“某月的最后一个星期几”。
 
-以上“基本组件”可以组合成各种表示完整日期或部分日期的类型，如下表所示。除了显式构造函数，更方便的构造方式是使用字面值和`operator/`（就像自然书写日期的方式），其中`y`、`m`、`d`、`w`分别是`year`、`month`、`day`、`weekday`对象。
+以上“基本组件”可以组合成各种表示完整日期或部分日期的类型，如下表所示。除了显式构造函数，更方便的方式是使用字面值和`operator/`（就像自然书写日期的方式），其中`y`、`m`、`d`、`w`分别是`year`、`month`、`day`、`weekday`对象。
 
 | 类 | 含义 | 构造函数 | 字面值语法 |
 | --- | --- | --- | --- |
@@ -628,7 +674,7 @@ C++20在chrono库中引入了日历类型体系。核心是`year_month_day`，�
   * `std::chrono::last`，表示月的最后一天
   * `weekday[n]`，表示月的第n个星期几
   * `weekday[std::chrono::last]`，表示月的最后一个星期几
-* 如果无歧义，也可以使用普通整数。例如，允许`2005y/4/5`或`5d/April/2005`，但不允许`5/April/2005`。
+* 如果无歧义，也可以使用普通整数。例如，允许`2005y/4/5`或`5d/4/2005`，但不允许`5/April/2005`。
 * 省略第二个`/`可以创建部分日期（`year_month`、`month_day`等）。
 * 日期的`/`运算符满足结合律。例如`(2005y/April)/5` = `2005y/(April/5)`（实际上这是两个不同的重载，前者是`year_month / day`，后者是`year / month_day`）。
 
@@ -642,7 +688,7 @@ int main() {
     using namespace std::chrono;
 
     year_month_day ymd1(2005y, April, 5d);
-    std::cout << "ymd1: " << ymd1.year() << '-' << ymd1.month() << '-' << ymd1.day() << '\n';
+    std::cout << "ymd1: " << ymd1.year() << '/' << ymd1.month() << '/' << ymd1.day() << '\n';
 
     year_month_day ymd2 = 2005y / April / 5;
     std::cout << "ymd2: " << ymd2 << '\n';
@@ -652,7 +698,7 @@ int main() {
 输出：
 
 ```
-ymd1: 2005-Apr-05
+ymd1: 2005/Apr/05
 ymd2: 2005-04-05
 ```
 
@@ -876,7 +922,7 @@ std::cout << "now is " << today << ' ' << time_of_day << " (UTC)\n";
 now is 2026-11-07 07:34:25.814886000 (UTC)
 ```
 
-注：C++20的`year_month_day`和`hh_mm_ss`分别相当于Java的`LocalDate`和`LocalTime`，以及Python的`datetime.date`和`datetime.time`。但没有相当于Java中`LocalDateTime`或Python中`datetime.datetime`的同时表示日期和时刻的类型。精确到秒（或以下）的时刻只能用`time_point`表示。
+注：C++20的`year_month_day`和`hh_mm_ss`分别相当于Java的`LocalDate`和`LocalTime`，以及Python的`datetime.date`和`datetime.time`。但没有相当于Java中`LocalDateTime`或Python中`datetime.datetime`的同时表示日期和时刻的日历类型。精确到秒（或以下）的时刻只能用`time_point`表示。
 
 ### 2.5 时区
 C++20的时区支持基于[IANA时区数据库](https://www.iana.org/time-zones)，这是大多数操作系统和编程语言使用的标准时区数据源。
@@ -915,7 +961,7 @@ Atlantic/Bermuda
 tzdb: cannot locate zone: Alcatraz
 ```
 
-注：在Windows上，GCC标准库(libstdc++)的`current_zone()`始终返回 "Etc/UTC" （见[std::chrono::current_zone() on windows](https://gcc.gnu.org/pipermail/libstdc++/2025-July/062286.html)），而MSVC标准库能返回正确时区。
+注：在Windows上，GCC标准库(libstdc++)的`current_zone()`始终返回 "Etc/UTC" （见[std::chrono::current_zone() on windows](https://gcc.gnu.org/pipermail/libstdc++/2025-July/062286.html)），而MSVC标准库能返回正确的时区。
 
 #### 2.5.1 时区时间
 类模板`std::chrono::zoned_time`表示时区时间，即一对`time_point`和`time_zone`。
