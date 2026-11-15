@@ -130,6 +130,8 @@ bundle
 ### 4.3 配置
 根据需要更新_config.yml中的变量，例如`url`、`avatar`、`timezone`、`lang`等。
 
+自定义图标：参考[Customize the Favicon](https://chirpy.cotes.page/posts/customize-the-favicon/)。
+
 ### 4.4 启动本地服务器
 要在本地预览网站内容，执行
 
