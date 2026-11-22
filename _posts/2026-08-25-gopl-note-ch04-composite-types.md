@@ -144,9 +144,9 @@ func zero(ptr *[5]int) {
 
 虽然使用指针来传递数组是高效的，而且也允许在函数内部修改数组，但数组由于其固定大小仍然是不灵活的。例如，`zero()`函数不接受指向`[4]int`的指针，也没有任何添加或删除数组元素的方法。由于这些原因，除了像SHA256的固定大小哈希等特殊情况外，数组很少用作函数参数或结果。相反，通常使用切片。
 
-练习4.1 编写一个函数，统计两个SHA256哈希中不同的比特位数量。（参考2.6.2节的`PopCount()`）
+[练习4.1](https://github.com/ZZy979/gopl.io/blob/main/ch4/exec4-1/diff.go) 编写一个函数，统计两个SHA256哈希中不同的比特位数量。（参考2.6.2节的`PopCount()`）
 
-练习4.2 编写一个程序，打印标准输入的SHA256哈希，支持通过命令行参数选择SHA384或SHA512。
+[练习4.2](https://github.com/ZZy979/gopl.io/blob/main/ch4/exec4-2/main.go) 编写一个程序，打印标准输入的SHA256哈希，支持通过命令行参数选择SHA384或SHA512。
 
 ## 4.2 切片
 **切片**(slice)表示所有元素都有相同类型的变长序列。切片类型写为`[]T`，其中`T`是元素类型。
@@ -415,15 +415,15 @@ func main() {
 }
 ```
 
-练习4.3 重写`reverse()`函数，使用数组指针而不是切片。
+[练习4.3](https://github.com/ZZy979/gopl.io/blob/main/ch4/exec4-3/reverse.go) 重写`reverse()`函数，使用数组指针而不是切片。
 
-练习4.4 重写`rotate()`函数，只用一次遍历完成旋转。
+[练习4.4](https://github.com/ZZy979/gopl.io/blob/main/ch4/exec4-4/rotate.go) 重写`rotate()`函数，只用一次遍历完成旋转。
 
-练习4.5 编写一个原地操作函数，删除`[]string`中的相邻重复元素。
+[练习4.5](https://github.com/ZZy979/gopl.io/blob/main/ch4/exec4-5/unique.go) 编写一个原地操作函数，删除`[]string`中的相邻重复元素。
 
-练习4.6 编写一个原地操作函数，将一个UTF-8编码的`[]byte`中的连续空白符（见`unicode.IsSpace()`）替换成单个空格。
+[练习4.6](https://github.com/ZZy979/gopl.io/blob/main/ch4/exec4-6/squash.go) 编写一个原地操作函数，将一个UTF-8编码的`[]byte`中的连续空白符（见`unicode.IsSpace()`）压缩成单个空格。
 
-练习4.7 修改`reverse()`函数，原地反转一个表示UTF-8编码字符串的`[]byte`的字符。是否可以不用分配额外内存？
+[练习4.7](https://github.com/ZZy979/gopl.io/blob/main/ch4/exec4-7/reverse.go) 修改`reverse()`函数，原地反转一个表示UTF-8编码字符串的`[]byte`中的字符。是否可以不用分配额外内存？
 
 ## 4.3 映射
 散列表(hash table)是无序的键/值对集合，其中所有键都是不同的。无论散列表有多大，与给定键关联的值可以通过平均常数次键比较来检索、更新或删除。
@@ -604,9 +604,9 @@ func Count(list []string) int { return m[k(list)] }
 
 `addEdge()`函数展示了惰性填充映射的惯用方式：在每个键首次出现时初始化对应的值。`hasEdge()`函数展示了如何利用不存在的映射元素的零值：即使`from`和`to`都不存在，`graph[from][to]`也会返回有意义的结果。
 
-练习4.8 修改`charcount`程序，使用`unicode.IsLetter()`等函数统计字母、数字等Unicode字符类别。
+[练习4.8](https://github.com/ZZy979/gopl.io/blob/main/ch4/exec4-8/main.go) 修改`charcount`程序，使用`unicode.IsLetter()`等函数统计字母、数字等Unicode字符类别。
 
-练习4.9 编写一个程序`wordfreq`，统计输入文本文件中每个单词的出现频率。在第一次调用`Scan()`之前先调用`input.Split(bufio.ScanWords)`，从而将输入拆分为单词而不是行。
+[练习4.9](https://github.com/ZZy979/gopl.io/blob/main/ch4/exec4-9/wordfreq.go) 编写一个程序`wordfreq`，统计输入文本文件中每个单词的出现频率。在第一次调用`Scan()`之前先调用`input.Split(bufio.ScanWords)`，从而将输入拆分为单词而不是行。
 
 ## 4.4 结构体
 **结构体**(struct)是一种聚合数据类型，将零个或多个任意类型的值组合成单个实体。每个值被称为**字段**(field)。一个经典的结构体的例子是员工记录，其字段包括员工的ID、姓名、地址、出生日期、职位、薪资、上级主管等。这些字段可以作为一个整体进行复制、传递给函数、从函数返回、存储在数组中等等。
@@ -1068,7 +1068,7 @@ fmt.Println(titles) // "[{Casablanca} {Cool Hand Luke} {Bullitt}]"
 
 注：GitHub issue查询接口的请求和响应结构详见文档[Search issues and pull requests](https://docs.github.com/en/rest/search/search#search-issues-and-pull-requests)。
 
-与之前一样，所有结构体字段名也必须首字母大写，即使对应的JSON名字未大写。不过，在解码过程中将JSON名字与Go结构体字段名匹配时是不区分大小写的。因此只有当JSON 名字包含下划线时才需要使用字段标签。另外，这里也是只选择了部分字段进行解码，GitHub响应包含的信息比这里展示的要多得多。
+与之前一样，所有结构体字段名也必须首字母大写，即使对应的JSON名字未大写。不过，在解码过程中将JSON名字与Go结构体字段名匹配时是**不区分大小写**的。因此只有当JSON名字包含下划线时才需要使用字段标签。另外，这里也是只选择了部分字段进行解码，GitHub响应包含的信息比这里展示的要多得多。
 
 `SearchIssues()`函数发起HTTP请求并将结果解码为JSON。由于用户提供的查询词可能包含`?`和`&`等特殊字符，因此使用`url.QueryEscape()`进行处理。
 
@@ -1099,13 +1099,13 @@ $ ./issues repo:golang/go is:open json decoder
 
 GitHub Web服务接口的功能远比这里介绍的多，详见[GitHub REST API文档](https://docs.github.com/en/rest)。
 
-练习4.10 修改`issue`程序，根据结果的时间进行分类，例如不到一个月、不到一年、超过一年。
+[练习4.10](https://github.com/ZZy979/gopl.io/blob/main/ch4/exec4-10/main.go) 修改`issue`程序，根据结果的时间进行分类，例如不到一个月、不到一年、超过一年。
 
 练习4.11 编写一个工具，允许用户通过命令行创建、读取、更新和关闭GitHub issue。当需要输入大量文本时，调用用户偏好的文本编辑器。
 
-练习4.12 流行网络漫画xkcd (<https://xkcd.com/>)提供了JSON接口。例如，请求 <https://xkcd.com/571/info.0.json> 会返回漫画571的详细描述。下载每个URL（仅一次）并构建离线索引。编写一个工具`xkcd`，利用该索引打印与命令行提供的搜索词相匹配的每则漫画的URL和文本内容。
+[练习4.12](https://github.com/ZZy979/gopl.io/blob/main/ch4/xkcd/main.go) 流行网络漫画xkcd (<https://xkcd.com/>)提供了JSON接口。例如，请求 <https://xkcd.com/571/info.0.json> 会返回漫画571的详细描述。下载每个URL（仅一次）并构建离线索引。编写一个工具`xkcd`，利用该索引打印与命令行提供的搜索词相匹配的每则漫画的URL和文本内容(transcript)。
 
-练习4.13 Open Movie Database (<https://omdbapi.com/>)提供的基于JSON的 Web服务允许用户通过名字搜索电影并下载海报图像。编写一个工具`poster`，下载命令行指定名字的电影的海报图像。
+练习4.13 Open Movie Database (<https://omdbapi.com/>)提供的基于JSON的Web服务允许用户通过名字搜索电影并下载海报图像。编写一个工具`poster`，下载命令行指定名字的电影的海报图像。
 
 ## 4.6 文本和HTML模板
 前面的例子仅做了最简单的格式化，`Printf()`完全足够了。但有时需要更复杂的格式化，此时最好将格式与代码完全分离。这可以通过`text/template`和`html/template`包来实现，它们提供了一种将变量值替换到文本或HTML模板中的机制。
@@ -1258,4 +1258,4 @@ $ go doc text/template
 $ go doc html/template
 ```
 
-练习4.14 创建一个Web服务器，查询一次GitHub，然后生成错误报告、里程碑和用户的导航列表。
+练习4.14 创建一个Web服务器，查询一次GitHub，然后允许导航错误报告、里程碑和用户的列表。
