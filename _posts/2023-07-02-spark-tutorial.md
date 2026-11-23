@@ -111,7 +111,7 @@ import org.apache.spark.sql.SparkSession
 object SimpleApp {
   def main(args: Array[String]): Unit = {
     val logFile = "YOUR_SPARK_HOME/README.md" // Should be some file on your system
-    val spark = SparkSession.builder.appName("Simple Application").getOrCreate()
+    val spark = SparkSession.builder().appName("Simple Application").getOrCreate()
     val logData = spark.read.textFile(logFile).cache()
     val numAs = logData.filter(line => line.contains("a")).count()
     val numBs = logData.filter(line => line.contains("b")).count()
@@ -121,7 +121,7 @@ object SimpleApp {
 }
 ```
 
-这个程序分别统计指定文件中包含 "a" 和 "b" 的行数，注意需要将YOUR_SPARK_HOME替换为Spark安装目录。和Spark Shell不同的是，在程序中需要使用`SparkSession.builder`初始化SparkSession。
+这个程序分别统计指定文件中包含 "a" 和 "b" 的行数，注意需要将YOUR_SPARK_HOME替换为Spark安装目录。和Spark Shell不同的是，在程序中需要使用`SparkSession.builder()`初始化SparkSession。
 
 可以使用sbt (Scala)、Maven (Java)或pip (Python)引入Spark依赖。以Maven为例：
 
@@ -157,7 +157,7 @@ Lines with a: 72, Lines with b: 39
 Spark程序必须做的第一件事是创建一个`SparkContext`对象，用于告诉Spark如何访问集群：
 
 ```scala
-val spark = SparkSession.builder.appName(name).master(master).getOrCreate()
+val spark = SparkSession.builder().appName(name).master(master).getOrCreate()
 val sc = spark.sparkContext
 ```
 
@@ -422,9 +422,9 @@ Spark SQL是用于处理**结构化数据**的Spark模块。可以使用SQL或Da
 Spark SQL的核心数据结构是**DataFrame**，即包含数据结构信息（列名、类型等）的Dataset（相当于关系型数据库表或pandas的`DataFrame`）。在Scala中，`DataFrame`是`Dataset[Row]`的别名。
 
 RDD、Dataset和DataFrame的区别：
-* RDD是分布式数据集合，是早期Spark使用的数据结构。
-* Dataset也是分布式数据集合，是Spark 1.6新增的，在RDD的基础上增加了Spark SQL的优化。
-* DataFrame是结构化数据集合，相当于`Dataset[Row]`。
+* `RDD`是分布式数据集合，是早期Spark使用的数据结构。
+* `Dataset`也是分布式数据集合，是Spark 1.6新增的，在`RDD`的基础上增加了Spark SQL的优化。
+* `DataFrame`是结构化数据集合，相当于`Dataset[Row]`。
 
 下面使用Spark Shell介绍DataFrame的基本操作。
 
@@ -433,10 +433,10 @@ RDD、Dataset和DataFrame的区别：
 SQL参考：<https://spark.apache.org/docs/latest/sql-ref.html>
 
 ### 5.1 创建DataFrame
-使用`SparkSession`，可以从RDD、Hive表或[Spark数据源](https://spark.apache.org/docs/latest/sql-data-sources.html)创建DataFrame。
+使用`SparkSession`，可以从RDD、Hive表或[Spark数据源](https://spark.apache.org/docs/latest/sql-data-sources.html)创建`DataFrame`。
 
 #### 5.1.1 JSON文件
-可以使用`spark.read.json(path)`读取JSON数据集并转换为DataFrame，Spark SQL会自动推断schema。使用`dataframe.write.json(path)`写出JSON文件。
+可以使用`spark.read.json(path)`读取JSON数据集并转换为`DataFrame`，Spark SQL会自动推断schema。使用`dataframe.write.json(path)`写出JSON文件。
 
 注意，这里的JSON文件格式实际上叫做[JSON Lines](http://jsonlines.org/)，每行都是一个单独的JSON对象。
 
@@ -448,14 +448,14 @@ SQL参考：<https://spark.apache.org/docs/latest/sql-ref.html>
 {"name":"Justin", "age":19}
 ```
 
-下面的代码基于以上JSON文件的内容创建了一个DataFrame：
+下面的代码基于以上JSON文件的内容创建了一个`DataFrame`：
 
 ```scala
 scala> val df = spark.read.json("people.json")
 df: org.apache.spark.sql.DataFrame = [age: bigint, name: string]                
 
 // Displays the content of the DataFrame to stdout
-scala> df.show
+scala> df.show()
 +----+-------+
 | age|   name|
 +----+-------+
@@ -466,7 +466,7 @@ scala> df.show
 ```
 
 #### 5.1.2 CSV文件
-Spark SQL提供了`spark.read.csv(path)`读取CSV格式的文件或目录并转换为DataFrame，`dataframe.write.csv(path)`写出CSV文件。可以使用`option()`指定读写选项，例如列名、分隔符等。
+Spark SQL提供了`spark.read.csv(path)`读取CSV格式的文件或目录并转换为`DataFrame`，`dataframe.write.csv(path)`写出CSV文件。可以使用`option()`指定读写选项，例如列名、分隔符等。
 
 例如，文件people.csv的内容如下：
 
@@ -476,13 +476,13 @@ Jorge,30,Developer
 Bob,32,Developer
 ```
 
-下面的代码将这个CSV文件读取为DataFrame，使用第一行作为列名，并自动推断schema：
+下面的代码将这个CSV文件读取为`DataFrame`，使用第一行作为列名，并自动推断schema：
 
 ```scala
 scala> val df = spark.read.option("header", "true").option("inferSchema", "true").csv(path)
 df: org.apache.spark.sql.DataFrame = [name: string, age: int ... 1 more field]
 
-scala> df.show
+scala> df.show()
 +-----+---+---------+
 | name|age|      job|
 +-----+---+---------+
@@ -491,12 +491,14 @@ scala> df.show
 +-----+---+---------+
 ```
 
-如果不指定`header`选项，则将第一行视为数据内容，列名为_c0, _c1...；如果不指定`inferSchema`选项，则所有列的类型均为字符串。
+如果`header`选项为`true`，则使用第一行作为列名；否则将第一行视为数据，列名为`_c0`、`_c1`等。
 
-完整选项列表参见[CSV Files - Data Source Option](https://spark.apache.org/docs/latest/sql-data-sources-csv.html#data-source-option)。
+如果`inferSchema`选项为`true`，则自动从数据推断schema，否则所有列的类型均为字符串。
+
+选项的完整列表参见[CSV Files - Data Source Option](https://spark.apache.org/docs/latest/sql-data-sources-csv.html#data-source-option)。
 
 #### 5.1.3 Scala集合
-可以使用`toDF()`方法从Scala集合创建DataFrame，必须先导入`spark.implicits._`。可以通过`toDF()`的参数指定列名，Spark将自动推断类型。例如：
+可以使用`toDF()`方法从Scala集合创建`DataFrame`，必须先导入`spark.implicits._`。可以通过`toDF()`的参数指定列名，Spark将自动推断类型。例如：
 
 ```scala
 // for toDF()
@@ -505,7 +507,7 @@ scala> import spark.implicits._
 scala> val df = Seq((30, "Andy"), (19, "Justin")).toDF("age", "name")
 df: org.apache.spark.sql.DataFrame = [age: int, name: string]
 
-scala> df.show
+scala> df.show()
 +---+------+
 |age|  name|
 +---+------+
@@ -514,13 +516,13 @@ scala> df.show
 +---+------+
 ```
 
-如果要包含`null`，则必须使用`None`和`Some`：
+如果要包含`null`值，必须使用`Option`类型：
 
 ```scala
 scala> val df = Seq((None, "Michael"), (Some(30), "Andy"), (Some(19), "Justin")).toDF("age", "name")
 df: org.apache.spark.sql.DataFrame = [age: int, name: string]
 
-scala> df.show
+scala> df.show()
 +----+-------+
 | age|   name|
 +----+-------+
@@ -540,7 +542,7 @@ scala> val data = Seq(Person("Jorge", 30, "Developer"), Person("Bob", 32, "Devel
 scala> val df = data.toDF()
 df: org.apache.spark.sql.DataFrame = [name: string, age: int ... 1 more field]
 
-scala> df.show
+scala> df.show()
 +-----+---+---------+
 | name|age|      job|
 +-----+---+---------+
@@ -550,105 +552,165 @@ scala> df.show
 ```
 
 ### 5.2 DataFrame操作
-DataFrame提供了结构化数据操作。
+`DataFrame`提供了结构化数据操作。
+
+测试数据：
+
+```scala
+val df = Seq(
+  ("Lisa", 35, "Sales", 10000),
+  ("Evan", 38, "Sales", 32000),
+  ("Fred", 28, "Engineering", 21000),
+  ("Alex", 33, "Sales", 30000),
+  ("Tom", 33, "Engineering", 28000),
+  ("Jane", 28, "Marketing", 29000),
+  ("Jeff", 38, "Marketing", 35000),
+  ("Paul", 23, "Engineering", 29000),
+  ("Chloe", 25, "Engineering", 23000)
+).toDF("name", "age", "dept", "salary")
+```
 
 下面是一些基本示例：
 
 ```scala
 // Print the schema in a tree format
-scala> df.printSchema
+scala> df.printSchema()
 root
- |-- age: long (nullable = true)
  |-- name: string (nullable = true)
+ |-- age: integer (nullable = false)
+ |-- dept: string (nullable = true)
+ |-- salary: integer (nullable = false)
 
-// Select only the "name" column
-scala> df.select("name").show
-+-------+
-|   name|
-+-------+
-|Michael|
-|   Andy|
-| Justin|
-+-------+
+// Select only the "name" and "age" column
+scala> df.select("name", "age").show()
++-----+---+
+| name|age|
++-----+---+
+| Lisa| 35|
+| Evan| 38|
+| Fred| 28|
+| Alex| 33|
+|  Tom| 33|
+| Jane| 28|
+| Jeff| 38|
+| Paul| 23|
+|Chloe| 25|
++-----+---+
 
 // This import is needed to use the $-notation
 scala> import spark.implicits._
 
 // Select everybody, but increment the age by 1
 scala> df.select($"name", $"age" + 1).show()
-+-------+---------+
-|   name|(age + 1)|
-+-------+---------+
-|Michael|     null|
-|   Andy|       31|
-| Justin|       20|
-+-------+---------+
++-----+---------+
+| name|(age + 1)|
++-----+---------+
+| Lisa|       36|
+| Evan|       39|
+| Fred|       29|
+| Alex|       34|
+|  Tom|       34|
+| Jane|       29|
+| Jeff|       39|
+| Paul|       24|
+|Chloe|       26|
++-----+---------+
 
-// Select people older than 21
-scala> df.filter($"age" > 21).show
-+---+----+
-|age|name|
-+---+----+
-| 30|Andy|
-+---+----+
+// Select people older than 30
+scala> df.filter($"age" > 30).show()
++----+---+-----------+------+
+|name|age|       dept|salary|
++----+---+-----------+------+
+|Lisa| 35|      Sales| 10000|
+|Evan| 38|      Sales| 32000|
+|Alex| 33|      Sales| 30000|
+| Tom| 33|Engineering| 28000|
+|Jeff| 38|  Marketing| 35000|
++----+---+-----------+------+
 
 // Count people by age
-scala> df.groupBy("age").count.show
-+----+-----+
-| age|count|
-+----+-----+
-|  19|    1|
-|null|    1|
-|  30|    1|
-+----+-----+
+scala> df.groupBy("age").count().orderBy("age").show()
++---+-----+
+|age|count|
++---+-----+
+| 23|    1|
+| 25|    1|
+| 28|    2|
+| 33|    2|
+| 35|    1|
+| 38|    2|
++---+-----+
+
+// Average salary by department, in descending order
+scala> df.groupBy("dept").agg(avg("salary").as("avg_salary")).orderBy(desc("avg_salary")).show()
++-----------+----------+
+|       dept|avg_salary|
++-----------+----------+
+|  Marketing|   32000.0|
+|Engineering|   25250.0|
+|      Sales|   24000.0|
++-----------+----------+
 ```
 
 注：
-* `$"name"`等价于`col("name")`
-* `df.select($"name", $"age" + 1)`等价于`df.select(col("name"), expr("age + 1"))`和`df.selectExpr("name", "age + 1")`
-* `df.filter($"age" > 21)`等价于`df.filter("age > 21")`
+* `$"name"`等价于`col("name")`，用于选择具有指定名字的列，返回一个[Column](https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/Column.html)对象。
+* `Column`对象可以用运算符组合成更复杂的表达式，例如`$"a" + 1`、`$"a" > 0`、`$"a".isNull`、`$"a" === $"b"`等。另外，也可以用`expr()`函数将表达式字符串解析成`Column`对象。例如，前面几个表达式分别等价于`expr("a + 1")`、`expr("a > 0")`、`expr("a IS NULL")`、`expr("a = b")`。
+* `filter()`方法支持直接传递表达式字符串。例如，`df.filter($"age" > 30)`等价于`df.filter("age > 30")`。
+* `select()`、`groupBy()`和`orderBy()`的参数必须全部是`String`（列名）或者全部是`Column`。要混合使用列名和表达式，可以使用`selectExpr()`，例如`df.selectExpr("name", "age + 1")`。
+* `col()`、`expr()`等函数定义在[
+org.apache.spark.sql.functions](https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/functions$.html)中。Spark Shell自动导入了这些名字，在代码中需要手动导入。
 
-其中`col()`、`expr()`等函数定义在[
-org.apache.spark.sql.functions](https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/functions$.html)。
+常用的DataFrame操作和对应的SQL语句如下表所示。
 
-下面是一些常用的DataFrame操作：
-
-| SQL子句 | DataFrame操作 |
+| SQL语句 | DataFrame操作 |
 | --- | --- |
-| SELECT | `select()`或`selectExpr()` |
-| 增加列 | `withColumn()` |
-| AS | `withColumnRenamed()` |
-| JOIN | `join()` |
-| WHERE | `filter()`或`where()` |
-| GROUP BY | `groupBy().agg()` |
-| ORDER BY | `sort()`或`orderBy()` |
+| `SELECT a, b` | `df.select("a", "b")` |
+| `SELECT a, b + 1` | `df.select($"a", $"b" + 1)`<br>或`df.selectExpr("a", "b + 1")` |
+| `SELECT b + 1 AS c` | `df.withColumn("c", expr("b + 1"))` |
+| `SELECT b AS b2` | `df.withColumnRenamed("b", "b2")` |
+| `t INNER JOIN t2 ON t.a = t2.a` | `df.join(df2, Seq("a"), "inner")` |
+| `WHERE a > 0` | `df.filter("a > 0")` |
+| `SELECT a, SUM(b), COUNT(*)`<br>`... GROUP BY a` | `df.groupBy("a").agg(sum("b"), count("*"))` |
+| `ORDER BY a, b` | `df.orderBy("a", "b")` |
+| `ORDER BY a, b DESC` | `df.orderBy($"a", $"b".desc)` |
+| `CASE WHEN gender = "male" THEN 0`<br>`WHEN gender = "female" THEN 1`<br>`ELSE 2 END` | `when($"gender" === "male", 0)`<br>`.when($"gender" === "female", 1)`<br>`.otherwise(2)` |
 
 完整列表见[Dataset API文档](https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/Dataset.html)。
 
 除了引用列和表达式外，Spark SQL还提供了丰富的函数库，包括字符串操作、日期运算、常见数学函数等，另外还支持用户自定义函数(UDF)。详见[DataFrame Function Reference](https://spark.apache.org/docs/latest/sql-ref-functions.html)。
 
 ### 5.3 SQL查询
-`SparkSession`的`sql()`方法可以运行SQL查询，并将结果作为DataFrame返回。例如：
+`SparkSession`的`sql()`方法可以运行SQL查询，并将结果作为`DataFrame`返回。例如：
 
 ```scala
 // Register the DataFrame as a SQL temporary view
 scala> df.createOrReplaceTempView("people")
 
-scala> spark.sql("SELECT * FROM people").show
-+----+-------+
-| age|   name|
-+----+-------+
-|null|Michael|
-|  30|   Andy|
-|  19| Justin|
-+----+-------+
+scala> spark.sql("SELECT * FROM people").show()
++-----+---+-----------+------+
+| name|age|       dept|salary|
++-----+---+-----------+------+
+| Lisa| 35|      Sales| 10000|
+| Evan| 38|      Sales| 32000|
+| Fred| 28|Engineering| 21000|
+| Alex| 33|      Sales| 30000|
+|  Tom| 33|Engineering| 28000|
+| Jane| 28|  Marketing| 29000|
+| Jeff| 38|  Marketing| 35000|
+| Paul| 23|Engineering| 29000|
+|Chloe| 25|Engineering| 23000|
++-----+---+-----------+------+
 
-scala> spark.sql("SELECT name FROM people WHERE age > 21").show
-+----+
-|name|
-+----+
-|Andy|
-+----+
+scala> spark.sql("SELECT name, age FROM people WHERE age > 30").show()
++----+---+
+|name|age|
++----+---+
+|Lisa| 35|
+|Evan| 38|
+|Alex| 33|
+| Tom| 33|
+|Jeff| 38|
++----+---+
 ```
 
 SQL语法参考：[SQL Reference](https://spark.apache.org/docs/latest/sql-ref.html)
@@ -724,7 +786,7 @@ val result = df.withColumn("prefix_salary", sum("salary").over(window))
 ```
 
 ### 5.4 创建Dataset
-可以使用`toDS()`方法从Scala集合创建Dataset，必须先导入`spark.implicits._`。例如：
+可以使用`toDS()`方法从Scala集合创建`Dataset`，必须先导入`spark.implicits._`。例如：
 
 ```scala
 scala> case class Person(name: String, age: Long)
@@ -734,10 +796,10 @@ defined class Person
 scala> import spark.implicits._
 
 // Encoders are created for case classes
-scala> val caseClassDS = Seq(Person("Andy", 32)).toDS
+scala> val caseClassDS = Seq(Person("Andy", 32)).toDS()
 caseClassDS: org.apache.spark.sql.Dataset[Person] = [name: string, age: bigint]
 
-scala> caseClassDS.show
+scala> caseClassDS.show()
 +----+---+
 |name|age|
 +----+---+
@@ -745,17 +807,17 @@ scala> caseClassDS.show
 +----+---+
 
 // Encoders for most common types are automatically provided by importing spark.implicits._
-scala> val primitiveDS = Seq(1, 2, 3).toDS
+scala> val primitiveDS = Seq(1, 2, 3).toDS()
 primitiveDS: org.apache.spark.sql.Dataset[Int] = [value: int]
 
-scala> primitiveDS.map(_ + 1).collect
+scala> primitiveDS.map(_ + 1).collect()
 res21: Array[Int] = Array(2, 3, 4)
 
 // DataFrames can be converted to a Dataset by providing a class. Mapping will be done by name
 scala> val peopleDS = spark.read.json("examples/src/main/resources/people.json").as[Person]
 peopleDS: org.apache.spark.sql.Dataset[Person] = [age: bigint, name: string]
 
-scala> peopleDS.show
+scala> peopleDS.show()
 +----+-------+
 | age|   name|
 +----+-------+
@@ -765,13 +827,13 @@ scala> peopleDS.show
 +----+-------+
 ```
 
-注：如果元素类型不是case类，则默认只有一个名为 "value" 的列。例如：
+注：如果元素类型不是case类，则默认只有一个名为`value`的列。例如：
 
 ```scala
-scala> val ds = Seq(1, 2, 3).toDS
+scala> val ds = Seq(1, 2, 3).toDS()
 ds: org.apache.spark.sql.Dataset[Int] = [value: int]
 
-scala> ds.show
+scala> ds.show()
 +-----+
 |value|
 +-----+
@@ -808,7 +870,7 @@ peopleRDD: org.apache.spark.rdd.RDD[Person] = MapPartitionsRDD[3] at map at <con
 scala> val peopleDF = peopleRDD.toDF
 peopleDF: org.apache.spark.sql.DataFrame = [name: string, age: bigint]
 
-scala> peopleDF.show
+scala> peopleDF.show()
 +-------+---+
 |   name|age|
 +-------+---+
@@ -817,7 +879,7 @@ scala> peopleDF.show
 | Justin| 19|
 +-------+---+
 
-scala> peopleDF.filter("age BETWEEN 13 AND 19").show
+scala> peopleDF.filter("age BETWEEN 13 AND 19").show()
 +------+---+
 |  name|age|
 +------+---+
